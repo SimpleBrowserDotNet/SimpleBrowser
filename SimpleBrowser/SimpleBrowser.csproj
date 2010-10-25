@@ -50,6 +50,7 @@
     <Compile Include="HtmlParserException.cs" />
     <Compile Include="HtmlResult.cs" />
     <Compile Include="HttpBrowserBase.cs" />
+    <Compile Include="HttpRequestLog.cs" />
     <Compile Include="Internal\CollectionExtensions.cs" />
     <Compile Include="Internal\ObjectExtensions.cs" />
     <Compile Include="Internal\StringExtensions.cs" />

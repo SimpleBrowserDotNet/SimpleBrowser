@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.Drawing;
-using System.Net;
 
 namespace SimpleBrowser
 {
@@ -75,17 +73,6 @@ namespace SimpleBrowser
 
 		public abstract void Dispose();
 		public abstract bool ContainsText(string text);
-	}
-
-	public class HttpRequestLog
-	{
-		public string Text { get; set; }
-		public string Method { get; set; }
-		public NameValueCollection PostData { get; set; }
-		public WebHeaderCollection RequestHeaders { get; set; }
-		public WebHeaderCollection ResponseHeaders { get; set; }
-		public int StatusCode { get; set; }
-		public Uri Url { get; set; }
 	}
 
 	public enum FindBy

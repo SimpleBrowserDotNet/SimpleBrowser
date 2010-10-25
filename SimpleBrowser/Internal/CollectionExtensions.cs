@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleBrowser
 {
@@ -91,6 +92,33 @@ namespace SimpleBrowser
 		public static string ToQueryString(this NameValueCollection nvc)
 		{
 			return StringUtil.MakeQueryString(nvc);
+		}
+
+		public static XElement ToXElement(this NameValueCollection nvc, string name)
+		{
+			var e = new XElement(name);
+			foreach(var key in nvc.AllKeys)
+			{
+				var vals = nvc.GetValues(key);
+				switch(vals.Length)
+				{
+					case 0:
+						e.Add(new XElement(key));
+						break;
+					case 1:
+						e.Add(new XElement(key, vals[0]));
+						break;
+					default:
+					{
+						var x = new XElement(key);
+						foreach(var val in vals)
+							x.Add(new XElement("Value", vals));
+						e.Add(x);
+						break;
+					}
+				}
+			}
+			return e;
 		}
 	}
 }

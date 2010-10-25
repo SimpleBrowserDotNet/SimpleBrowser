@@ -20,6 +20,8 @@ namespace SimpleBrowser
 			if(ServicePointManager.Expect100Continue)
 				ServicePointManager.Expect100Continue = false;
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+			if(_userAgent == null)
+				_userAgent = WebCrawler.GetRandomUserAgent();
 		}
 
 		private HashSet<string> _extraHeaders = new HashSet<string>();
@@ -278,9 +280,7 @@ namespace SimpleBrowser
 							typeName = "text";
 						else
 							typeName = typeAttr.Value;
-						var valueAttr = GetAttribute(element, "value");
-						if(valueAttr == null)
-							continue;
+						var valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
 						switch(typeName)
 						{
 							case "radio":
@@ -338,9 +338,7 @@ namespace SimpleBrowser
 			var methodAttr = GetAttribute(form, "method");
 			var method = methodAttr == null ? "GET" : methodAttr.Value.ToUpper() == "POST" ? "POST" : "GET";
 			var actionAttr = GetAttribute(form, "action");
-			var action = actionAttr == null ? Url
-			             	: Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ?
-			             	                                                                	new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
+			var action = actionAttr == null ? Url : Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ? new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
 
 			DoRequest(action, method, data, null, null, _timeoutMilliseconds);
 		}
@@ -510,8 +508,6 @@ namespace SimpleBrowser
 		private string _userAgent;
 		private HttpWebRequest PrepareRequestObject(Uri url, string method, int timeoutMilliseconds)
 		{
-			if(_userAgent == null)
-				_userAgent = WebCrawler.GetRandomUserAgent();
 			HttpWebRequest req = new WebCrawler().CreateRequestObject(url, method, _userAgent);
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
@@ -641,43 +637,43 @@ namespace SimpleBrowser
 						                  };
 						if(AutoLogRequestData)
 							LogRequestData();
-						string host = uri.Host;
-						string[] parts = host.Split('.');
-						if(parts.Length > 2)
-							host = parts[parts.Length - 2] + "." + parts[parts.Length - 1];
-						var cookieUri = new Uri("http://" + host);
-						foreach(Cookie cookie in response.Cookies)
-						{
-							if(cookie.Domain != null)
-							{
-								string domain = cookie.Domain;
-								if(domain.StartsWith("."))
-									domain = domain.Substring(1);
-								if(domain != cookieUri.Host)
-									_cookies.Add(new Uri("http://" + domain), new Cookie(cookie.Name, cookie.Value));
-								_cookies.Add(cookieUri, new Cookie(cookie.Name, cookie.Value));
-							}
-						}
-						Regex rx = new Regex(@"(?:^|,)(\S.*?)=(.*?);");
-						foreach(Match match in rx.Matches(response.Headers[HttpResponseHeader.SetCookie] ?? string.Empty))
-						{
-							try
-							{
-								var cookieName = HttpUtility.UrlDecode(match.Groups[1].Value);
-								var cookieValue = HttpUtility.UrlDecode(match.Groups[2].Value);
-								if(cookieValue.Contains(","))
-									cookieValue = cookieValue.Replace(",", "%2C");
-								Cookie cookie = new Cookie(cookieName, cookieValue);
-								_cookieReference[cookieName] = cookieValue;
-								if((int)response.StatusCode == 302)
-									_cookies.Add(cookieUri, cookie);
-							}
-							catch(CookieException ex)
-							{
-								if(AutoLogStatusMessages)
-									Log("An error was encountered while trying to write out the cookie. The error was: " + ex.Message);
-							}
-						}
+						//string host = uri.Host;
+						//string[] parts = host.Split('.');
+						//if(parts.Length > 2)
+						//    host = parts[parts.Length - 2] + "." + parts[parts.Length - 1];
+						//var cookieUri = new Uri("http://" + host);
+						//foreach(Cookie cookie in response.Cookies)
+						//{
+						//    if(cookie.Domain != null)
+						//    {
+						//        string domain = cookie.Domain;
+						//        if(domain.StartsWith("."))
+						//            domain = domain.Substring(1);
+						//        if(domain != cookieUri.Host)
+						//            _cookies.Add(new Uri("http://" + domain), new Cookie(cookie.Name, cookie.Value));
+						//        _cookies.Add(cookieUri, new Cookie(cookie.Name, cookie.Value));
+						//    }
+						//}
+						//Regex rx = new Regex(@"(?:^|,)(\S.*?)=(.*?);");
+						//foreach(Match match in rx.Matches(response.Headers[HttpResponseHeader.SetCookie] ?? string.Empty))
+						//{
+						//    try
+						//    {
+						//        var cookieName = HttpUtility.UrlDecode(match.Groups[1].Value);
+						//        var cookieValue = HttpUtility.UrlDecode(match.Groups[2].Value);
+						//        if(cookieValue.Contains(","))
+						//            cookieValue = cookieValue.Replace(",", "%2C");
+						//        Cookie cookie = new Cookie(cookieName, cookieValue);
+						//        _cookieReference[cookieName] = cookieValue;
+						//        if((int)response.StatusCode == 302)
+						//            _cookies.Add(cookieUri, cookie);
+						//    }
+						//    catch(CookieException ex)
+						//    {
+						//        if(AutoLogStatusMessages)
+						//            Log("An error was encountered while trying to write out the cookie. The error was: " + ex.Message);
+						//    }
+						//}
 						if((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
 						{
 							//url = AdjustUrl(url, response.Headers["Location"]);
@@ -735,6 +731,16 @@ namespace SimpleBrowser
 			_currentHtml = content;
 			_contentType = "image/html";
 			_doc = null;
+		}
+
+		public NameValueCollection AdditionalPostVars
+		{
+			get
+			{
+				if(_includeFormValues == null)
+					_includeFormValues = new NameValueCollection();
+				return _includeFormValues;
+			}
 		}
 	}
 }
