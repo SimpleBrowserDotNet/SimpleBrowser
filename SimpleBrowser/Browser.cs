@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 using SimpleBrowser;
+using SimpleBrowser.Parser;
 
 namespace SimpleBrowser
 {
@@ -492,7 +494,7 @@ namespace SimpleBrowser
 				{
 					try
 					{
-						_doc = HtmlParser.SanitizeHtml(_currentHtml);
+						_doc = _currentHtml.ParseHtml();
 					}
 					catch(HtmlParserException ex)
 					{
@@ -564,6 +566,7 @@ namespace SimpleBrowser
 			string html;
 			do
 			{
+				Debug.WriteLine(uri.ToString());
 				if(maxRedirects-- == 0)
 				{
 					if(AutoLogStatusMessages)
@@ -628,6 +631,7 @@ namespace SimpleBrowser
 						_lastRequestLog = new HttpRequestLog
 						                  {
 						                  	Text = oldHTML,
+											ParsedHtml = HtmlXml.ToString(),
 						                  	Method = method,
 						                  	PostData = postVars,
 						                  	RequestHeaders = req.Headers,
@@ -680,6 +684,7 @@ namespace SimpleBrowser
 							uri = new Uri(uri, response.Headers["Location"]);
 							handle301or302Redirect = true;
 							Url = uri;
+							Debug.WriteLine("Redirecting to: " + Url);
 							method = "GET";
 							postData = null;
 						}

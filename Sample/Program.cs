@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using SimpleBrowser;
+using SimpleBrowser.Parser;
 
 namespace Sample
 {
@@ -11,6 +12,8 @@ namespace Sample
 	{
 		static void Main(string[] args)
 		{
+			var doc = HtmlParser.ParseHtml(File.ReadAllText(@"C:\data\Logs\2010-10-25\DomainfaceNonCritical\AutoBidder\ResponseLog 2010-10-25-10-47-00-614.html"));
+
 			var browser = new Browser();
 			browser.RequestLogged += OnBrowserRequestLogged;
 			browser.Navigate("http://delicious.com");

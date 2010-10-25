@@ -103,17 +103,15 @@ namespace SimpleBrowser
 				switch(vals.Length)
 				{
 					case 0:
-						e.Add(new XElement(key));
+						e.Add(new XElement("Value", new XAttribute("Name", key)));
 						break;
 					case 1:
-						e.Add(new XElement(key, vals[0]));
+						e.Add(new XElement("Value", new XAttribute("Name", key), vals[0]));
 						break;
 					default:
 					{
-						var x = new XElement(key);
 						foreach(var val in vals)
-							x.Add(new XElement("Value", vals));
-						e.Add(x);
+							e.Add(new XElement("Value", new XAttribute("Name", key), val));
 						break;
 					}
 				}
