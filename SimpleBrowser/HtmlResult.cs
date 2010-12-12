@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using SimpleBrowser;
 
 namespace SimpleBrowser
@@ -18,6 +19,7 @@ namespace SimpleBrowser
 		void Click();
 		void SubmitForm();
 		string GetAttribute(string name);
+		XElement XElement { get; }
 	}
 
 	public class HtmlResult
@@ -42,6 +44,8 @@ namespace SimpleBrowser
 		{
 			get { return _current; }
 		}
+
+		public XElement XElement { get { return _current.XElement; } }
 
 		private void AssertElementExists()
 		{

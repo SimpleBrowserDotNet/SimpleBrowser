@@ -26,6 +26,13 @@ namespace SimpleBrowser.Parser
 			return hdb._doc;
 		}
 
+		private string SanitizeElementName(string name)
+		{
+			if(name.Contains(":"))
+				name = name.Substring(name.LastIndexOf(":") + 1);
+			return name.ToLowerInvariant();
+		}
+
 		int _index;
 		private void Assemble()
 		{
@@ -38,7 +45,7 @@ namespace SimpleBrowser.Parser
 				{
 					case TokenType.Element:
 					{
-						var name = token.A.ToLowerInvariant();
+						var name = SanitizeElementName(token.A);
 						if(name == "html") break;
 						var current = new XElement(name);
 						topOrRoot().Add(current);
@@ -50,7 +57,7 @@ namespace SimpleBrowser.Parser
 
 					case TokenType.CloseElement:
 					{
-						var name = token.A.ToLowerInvariant();
+						var name = SanitizeElementName(token.A);
 						if(name == "html") break;
 						if(stack.Any(x => x.Name == name))
 							do

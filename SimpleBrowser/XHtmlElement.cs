@@ -18,6 +18,12 @@ namespace SimpleBrowser
 		{
 			return GetAttribute(Element, name);
 		}
+
+		public XElement XElement
+		{
+			get { return _element; }
+		}
+
 		private XAttribute GetAttribute(XElement x, string name)
 		{
 			return x.Attributes().Where(h => h.Name.LocalName.ToLower() == name).FirstOrDefault();
