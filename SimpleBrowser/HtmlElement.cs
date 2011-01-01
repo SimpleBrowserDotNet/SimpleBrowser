@@ -4,12 +4,11 @@ using System.Xml.Linq;
 
 namespace SimpleBrowser
 {
-	[Obsolete]
-	public class XHtmlElement : IElement
+	internal class HtmlElement
 	{
 		private readonly XElement _element;
 
-		public XHtmlElement(XElement element)
+		public HtmlElement(XElement element)
 		{
 			_element = element;
 		}
@@ -26,12 +25,14 @@ namespace SimpleBrowser
 
 		private XAttribute GetAttribute(XElement x, string name)
 		{
-			return x.Attributes().Where(h => h.Name.LocalName.ToLower() == name).FirstOrDefault();
+			return x.Attributes().Where(h => h.Name.LocalName.ToLower() == name.ToLower()).FirstOrDefault();
 		}
-		private string GetAttributeValue(string name)
+
+		internal string GetAttributeValue(string name)
 		{
 			return GetAttributeValue(Element, name);
 		}
+
 		private string GetAttributeValue(XElement x, string name)
 		{
 			var attr = GetAttribute(x, name);
@@ -59,8 +60,8 @@ namespace SimpleBrowser
 			get { return GetAttributeValue("type"); }
 		}
 
-		public event Action<XHtmlElement> Clicked;
-		public event Action<XHtmlElement> FormSubmitted;
+		public event Action<HtmlElement> Clicked;
+		public event Action<HtmlElement> FormSubmitted;
 
 		public void Click()
 		{
@@ -74,22 +75,29 @@ namespace SimpleBrowser
 				FormSubmitted(this);
 		}
 
-		string IElement.GetAttribute(string name)
-		{
-			var attr = _element.Attributes().Where(a => a.Name.LocalName.ToLower() == name.ToLower()).FirstOrDefault();
-			return attr == null ? null : attr.Value;
-		}
-
 		public string Value
 		{
 			get
 			{
-				if(Element.Name.LocalName.ToLower() != "input")
-					return Element.Value;
-				var attr = GetAttribute("value");
-				if(attr == null)
-					return null;
-				return attr.Value;
+				var name = Element.Name.LocalName.ToLower();
+				switch(name)
+				{
+					case "input":
+						var attr = GetAttribute("value");
+						if(attr == null)
+							return null;
+						return attr.Value;
+
+					case "select":
+						var options = Element.Descendants("option");
+						var optionEl = options.Where(d => d.Attribute("selected") != null).FirstOrDefault() ?? options.FirstOrDefault();
+						if(optionEl == null) return null;
+						var valueAttr = optionEl.Attribute("value");
+						return valueAttr == null ? optionEl.Value : valueAttr.Value;
+
+					default:
+						return Element.Value;
+				}
 			}
 			set
 			{
