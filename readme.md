@@ -1,13 +1,19 @@
 SimpleBrowser
 =============
-SimpleBrowser is a lightweight, yet highly capable browser automation system that is the predecessor to the as-yet unreleased
-[XBrowser](http://github.com/axefrog/XBrowser). Unlike XBrowser, SimpleBrowser does not support JavaScript or other advanced
-features, but it does provide an intuitive automation API that makes quickly loading website pages, navigating through websites
-and extracting data from those pages quite easy.
+SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios.
+It provides an intuitive API that makes it simple to quickly extract specific elements of a page using a variety of matching
+techniques, and then interact with those elements with methods such as `Click()`, `SubmitForm()` and many more. SimpleBrowser
+does not support JavaScript, but allows for manual manipulation of the user agent, referrer, request headers, form values and
+other values before submission or navigation.
+
+Requirements
+------------
+* .Net Framework 4.0
 
 Features
 --------
 * Multiple ways of locating and interacting with page elements
+* A highly permissive HTML parser that converts any HTML, no matter how badly formed, to a valid XDocument object
 * Automatic cookie/session management
 * Extensive logging support to make it easy to identify problems loading and automating browsing sessions
 
