@@ -611,6 +611,7 @@ namespace SimpleBrowser
 					else
 					{
 						uri = new Uri(uri.Scheme + "://" + uri.Host + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(postVars));
+						req = PrepareRequestObject(uri, method, timeoutMilliseconds);
 					}
 				}
 				else if(postData != null)
