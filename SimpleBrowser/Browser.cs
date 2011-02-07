@@ -228,6 +228,12 @@ namespace SimpleBrowser
 						case "submit": element.SubmitForm(); return;
 						default: return;
 					}
+				case "button":
+					switch (element.InputType)
+					{
+						case "submit": element.SubmitForm(); return;
+						default: return;
+					}
 			}
 		}
 
