@@ -212,53 +212,62 @@ namespace SimpleBrowser
 			return new HtmlResult(htmlElement);
 		}
 
-		private void htmlElement_Clicked(HtmlElement element)
+		private ClickResult htmlElement_Clicked(HtmlElement element)
 		{
 			Log("Clicked element: " + element.Value);
 
 			switch(element.TagName.ToLower())
 			{
-				case "a": ClickLink(element.Element); return;
+				case "a": return ClickLink(element.Element);
 				case "input":
 					switch(element.InputType)
 					{
-						case "radio": CheckRadioButton(element.Element); return;
-						case "checkbox": CheckCheckbox(element.Element); return;
+						case "radio": return CheckRadioButton(element.Element);
+						case "checkbox": return CheckCheckbox(element.Element);
 						case "image":
-						case "submit": element.SubmitForm(); return;
-						default: return;
+						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
+						default: return ClickResult.SucceededNoNavigation;
 					}
 				case "button":
 					switch (element.InputType)
 					{
-						case "submit": element.SubmitForm(); return;
-						default: return;
+						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
+						default: return ClickResult.SucceededNoNavigation;
 					}
 			}
+
+			return ClickResult.SucceededNoNavigation;
 		}
 
-		private void OnHtmlElementSubmittedAsForm(HtmlElement element)
+		private bool OnHtmlElementSubmittedAsForm(HtmlElement element)
 		{
-			SubmitForm(ObtainAncestor(element.Element, "form"), element.Element);
+			return SubmitForm(ObtainAncestor(element.Element, "form"), element.Element);
 		}
-		private void ClickLink(XElement element)
+		private ClickResult ClickLink(XElement element)
 		{
 			var attr = GetAttribute(element, "href");
-			if(attr == null || attr.Value.StartsWith("#"))
-				return;
+			if (attr == null || attr.Value.StartsWith("#"))
+				return ClickResult.Failed;
+
 			Uri href;
 			string attrValue = HttpUtility.HtmlDecode(attr.Value);
 			if(Uri.IsWellFormedUriString(attrValue, UriKind.Absolute))
 				href = new Uri(attrValue);
 			else
 				href = new Uri(Url, attrValue);
-			DoRequest(href, "GET", null, null, null, _timeoutMilliseconds);
+
+			if(DoRequest(href, "GET", null, null, null, _timeoutMilliseconds))
+				return ClickResult.SucceededNavigationComplete;
+			else
+				return ClickResult.SucceededNavigationError;
 		}
-		private void CheckRadioButton(XElement target)
+		private ClickResult CheckRadioButton(XElement target)
 		{
+			if (target == null)
+				return ClickResult.Failed;
 			var nameAttr = GetAttribute(target, "name");
 			if(nameAttr == null)
-				return;
+				return ClickResult.Failed;
 			var group = FindElements(ElementType.RadioButton)
 				//.Where(h => h.Attributes().Where(k => k.Name.LocalName.ToLower() == "checked").Count() > 0)
 				.Where(h => h.Attributes().Where(k => k.Name.LocalName.ToLower() == "name" && k.Value.ToLower() == nameAttr.Value.ToLower()).Count() > 0)
@@ -269,14 +278,18 @@ namespace SimpleBrowser
 				var value = ReferenceEquals(element, target) ? "checked" : null;
 				element.SetAttributeValue(attr == null ? "checked" : attr.Name.LocalName, value); // we do it this way to account for case variations
 			}
+			return ClickResult.SucceededNoNavigation;
 		}
-		private void CheckCheckbox(XElement target)
+		private ClickResult CheckCheckbox(XElement target)
 		{
+			if (target == null)
+				return ClickResult.Failed;
 			var attr = GetAttribute(target, "checked");
 			if(attr == null) // if we didnt find it, set it
 				target.SetAttributeValue("checked", "checked");
 			else // if we found it, it needs to be removed
 				target.SetAttributeValue(attr.Name.LocalName, null);
+			return ClickResult.SucceededNoNavigation;
 		}
 		private XElement ObtainAncestor(XElement descendent, string ancestorTagName)
 		{
@@ -286,8 +299,12 @@ namespace SimpleBrowser
 				throw new InvalidOperationException("The target element does not reside inside an element of type \"" + ancestorTagName + "\"");
 			return ObtainAncestor(descendent.Parent, ancestorTagName);
 		}
-		private void SubmitForm(XElement form, XElement clickedElement)
+		private bool SubmitForm(XElement form, XElement clickedElement)
 		{
+			if(form==null)
+				return false;
+			if(clickedElement==null)
+				return false;
 			Dictionary<string, bool> radioValuesCompleted = new Dictionary<string, bool>();
 			NameValueCollection data = new NameValueCollection();
 			string[] names = new[] { "input", "textarea", "select" };
@@ -369,7 +386,7 @@ namespace SimpleBrowser
 			var actionAttr = GetAttribute(form, "action");
 			var action = actionAttr == null ? Url : Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ? new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
 
-			DoRequest(action, method, data, null, null, _timeoutMilliseconds);
+			return DoRequest(action, method, data, null, null, _timeoutMilliseconds);
 		}
 		private string GetOptionValue(XElement option)
 		{

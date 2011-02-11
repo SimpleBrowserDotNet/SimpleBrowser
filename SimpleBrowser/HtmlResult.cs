@@ -158,11 +158,11 @@ namespace SimpleBrowser
 		/// group will have their CHECKED attribute removed and the current element will have its CHECKED element set.
 		/// If the element is a link, the 
 		/// </summary>
-		public void Click()
+		public ClickResult Click()
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
-			_current.Click();
+			return _current.Click();
 		}
 
 		/// <summary>
