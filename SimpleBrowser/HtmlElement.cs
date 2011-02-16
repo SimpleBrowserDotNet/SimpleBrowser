@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace SimpleBrowser
@@ -62,6 +63,7 @@ namespace SimpleBrowser
 
 		public event Action<HtmlElement> Clicked;
 		public event Action<HtmlElement> FormSubmitted;
+		public event Action<HtmlElement, string> AspNetPostBackLinkClicked;
 
 		public void Click()
 		{
@@ -73,6 +75,22 @@ namespace SimpleBrowser
 		{
 			if(FormSubmitted != null)
 				FormSubmitted(this);
+		}
+
+		public void DoAspNetLinkPostBack()
+		{
+			if(TagName == "a")
+			{
+				var match = Regex.Match(GetAttributeValue("href"), @"javascript\:__doPostBack\('([^\']*)\'");
+				if(match.Success)
+				{
+					var name = match.Groups[1].Value;
+					if(AspNetPostBackLinkClicked != null)
+						AspNetPostBackLinkClicked(this, name);
+					return;
+				}
+			}
+			throw new InvalidOperationException("This method must only be called on <a> elements having a __doPostBack javascript call in the href attribute");
 		}
 
 		public string Value

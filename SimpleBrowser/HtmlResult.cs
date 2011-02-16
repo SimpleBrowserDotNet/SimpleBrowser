@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using SimpleBrowser.Query;
 
 namespace SimpleBrowser
 {
@@ -19,23 +21,43 @@ namespace SimpleBrowser
 	{
 		private HtmlElement _current;
 		private List<HtmlElement> _list;
+		private readonly Browser _browser;
 		int _index;
 
-		internal HtmlResult(List<HtmlElement> results)
+		internal HtmlResult(List<HtmlElement> results, Browser browser)
 		{
 			_current = results.Count > 0 ? results[0] : null;
 			_list = results;
+			_browser = browser;
 		}
 
-		internal HtmlResult(HtmlElement result)
+		internal HtmlResult(HtmlElement result, Browser browser)
 		{
 			_current = result;
+			_browser = browser;
 			_list = new List<HtmlElement>(new[] { result });
 		}
 
 		internal HtmlElement CurrentElement
 		{
 			get { return _current; }
+		}
+
+		/// <summary>
+		/// Returns a new result set derived from the current element, using jQuery selector syntax
+		/// </summary>
+		public HtmlResult Select(string query)
+		{
+			AssertElementExists();
+			return new HtmlResult(XQuery.Execute("* " + query, _browser.XDocument, _current.XElement).Select(_browser.CreateHtmlElement).ToList(), _browser);
+		}
+
+		/// <summary>
+		/// Returns a new result set derived from the current set of elements, using jQuery selector syntax
+		/// </summary>
+		public HtmlResult Refine(string query)
+		{
+			return new HtmlResult(XQuery.Execute(query, _browser.XDocument, _list.Select(h => h.XElement).ToArray()).Select(_browser.CreateHtmlElement).ToList(), _browser);
 		}
 
 		/// <summary>
@@ -152,11 +174,11 @@ namespace SimpleBrowser
 
 		/// <summary>
 		/// Simulates a click on an element, which has differing effects depending on the element type. If the element
-		/// is a BUTTON or INPUT TYPE=SUBMIT element, the current form (if any) will be submitted, with the name/value
-		/// of the clicked element being used in the submission values where relevant. If the element is a checkbox,
-		/// the CHECKED value will be toggled on or off. If the element is a radio button, other radio buttons in the
-		/// group will have their CHECKED attribute removed and the current element will have its CHECKED element set.
-		/// If the element is a link, the 
+		/// is a BUTTON or INPUT TYPE=SUBMIT or INPUT TYPE=IMAGE element, the current form (if any) will be submitted,
+		/// with the name/value of the clicked element being used in the submission values where relevant. If the
+		/// element is a checkbox, the CHECKED value will be toggled on or off. If the element is a radio button, other
+		/// radio buttons in the group will have their CHECKED attribute removed and the current element will have its
+		/// CHECKED element set.
 		/// </summary>
 		public void Click()
 		{
@@ -179,6 +201,16 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
+		/// This method is designed for use on Asp.Net WebForms sites where the anchor link being clicked only has a postback
+		/// javascript function as its method of navigating to the next page.
+		/// </summary>
+		public void DoAspNetLinkPostBack()
+		{
+			AssertElementExists();
+			_current.DoAspNetLinkPostBack();
+		}
+
+		/// <summary>
 		/// return the value of the specified attribute. Throws an exception if Exists is false.
 		/// </summary>
 		public string GetAttribute(string name)
@@ -190,7 +222,7 @@ namespace SimpleBrowser
 		public IEnumerator<HtmlResult> GetEnumerator()
 		{
 			foreach(var el in _list)
-				yield return new HtmlResult(el);
+				yield return new HtmlResult(el, _browser);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

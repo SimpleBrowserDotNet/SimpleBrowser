@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 using SimpleBrowser.Parser;
+using SimpleBrowser.Query;
 
 namespace SimpleBrowser
 {
@@ -63,6 +64,8 @@ namespace SimpleBrowser
 		{
 			_extraHeaders.Add(header);
 		}
+
+		public string Accept { get; set; }
 
 		public void RemoveHeader(string header)
 		{
@@ -195,21 +198,28 @@ namespace SimpleBrowser
 		{
 			List<HtmlElement> xlist = new List<HtmlElement>();
 			foreach(var e in list)
-			{
-				var htmlElement = new HtmlElement(e);
-				htmlElement.Clicked += htmlElement_Clicked;
-				htmlElement.FormSubmitted += OnHtmlElementSubmittedAsForm;
-				xlist.Add(htmlElement);
-			}
-			return new HtmlResult(xlist);
+				xlist.Add(CreateHtmlElement(e));
+			return new HtmlResult(xlist, this);
 		}
 
 		private HtmlResult GetHtmlResult(XElement e)
 		{
-			var htmlElement = new HtmlElement(e);
+			return new HtmlResult(CreateHtmlElement(e), this);
+		}
+
+		internal HtmlElement CreateHtmlElement(XElement element)
+		{
+			var htmlElement = new HtmlElement(element);
 			htmlElement.Clicked += htmlElement_Clicked;
 			htmlElement.FormSubmitted += OnHtmlElementSubmittedAsForm;
-			return new HtmlResult(htmlElement);
+			htmlElement.AspNetPostBackLinkClicked += htmlElement_AspNetPostBackLinkClicked;
+			return htmlElement;
+		}
+
+		void htmlElement_AspNetPostBackLinkClicked(HtmlElement element, string name)
+		{
+			Find(ElementType.TextField, FindBy.Name, "__EVENTTARGET").Value = name;
+			OnHtmlElementSubmittedAsForm(element);
 		}
 
 		private void htmlElement_Clicked(HtmlElement element)
@@ -323,7 +333,8 @@ namespace SimpleBrowser
 							case "image":
 								if(!ReferenceEquals(element, clickedElement))
 									continue;
-								data.Add(name, valueAttr.Value);
+								if(!string.IsNullOrEmpty(valueAttr.Value))
+									data.Add(name, valueAttr.Value);
 								break;
 
 							case "hidden":
@@ -509,7 +520,7 @@ namespace SimpleBrowser
 		/// originating HTML does not have to be valid XML; the parser will use a variety of methods to convert any
 		/// invalid markup to valid XML.
 		/// </summary>
-		private XDocument XDocument
+		internal XDocument XDocument
 		{
 			get
 			{
@@ -536,7 +547,7 @@ namespace SimpleBrowser
 			req.Method = method;
 			req.ContentType = "application/x-www-form-urlencoded";
 			req.UserAgent = UserAgent;
-			req.Accept = "*/*";
+			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
 			req.CookieContainer = _cookies;
@@ -733,6 +744,16 @@ namespace SimpleBrowser
 		public NameValueCollection ExtraFormValues
 		{
 			get { return _includeFormValues ?? (_includeFormValues = new NameValueCollection()); }
+		}
+
+		/// <summary>
+		/// This is an alternative to Find and allows the use of jQuery selector syntax to locate elements on the page.
+		/// </summary>
+		/// <param name="query">The query to use to locate elements</param>
+		/// <returns>An HtmlResult object containing zero or more matches</returns>
+		public HtmlResult Select(string query)
+		{
+			return new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
 		}
 	}
 }
