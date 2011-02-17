@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Xml.Linq;
@@ -18,7 +19,9 @@ namespace SimpleBrowser.Query.Selectors
 
 		public void Execute(XQueryResultsContext context)
 		{
-			context.ResultSetInternal = context.ResultSetInternal
+			var set = context.ResultSetInternal;
+			Debug.WriteLine("selecting <" + _name + "> from " + set.Count() + " nodes");
+			context.ResultSetInternal = set
 				.Where(x => string.Compare(x.Name.LocalName, _name, true) == 0);
 		}
 

@@ -24,7 +24,7 @@ namespace SimpleBrowser.Query
 			{
 				return _resultSets
 					.SelectMany(x => x)
-					.Distinct(new XElementEqualityComparer())
+					.Distinct() // new XElementEqualityComparer()
 					.ToArray();
 			}
 		}
@@ -66,7 +66,7 @@ namespace SimpleBrowser.Query
 			private XNodeEqualityComparer _comparer = new XNodeEqualityComparer();
 			public bool Equals(XElement x, XElement y)
 			{
-				return _comparer.Equals(x, y);
+				return ReferenceEquals(x, y);
 			}
 
 			public int GetHashCode(XElement obj)
