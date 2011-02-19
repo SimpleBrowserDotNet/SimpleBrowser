@@ -357,6 +357,24 @@ namespace SimpleBrowser
 						}
 						break;
 
+					case "button":
+						typeAttr = GetAttribute(element, "type");
+						if(typeAttr == null)
+							typeName = "button";
+						else
+							typeName = typeAttr.Value;
+						valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
+						switch(typeName)
+						{
+							case "button":
+							case "submit":
+								if(!ReferenceEquals(element, clickedElement))
+									continue;
+								data.Add(name, valueAttr.Value);
+								break;
+						}
+						break;
+
 					case "textarea":
 						data.Add(name, element.Value);
 						break;
