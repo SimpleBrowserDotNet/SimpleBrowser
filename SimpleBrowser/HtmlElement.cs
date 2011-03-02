@@ -61,20 +61,24 @@ namespace SimpleBrowser
 			get { return GetAttributeValue("type"); }
 		}
 
-		public event Action<HtmlElement> Clicked;
-		public event Action<HtmlElement> FormSubmitted;
+		public event Func<HtmlElement, ClickResult> Clicked;
+		public event Func<HtmlElement, bool> FormSubmitted;
 		public event Action<HtmlElement, string> AspNetPostBackLinkClicked;
 
-		public void Click()
+		public ClickResult Click()
 		{
 			if(Clicked != null)
-				Clicked(this);
+				return Clicked(this);
+
+			return ClickResult.SucceededNoOp;
 		}
 
-		public void SubmitForm()
+		public bool SubmitForm()
 		{
 			if(FormSubmitted != null)
-				FormSubmitted(this);
+				return FormSubmitted(this);
+
+			return false;
 		}
 
 		public void DoAspNetLinkPostBack()

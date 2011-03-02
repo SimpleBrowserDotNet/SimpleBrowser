@@ -24,6 +24,13 @@
 		SelectBox,
 		Script
 	}
+
+	public enum ClickResult
+	{
+		Failed,
+		SucceededNoOp,
+		SucceededNoNavigation,
+		SucceededNavigationComplete,
+		SucceededNavigationError
+	}
 }
-
-

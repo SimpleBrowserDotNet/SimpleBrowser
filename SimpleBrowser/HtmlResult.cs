@@ -180,11 +180,11 @@ namespace SimpleBrowser
 		/// radio buttons in the group will have their CHECKED attribute removed and the current element will have its
 		/// CHECKED element set.
 		/// </summary>
-		public void Click()
+		public ClickResult Click()
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
-			_current.Click();
+			return _current.Click();
 		}
 
 		/// <summary>
