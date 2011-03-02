@@ -222,7 +222,6 @@ namespace SimpleBrowser
 			OnHtmlElementSubmittedAsForm(element);
 		}
 
-		private void htmlElement_Clicked(HtmlElement element)
 		private ClickResult htmlElement_Clicked(HtmlElement element)
 		{
 			Log("Clicked element: " + element.Value);
