@@ -23,6 +23,7 @@ namespace SimpleBrowser
 		private CookieContainer _cookies = new CookieContainer();
 		private XDocument _doc;
 		private HttpRequestLog _lastRequestLog;
+		private List<LogItem> _logs = new List<LogItem>();
 
 		static Browser()
 		{
@@ -35,6 +36,7 @@ namespace SimpleBrowser
 		{
 			CurrentHtml = null;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
+			RetainLogs = true;
 		}
 
 		public string UserAgent { get; set; }
@@ -42,12 +44,15 @@ namespace SimpleBrowser
 		public string CurrentHtml { get; private set; }
 		public string ResponseText { get; private set; }
 		public string ContentType { get; private set; }
+		public bool RetainLogs { get; set; }
 
 		public event Action<Browser, string> MessageLogged;
 		public event Action<Browser, HttpRequestLog> RequestLogged;
 
-		public void Log(string message)
+		public void Log(string message, LogMessageType type = LogMessageType.User)
 		{
+			if(RetainLogs)
+				_logs.Add(new LogMessage(message, type));
 			if(MessageLogged != null)
 				MessageLogged(this, message);
 		}
@@ -55,6 +60,8 @@ namespace SimpleBrowser
 		public void LogRequestData()
 		{
 			HttpRequestLog log = AcquireRequestData();
+			if(RetainLogs)
+				_logs.Add(log);
 			if(log != null && RequestLogged != null)
 				RequestLogged(this, log);
 		}
@@ -224,7 +231,7 @@ namespace SimpleBrowser
 
 		private ClickResult htmlElement_Clicked(HtmlElement element)
 		{
-			Log("Clicked element: " + element.Value);
+			Log("Clicked element: " + element.Value, LogMessageType.Internal);
 
 			switch(element.TagName.ToLower())
 			{
@@ -235,6 +242,7 @@ namespace SimpleBrowser
 						case "radio": return CheckRadioButton(element.Element);
 						case "checkbox": return CheckCheckbox(element.Element);
 						case "image":
+						case "button":
 						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
 						default: return ClickResult.SucceededNoNavigation;
 					}
@@ -573,8 +581,8 @@ namespace SimpleBrowser
 					}
 					catch(Exception ex)
 					{
-						Log("Error converting HTML to XML for URL " + Url);
-						Log(ex.Message);
+						Log("Error converting HTML to XML for URL " + Url, LogMessageType.Error);
+						Log(ex.Message, LogMessageType.Error);
 						_doc = HtmlParser.CreateBlankHtmlDocument();
 					}
 				}
@@ -599,7 +607,7 @@ namespace SimpleBrowser
 			return req;
 		}
 
-		private bool DoRequest(Uri uri, string method, NameValueCollection postVars, string postData, string contentType, int timeoutMilliseconds)
+		private bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, int timeoutMilliseconds)
 		{
 			/* IMPORTANT INFORMATION:
 			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
@@ -635,7 +643,7 @@ namespace SimpleBrowser
 				Debug.WriteLine(uri.ToString());
 				if(maxRedirects-- == 0)
 				{
-					Log("Too many 302 redirects");
+					Log("Too many 302 redirects", LogMessageType.Error);
 					return false;
 				}
 				handle301Or302Redirect = false;
@@ -644,17 +652,17 @@ namespace SimpleBrowser
 					req.Headers.Add(header);
 				if(_includeFormValues != null)
 				{
-					if(postVars == null)
-						postVars = _includeFormValues;
+					if(userVariables == null)
+						userVariables = _includeFormValues;
 					else
-						postVars.Add(_includeFormValues);
+						userVariables.Add(_includeFormValues);
 				}
 
-				if(postVars != null)
+				if(userVariables != null)
 				{
 					if(method == "POST")
 					{
-						byte[] data = Encoding.ASCII.GetBytes(StringUtil.MakeQueryString(postVars));
+						byte[] data = Encoding.ASCII.GetBytes(StringUtil.MakeQueryString(userVariables));
 						req.ContentLength = data.Length;
 						Stream stream = req.GetRequestStream();
 						stream.Write(data, 0, data.Length);
@@ -662,7 +670,7 @@ namespace SimpleBrowser
 					}
 					else
 					{
-						uri = new Uri(uri.Scheme + "://" + uri.Host + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(postVars));
+						uri = new Uri(uri.Scheme + "://" + uri.Host + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(userVariables));
 						req = PrepareRequestObject(uri, method, timeoutMilliseconds);
 					}
 				}
@@ -699,12 +707,14 @@ namespace SimpleBrowser
 											  Text = oldHTML,
 											  ParsedHtml = XDocument.ToString(),
 											  Method = method,
-											  PostData = postVars,
+											  PostData = userVariables,
 											  RequestHeaders = req.Headers,
 											  ResponseHeaders = response.Headers,
 											  StatusCode = (int)response.StatusCode,
 											  Url = uri
 										  };
+						if(method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
+							_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
 						LogRequestData();
 						if((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
 						{
@@ -715,6 +725,7 @@ namespace SimpleBrowser
 							Debug.WriteLine("Redirecting to: " + Url);
 							method = "GET";
 							postData = null;
+							userVariables = null;
 						}
 					}
 				}
@@ -724,15 +735,15 @@ namespace SimpleBrowser
 					switch(ex.Status)
 					{
 						case WebExceptionStatus.Timeout:
-							Log("A timeout occurred while trying to load the web page");
+							Log("A timeout occurred while trying to load the web page", LogMessageType.Error);
 							break;
 
 						case WebExceptionStatus.ReceiveFailure:
-							Log("The response was cut short prematurely");
+							Log("The response was cut short prematurely", LogMessageType.Error);
 							break;
 
 						default:
-							Log("An exception was thrown while trying to load the page: " + ex.Message);
+							Log("An exception was thrown while trying to load the page: " + ex.Message, LogMessageType.Error);
 							break;
 					}
 					return false;
@@ -744,7 +755,17 @@ namespace SimpleBrowser
 			return true;
 		}
 
+		public string RenderHtmlLogFile(string title = "SimpleBrowser Session Log")
+		{
+			var formatter = new HtmlLogFormatter();
+			return formatter.Render(_logs, title);
+		}
+
 		public WebException LastWebException { get; private set; }
+		public void ClearException()
+		{
+			LastWebException = null;
+		}
 
 		private HttpRequestLog AcquireRequestData()
 		{
@@ -758,6 +779,7 @@ namespace SimpleBrowser
 		/// <returns></returns>
 		public bool ContainsText(string text)
 		{
+			Log("Looking for text: " + text, LogMessageType.Internal);
 			text = HttpUtility.HtmlDecode(text);
 			string source = HttpUtility.HtmlDecode(XDocument.Root.Value).Replace("&nbsp;", " ");
 			return new Regex(Regex.Replace(Regex.Escape(text).Replace(@"\ ", " "), @"\s+", @"\s+"), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(source);
@@ -795,7 +817,9 @@ namespace SimpleBrowser
 		/// <returns>An HtmlResult object containing zero or more matches</returns>
 		public HtmlResult Select(string query)
 		{
-			return new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
+			var result = new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
+			Log("Selected " + result.TotalElementsFound + " element(s) via jQuery selector: " + query, LogMessageType.Internal);
+			return result;
 		}
 	}
 }

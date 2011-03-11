@@ -5,11 +5,22 @@ using System.Xml.Linq;
 
 namespace SimpleBrowser
 {
-	public class HttpRequestLog
+	public abstract class LogItem
+	{
+		protected LogItem()
+		{
+			ServerTime = DateTime.UtcNow;
+		}
+
+		public DateTime ServerTime { get; set; }
+	}
+
+	public class HttpRequestLog : LogItem
 	{
 		public string Text { get; set; }
 		public string Method { get; set; }
 		public NameValueCollection PostData { get; set; }
+		public NameValueCollection QueryStringData { get; set; }
 		public WebHeaderCollection RequestHeaders { get; set; }
 		public WebHeaderCollection ResponseHeaders { get; set; }
 		public int StatusCode { get; set; }
@@ -32,5 +43,25 @@ namespace SimpleBrowser
 			if(ResponseHeaders != null) doc.Root.Add(ResponseHeaders.ToXElement("ResponseHeaders"));
 			return doc;
 		}
+	}
+
+	public class LogMessage : LogItem
+	{
+		public LogMessage(string message, LogMessageType type = LogMessageType.User)
+		{
+			Message = message;
+			Type = type;
+		}
+
+		public string Message { get; set; }
+		public LogMessageType Type { get; set; }
+	}
+
+	public enum LogMessageType
+	{
+		User,
+		Internal,
+		Error,
+		StackTrace
 	}
 }
