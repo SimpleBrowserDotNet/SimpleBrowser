@@ -1,7 +1,7 @@
 ﻿@using SimpleBrowser;
 @using System.Web;
 @{
-	Type lastItemType = null;
+	bool lastItemIsLogMessage = false;
 }
 <!doctype html>
 <html>
@@ -31,13 +31,14 @@
 			.timestamp { color: #999; margin-bottom: 15px; }
 			.requestheaders, .responseheaders { background-color: #FFFAE5; }
 			.postdata, .querydata { background-color: #E5FFF2; }
-			.messages { padding: 10px; background-color: #f7f7f7; line-height: 1.5em; font-size: 13px; border-left: 5px solid #468966; border-top: 1px solid #e5e5e5; }
-			.messages:before { content:'MESSAGE LOG'; font-size: 10px; display: block; color: #999; font-weight: bold; margin-bottom: 5px; }
-			.messages .servertime { color: #999; margin-right: 10px; }
-			.message-user .message { color: black; }
-			.message-internal .message { color: #468966; }
+			.messages { padding: 10px; background-color: #333; line-height: 1.5em; font-size: 13px; border-left: 5px solid #999; }
+			.messages:before { content:'MESSAGE LOG'; font-size: 10px; display: block; color: #999; float: right; margin: 0 0 5px 10px; }
+			.messages .servertime { color: #999; float: left; }
+			.messages .message { display: block; margin-left: 190px; }
+			.message-user .message { color: cyan; }
+			.message-internal .message { color: #ccc; }
 			.message-error .message { color: red; }
-			.message-stacktrace .message { color: maroon; }
+			.message-stacktrace .message { color: yellow; }
 			#popup { background-color: rgba(0,0,0,0.6); position: fixed; width: 100%; height: 100%; left: 0; top: 0; }
 			#window { position: absolute; background-color: white; -webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.5); padding: 15px; top: 50px; left: 50px; right: 50px; bottom: 50px; }
 			#iframecontainer { position: absolute; top: 55px; left: 15px; right: 15px; bottom: 15px; border: 1px solid #e5e5e5; width: auto; }
@@ -106,15 +107,16 @@ PR_TAG:&quot;tag&quot;,PR_TYPE:S}})()
 		</div>
 
 		<h1>@Context.Title</h1>
-		<p>This browser automation log was captured on <b>@Context.CaptureDate</b> and ran for a duration of <b>@Context.TotalDuration</b>, making a total of <b>@Context.Logs.Count</b> request(s).</p>
+		<p>This browser automation log was captured on <b>@Context.CaptureDate</b> and ran for a duration of <b>@Context.TotalDuration</b>, making a total of <b>@Context.RequestsCount</b> request(s).</p>
 		
 		<h2>Details</h2>
 		@for(var i=0; i<Context.Logs.Count; i++) {
 			var entry = Context.Logs[i];
-			if((lastItemType == null || lastItemType != entry.GetType()) && entry is LogMessage) {
-				lastItemType = typeof(LogMessage);
+			<!-- LOG ENTRY #@i : @entry -->
+			if(!lastItemIsLogMessage && entry is LogMessage) {
+				lastItemIsLogMessage = true;
 		<div class="messages">
-				@for(var j=i; i<Context.Logs.Count && Context.Logs[i] is LogMessage; i++) {
+				@for(; i<Context.Logs.Count && Context.Logs[i] is LogMessage; i++) {
 					var log = Context.Logs[i] as LogMessage;
 			<div class="logmessage message-@log.Type.ToString().ToLower()">
 				<span class="servertime">@log.ServerTime.ToString("dd-MMM-yyyy h:mm.fff tt")</span>
@@ -124,8 +126,9 @@ PR_TAG:&quot;tag&quot;,PR_TYPE:S}})()
 		</div>
 				if(i >= Context.Logs.Count) { break; }
 			}
-			lastItemType = entry.GetType();
+			entry = Context.Logs[i];
 			if(entry is HttpRequestLog) {
+				lastItemIsLogMessage = false;
 				var log = entry as HttpRequestLog;
 		<div class="requestlog" id="log-@i">
 			<div class="timestamp"><span class="label">Logged at:</span> <span class="servertime">@log.ServerTime.ToString("dd-MMM-yyyy h:mm.fff tt")</span></div>

@@ -231,8 +231,6 @@ namespace SimpleBrowser
 
 		private ClickResult htmlElement_Clicked(HtmlElement element)
 		{
-			Log("Clicked element: " + element.Value, LogMessageType.Internal);
-
 			switch(element.TagName.ToLower())
 			{
 				case "a": return ClickLink(element.Element);
@@ -583,6 +581,7 @@ namespace SimpleBrowser
 					{
 						Log("Error converting HTML to XML for URL " + Url, LogMessageType.Error);
 						Log(ex.Message, LogMessageType.Error);
+						Log("<b>Exception Stack Trace:</b><br />" + ex.StackTrace.Replace(Environment.NewLine, "<br />"), LogMessageType.StackTrace);
 						_doc = HtmlParser.CreateBlankHtmlDocument();
 					}
 				}
@@ -782,7 +781,9 @@ namespace SimpleBrowser
 			Log("Looking for text: " + text, LogMessageType.Internal);
 			text = HttpUtility.HtmlDecode(text);
 			string source = HttpUtility.HtmlDecode(XDocument.Root.Value).Replace("&nbsp;", " ");
-			return new Regex(Regex.Replace(Regex.Escape(text).Replace(@"\ ", " "), @"\s+", @"\s+"), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(source);
+			var found = new Regex(Regex.Replace(Regex.Escape(text).Replace(@"\ ", " "), @"\s+", @"\s+"), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(source);
+			Log("&rarr; Text " + (found ? "" : "NOT ") + "found!", LogMessageType.Internal);
+			return found;
 		}
 
 		/// <summary>

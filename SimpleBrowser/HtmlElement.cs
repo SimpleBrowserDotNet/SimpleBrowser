@@ -123,6 +123,7 @@ namespace SimpleBrowser
 			}
 			set
 			{
+				
 				switch(Element.Name.LocalName.ToLower())
 				{
 					case "textarea":

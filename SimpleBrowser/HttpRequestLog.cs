@@ -43,6 +43,11 @@ namespace SimpleBrowser
 			if(ResponseHeaders != null) doc.Root.Add(ResponseHeaders.ToXElement("ResponseHeaders"));
 			return doc;
 		}
+
+		public override string ToString()
+		{
+			return string.Concat("{", Method, " to ", Url.ToString().ShortenTo(50, true), "}");
+		}
 	}
 
 	public class LogMessage : LogItem
@@ -55,6 +60,11 @@ namespace SimpleBrowser
 
 		public string Message { get; set; }
 		public LogMessageType Type { get; set; }
+
+		public override string ToString()
+		{
+			return string.Concat("{", Message.ShortenTo(80, true), "}");
+		}
 	}
 
 	public enum LogMessageType

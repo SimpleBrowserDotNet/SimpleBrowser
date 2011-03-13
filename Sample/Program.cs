@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,7 @@ namespace Sample
 				if(LastRequestFailed(browser)) return; // always check the last request in case the page failed to load
 
 				// click the login link and click it
+				browser.Log("First we need to log in, so browse to the login page, fill in the login details and submit the form.");
 				var loginLink = browser.Find("a", FindBy.Text, "Login");
 				if(!loginLink.Exists)
 					browser.Log("Can't find the login link! Perhaps the site is down for maintenance?");
@@ -45,7 +47,7 @@ namespace Sample
 					// see if the login succeeded - ContainsText() is very forgiving, so don't worry about whitespace, casing, html tags separating the text, etc.
 					if(browser.ContainsText("Incorrect login or password"))
 					{
-						browser.Log("Login failed!");
+						browser.Log("Login failed!", LogMessageType.Error);
 					}
 					else
 					{
@@ -69,7 +71,8 @@ namespace Sample
 			}
 			finally
 			{
-				WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile("SimpleBrowser Sample - Request Log"));
+				var path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile("SimpleBrowser Sample - Request Log"));
+				Process.Start(path);
 			}
 		}
 
@@ -95,12 +98,13 @@ namespace Sample
 			_logs.Add(log);
 		}
 
-		static void WriteFile(string filename, string text)
+		static string WriteFile(string filename, string text)
 		{
 			var dir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"));
 			if(!dir.Exists) dir.Create();
 			var path = Path.Combine(dir.FullName, filename);
 			File.WriteAllText(path, text);
+			return path;
 		}
 	}
 }

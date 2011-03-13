@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml.Linq;
 using SimpleBrowser.Query;
 
@@ -29,6 +30,7 @@ namespace SimpleBrowser
 			_current = results.Count > 0 ? results[0] : null;
 			_list = results;
 			_browser = browser;
+			_browser.Log("New HTML result set obtained, containing " + results.Count + " element(s)", LogMessageType.Internal);
 		}
 
 		internal HtmlResult(HtmlElement result, Browser browser)
@@ -148,6 +150,7 @@ namespace SimpleBrowser
 			set
 			{
 				AssertElementExists();
+				_browser.Log("Setting the value of " + HttpUtility.HtmlEncode(XElement.ToString()) + " to " + HttpUtility.HtmlEncode(value.ShortenTo(30, true)), LogMessageType.Internal);
 				_current.Value = value;
 			}
 		}
@@ -168,6 +171,7 @@ namespace SimpleBrowser
 			{
 				AssertElementExists();
 				AssertElementIsInputType("radio", "checkbox");
+				_browser.Log("Setting the checked state of " + HttpUtility.HtmlEncode(XElement.ToString()) + " to " + (value ? "CHECKED" : "UNCHECKED"), LogMessageType.Internal);
 				_current.Checked = value;
 			}
 		}
@@ -184,6 +188,7 @@ namespace SimpleBrowser
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
+			_browser.Log("Clicking element: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
 			return _current.Click();
 		}
 
@@ -197,6 +202,7 @@ namespace SimpleBrowser
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
+			_browser.Log("Submitting parent/ancestor form of: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
 			_current.SubmitForm();
 		}
 
@@ -207,6 +213,7 @@ namespace SimpleBrowser
 		public void DoAspNetLinkPostBack()
 		{
 			AssertElementExists();
+			_browser.Log("Performing ASP.Net postback click for : " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
 			_current.DoAspNetLinkPostBack();
 		}
 
