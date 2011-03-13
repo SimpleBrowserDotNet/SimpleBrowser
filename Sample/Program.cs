@@ -11,7 +11,6 @@ namespace Sample
 {
 	class Program
 	{
-		static List<HttpRequestLog> _logs = new List<HttpRequestLog>();
 		static void Main(string[] args)
 		{
 			var browser = new Browser();
@@ -95,7 +94,6 @@ namespace Sample
 		{
 			Console.WriteLine(" -> " + log.Method + " request to " + log.Url);
 			Console.WriteLine(" <- Response status code: " + log.StatusCode);
-			_logs.Add(log);
 		}
 
 		static string WriteFile(string filename, string text)
