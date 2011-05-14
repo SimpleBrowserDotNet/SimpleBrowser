@@ -62,25 +62,21 @@ namespace SimpleBrowser.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to @using SimpleBrowser;
+        ///@using System.Web;
+        ///@{
+        ///	bool lastItemIsLogMessage = false;
+        ///}
         ///&lt;!doctype html&gt;
         ///&lt;html&gt;
         ///	&lt;head&gt;
-        ///		&lt;title&gt;@Model.Title&lt;/title&gt;
+        ///		&lt;title&gt;@Context.Title&lt;/title&gt;
         ///		&lt;style type=&quot;text/css&quot;&gt;
-        ///		&lt;/style&gt;
-        ///	&lt;/head&gt;
-        ///	&lt;body&gt;
-        ///		@foreach(HttpRequestLog log in Model.Logs) {
-        ///		&lt;div class=&quot;log&quot;&gt;
-        ///			&lt;ul&gt;
-        ///				&lt;li&gt;&lt;b class=&quot;label&quot;&gt;URL:&lt;/b&gt; &lt;span class=&quot;value&quot;&gt;@log.Url&lt;/span&gt;&lt;/li&gt;
-        ///				&lt;li&gt;&lt;b class=&quot;label&quot;&gt;Method:&lt;/b&gt; &lt;span class=&quot;value&quot;&gt;@log.Method&lt;/span&gt;&lt;/li&gt;
-        ///				&lt;li&gt;&lt;b class=&quot;label&quot;&gt;Status Code:&lt;/b&gt; &lt;span class=&quot;value&quot;&gt;@log.StatusCode&lt;/span&gt;&lt;/li&gt;
-        ///			&lt;/ul&gt;
-        ///		&lt;/div&gt;
-        ///		}
-        ///	&lt;/body&gt;
-        ///&lt;/ht [rest of string was truncated]&quot;;.
+        ///			body { font-family: Verdana, Sans-Serif; font-size: 11px; margin: 30px; color: #333; }
+        ///			h1, h2, h3, p { margin: 0 0 15px 0; }
+        ///			h1, h2, h3, h4 { font-family: Arial; color: black; }
+        ///			h1 { font-size: 32px; color: #468966; letter-spacing: -1px; }
+        ///			h2 { font-size: 24px; color: #8E2800; letter-spacing: -1px; }
+        ///			h3 { f [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string HtmlLogTemplate {
             get {

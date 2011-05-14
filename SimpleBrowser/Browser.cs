@@ -43,11 +43,37 @@ namespace SimpleBrowser
 		public Uri Url { get; private set; }
 		public string CurrentHtml { get; private set; }
 		public string ResponseText { get; private set; }
+		public string Text { get { return XDocument.Root.Value; } }
 		public string ContentType { get; private set; }
 		public bool RetainLogs { get; set; }
 
 		public event Action<Browser, string> MessageLogged;
 		public event Action<Browser, HttpRequestLog> RequestLogged;
+
+		public Browser CreateReferenceView()
+		{
+			return new Browser
+			{
+				_cookies = _cookies,
+				_doc = _doc,
+				_extraHeaders = _extraHeaders,
+				_includeFormValues = _includeFormValues,
+				_lastRequestLog = _lastRequestLog,
+				_logs = _logs,
+				_proxy = _proxy,
+				_referrerUrl = _referrerUrl,
+				_timeoutMilliseconds = _timeoutMilliseconds,
+				Accept = Accept,
+				ContentType = ContentType,
+				CurrentHtml = CurrentHtml,
+				LastWebException = LastWebException,
+				MessageLogged = MessageLogged,
+				ResponseText = ResponseText,
+				Url = Url,
+				RetainLogs = RetainLogs,
+				UserAgent = UserAgent
+			};
+		}
 
 		public void Log(string message, LogMessageType type = LogMessageType.User)
 		{
@@ -108,6 +134,11 @@ namespace SimpleBrowser
 		public bool Navigate(Uri url, string postData, string contentType)
 		{
 			return DoRequest(url, "POST", null, postData, contentType, _timeoutMilliseconds);
+		}
+
+		public bool Navigate(Uri url, NameValueCollection postData, string contentType = null)
+		{
+			return DoRequest(url, "POST", postData, null, contentType, _timeoutMilliseconds);
 		}
 
 		public bool Navigate(Uri url, int timeoutMilliseconds)
@@ -226,7 +257,7 @@ namespace SimpleBrowser
 		void htmlElement_AspNetPostBackLinkClicked(HtmlElement element, string name)
 		{
 			Find(ElementType.TextField, FindBy.Name, "__EVENTTARGET").Value = name;
-			OnHtmlElementSubmittedAsForm(element);
+			OnHtmlElementSubmittedAsForm(element, null);
 		}
 
 		private ClickResult htmlElement_Clicked(HtmlElement element)
@@ -255,9 +286,9 @@ namespace SimpleBrowser
 			return ClickResult.SucceededNoNavigation;
 		}
 
-		private bool OnHtmlElementSubmittedAsForm(HtmlElement element)
+		private bool OnHtmlElementSubmittedAsForm(HtmlElement element, string url)
 		{
-			return SubmitForm(ObtainAncestor(element.Element, "form"), element.Element);
+			return SubmitForm(ObtainAncestor(element.Element, "form"), element.Element, url);
 		}
 		private ClickResult ClickLink(XElement element)
 		{
@@ -315,7 +346,7 @@ namespace SimpleBrowser
 				throw new InvalidOperationException("The target element does not reside inside an element of type \"" + ancestorTagName + "\"");
 			return ObtainAncestor(descendent.Parent, ancestorTagName);
 		}
-		private bool SubmitForm(XElement form, XElement clickedElement)
+		private bool SubmitForm(XElement form, XElement clickedElement, string url)
 		{
 			if(form==null)
 				return false;
@@ -333,93 +364,103 @@ namespace SimpleBrowser
 				if(nameAttr == null)
 					continue;
 				var name = nameAttr.Value;
-				switch(element.Name.LocalName.ToLower())
+				// don't include values from the form if they've already been specified by ExtraFormValues.
+				if(_includeFormValues == null || _includeFormValues[name] == null)
 				{
-					case "input":
-						var typeAttr = GetAttribute(element, "type");
-						string typeName;
-						if(typeAttr == null)
-							typeName = "text";
-						else
-							typeName = typeAttr.Value;
-						var valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
-						switch(typeName)
-						{
-							case "radio":
-								if(GetAttribute(element, "checked") == null || radioValuesCompleted.ContainsKey(name))
-									continue;
-								radioValuesCompleted.Add(name, true);
-								data.Add(name, valueAttr.Value);
-								break;
-
-							case "checkbox":
-								if(GetAttribute(element, "checked") == null)
-									continue;
-								data.Add(name, valueAttr.Value);
-								break;
-
-							case "submit":
-							case "image":
-								if(!ReferenceEquals(element, clickedElement))
-									continue;
-								if(!string.IsNullOrEmpty(valueAttr.Value))
+					switch(element.Name.LocalName.ToLower())
+					{
+						case "input":
+							var typeAttr = GetAttribute(element, "type");
+							string typeName;
+							if(typeAttr == null)
+								typeName = "text";
+							else
+								typeName = typeAttr.Value;
+							var valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
+							switch(typeName)
+							{
+								case "radio":
+									if(GetAttribute(element, "checked") == null || radioValuesCompleted.ContainsKey(name))
+										continue;
+									radioValuesCompleted.Add(name, true);
 									data.Add(name, valueAttr.Value);
-								break;
+									break;
 
-							case "hidden":
-							case "text":
-							case "password":
-								data.Add(name, valueAttr.Value);
-								break;
-						}
-						break;
+								case "checkbox":
+									if(GetAttribute(element, "checked") == null)
+										continue;
+									data.Add(name, valueAttr.Value);
+									break;
 
-					case "button":
-						typeAttr = GetAttribute(element, "type");
-						if(typeAttr == null)
-							typeName = "button";
-						else
-							typeName = typeAttr.Value;
-						valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
-						switch(typeName)
-						{
-							case "button":
-							case "submit":
-								if(!ReferenceEquals(element, clickedElement))
-									continue;
-								data.Add(name, valueAttr.Value);
-								break;
-						}
-						break;
+								case "submit":
+								case "image":
+									if(!ReferenceEquals(element, clickedElement))
+										continue;
+									if(!string.IsNullOrEmpty(valueAttr.Value))
+										data.Add(name, valueAttr.Value);
+									break;
 
-					case "textarea":
-						data.Add(name, element.Value);
-						break;
+								case "hidden":
+								case "text":
+								case "password":
+									data.Add(name, valueAttr.Value);
+									break;
+							}
+							break;
 
-					case "select":
-						var multipleAttr = GetAttribute(element, "multiple");
-						if(multipleAttr != null)
-							foreach(var option in element.Descendants()
-								.Where(h => h.Name.LocalName.ToLower() == "option"
-											&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
-								.ToList())
-								data.Add(name, GetOptionValue(option));
-						else
-						{
-							var option = element.Descendants()
-								.Where(h => h.Name.LocalName.ToLower() == "option"
-											&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
-								.FirstOrDefault();
-							if(option != null)
-								data.Add(name, GetOptionValue(option));
-						}
-						break;
+						case "button":
+							typeAttr = GetAttribute(element, "type");
+							if(typeAttr == null)
+								typeName = "button";
+							else
+								typeName = typeAttr.Value;
+							valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
+							switch(typeName)
+							{
+								case "button":
+								case "submit":
+									if(!ReferenceEquals(element, clickedElement))
+										continue;
+									data.Add(name, valueAttr.Value);
+									break;
+							}
+							break;
+
+						case "textarea":
+							data.Add(name, element.Value);
+							break;
+
+						case "select":
+							var multipleAttr = GetAttribute(element, "multiple");
+							if(multipleAttr != null)
+								foreach(var option in element.Descendants()
+									.Where(h => h.Name.LocalName.ToLower() == "option"
+												&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
+									.ToList())
+									data.Add(name, GetOptionValue(option));
+							else
+							{
+								var option = element.Descendants()
+									.Where(h => h.Name.LocalName.ToLower() == "option"
+												&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
+									.FirstOrDefault();
+								if(option != null)
+									data.Add(name, GetOptionValue(option));
+							}
+							break;
+					}
 				}
 			}
 			var methodAttr = GetAttribute(form, "method");
 			var method = methodAttr == null ? "GET" : methodAttr.Value.ToUpper() == "POST" ? "POST" : "GET";
-			var actionAttr = GetAttribute(form, "action");
-			var action = actionAttr == null ? Url : Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ? new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
+			Uri action;
+			if(url == null)
+			{
+				var actionAttr = GetAttribute(form, "action");
+				action = actionAttr == null ? Url : Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ? new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
+			}
+			else
+				action = new Uri(Url, url);
 
 			return DoRequest(action, method, data, null, null, _timeoutMilliseconds);
 		}

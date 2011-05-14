@@ -76,7 +76,6 @@ namespace SimpleBrowser.Tests
 		:text Selector											Selects all elements of type text.
 		:visible Selector										Selects all elements that are visible.
 */
-
 		/// <summary>
 		/// All Selector (“*”) - Selects all elements.
 		/// </summary>

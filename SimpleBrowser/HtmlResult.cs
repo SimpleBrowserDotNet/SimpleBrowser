@@ -193,17 +193,18 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
-		/// This method therefore can be used on any element contained within a form, or the form element itself. The
-		/// form will be serialized and submitted as close as possible to the way it would be in a normal browser
-		/// request. In addition, any values currently in the ExtraFormValues property of the Browser object will be
-		/// submitted as well.
+		/// This method can be used on any element contained within a form, or the form element itself. The form will be 
+		/// serialized and submitted as close as possible to the way it would be in a normal browser request. In
+		/// addition, any values currently in the ExtraFormValues property of the Browser object will be submitted as
+		/// well.
 		/// </summary>
-		public void SubmitForm()
+		/// <param name="url">Optional. If specified, the form will be submitted to this URL instead.</param>
+		public void SubmitForm(string url = null)
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
 			_browser.Log("Submitting parent/ancestor form of: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
-			_current.SubmitForm();
+			_current.SubmitForm(url);
 		}
 
 		/// <summary>

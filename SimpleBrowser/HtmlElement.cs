@@ -62,7 +62,7 @@ namespace SimpleBrowser
 		}
 
 		public event Func<HtmlElement, ClickResult> Clicked;
-		public event Func<HtmlElement, bool> FormSubmitted;
+		public event Func<HtmlElement, string, bool> FormSubmitted;
 		public event Action<HtmlElement, string> AspNetPostBackLinkClicked;
 
 		public ClickResult Click()
@@ -73,10 +73,10 @@ namespace SimpleBrowser
 			return ClickResult.SucceededNoOp;
 		}
 
-		public bool SubmitForm()
+		public bool SubmitForm(string url = null)
 		{
 			if(FormSubmitted != null)
-				return FormSubmitted(this);
+				return FormSubmitted(this, url);
 
 			return false;
 		}
