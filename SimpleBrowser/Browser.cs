@@ -643,7 +643,7 @@ namespace SimpleBrowser
 			if(_proxy != null)
 				req.Proxy = _proxy;
 			if(_referrerUrl != null)
-				req.Referer = _referrerUrl.ToString();
+				req.Referer = _referrerUrl.AbsoluteUri;
 			return req;
 		}
 
