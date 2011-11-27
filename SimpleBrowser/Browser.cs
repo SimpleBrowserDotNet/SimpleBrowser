@@ -55,7 +55,7 @@ namespace SimpleBrowser
 		{
 			return new Browser
 			{
-                Cookies = Cookies,
+				Cookies = Cookies,
 				_doc = _doc,
 				_extraHeaders = _extraHeaders,
 				_includeFormValues = _includeFormValues,
@@ -640,7 +640,7 @@ namespace SimpleBrowser
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
-            req.CookieContainer = Cookies;
+			req.CookieContainer = Cookies;
 			if(_proxy != null)
 				req.Proxy = _proxy;
 			if(_referrerUrl != null)
