@@ -20,7 +20,6 @@ namespace SimpleBrowser
 		private int _timeoutMilliseconds = 30000;
 		private Uri _referrerUrl;
 		private NameValueCollection _includeFormValues;
-		private CookieContainer _cookies = new CookieContainer();
 		private XDocument _doc;
 		private HttpRequestLog _lastRequestLog;
 		private List<LogItem> _logs = new List<LogItem>();
@@ -37,6 +36,7 @@ namespace SimpleBrowser
 			CurrentHtml = null;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
+            Cookies = new CookieContainer();
 		}
 
 		public string UserAgent { get; set; }
@@ -46,6 +46,7 @@ namespace SimpleBrowser
 		public string Text { get { return XDocument.Root.Value; } }
 		public string ContentType { get; private set; }
 		public bool RetainLogs { get; set; }
+        public CookieContainer Cookies { get; set; }
 
 		public event Action<Browser, string> MessageLogged;
 		public event Action<Browser, HttpRequestLog> RequestLogged;
@@ -54,7 +55,7 @@ namespace SimpleBrowser
 		{
 			return new Browser
 			{
-				_cookies = _cookies,
+                Cookies = Cookies,
 				_doc = _doc,
 				_extraHeaders = _extraHeaders,
 				_includeFormValues = _includeFormValues,
@@ -639,7 +640,7 @@ namespace SimpleBrowser
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
-			req.CookieContainer = _cookies;
+            req.CookieContainer = Cookies;
 			if(_proxy != null)
 				req.Proxy = _proxy;
 			if(_referrerUrl != null)
