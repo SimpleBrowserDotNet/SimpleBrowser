@@ -24,7 +24,7 @@ namespace SimpleBrowser.Query.Selectors
 			context.ResultSetInternal = results;
 		}
 
-		internal static readonly Regex RxSelector = new Regex(@"^\#(?<id>[A-Za-z_][A-Za-z0-9_]+)");
+        internal static readonly Regex RxSelector = new Regex(@"^\#(?<id>[A-Za-z_][A-Za-z0-9_\-:\.]+)");
 	}
 
 	public class IdSelectorCreator : XQuerySelectorCreator

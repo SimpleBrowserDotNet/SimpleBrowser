@@ -39,7 +39,7 @@ namespace SimpleBrowser.Query
 					{
 						var results = PreTranslateResultSet(_currentResultSet);
 						PreTranslateResultSet = null;
-						return results;
+						_currentResultSet = results;
 					}
 					return _currentResultSet;
 				}
