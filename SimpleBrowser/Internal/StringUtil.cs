@@ -53,8 +53,11 @@ namespace SimpleBrowser
 			if (values == null)
 				return string.Empty;
 			List<string> list = new List<string>();
-			foreach (string key in values.Keys)
-				list.Add(HttpUtility.UrlEncode(key) + "=" + HttpUtility.UrlEncode(values[key]));
+            foreach (string key in values.Keys) 
+            {
+                foreach (string value in values.GetValues(key))
+                    list.Add(HttpUtility.UrlEncode(key) + "=" + HttpUtility.UrlEncode(value));
+            }
 			return list.Concat("&");
 		}
 
