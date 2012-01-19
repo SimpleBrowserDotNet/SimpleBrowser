@@ -545,25 +545,52 @@ namespace SimpleBrowser
 		}
 		private List<XElement> FilterElementsByAttribute(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)
 		{
-			if(allowPartialMatch)
-				return elements.Where(h => h.Attributes()
-											.Where(k => k.Name.LocalName.ToLower() == attributeName.ToLower()
-														&& k.Value.ToLower().Contains(value.ToLower())).Count() > 0)
-					.ToList();
-			return elements.Where(h => h.Attributes()
-										.Where(k => k.Name.LocalName.ToLower() == attributeName.ToLower()
-													&& k.Value.ToLower() == value.ToLower()).Count() > 0)
-				.ToList();
+            if (allowPartialMatch)
+            {
+                return elements.Where(h => h.Attributes()
+                                            .Where(k => k.Name.LocalName.ToLower() == attributeName.ToLower()
+                                                        && k.Value.ToLower().Contains(value.ToLower())).Count() > 0)
+                    .ToList();
+            }
+            else
+            {
+                return elements.Where(h => h.Attributes()
+                                            .Where(k => k.Name.LocalName.ToLower() == attributeName.ToLower()
+                                                        && k.Value.ToLower() == value.ToLower()).Count() > 0)
+                    .ToList();
+            }
 		}
-		private List<XElement> FilterElementsByInnerText(List<XElement> elements, string tagName, string value, bool allowPartialMatch)
+        private List<XElement> FilterElementsByAttributeNameToken(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)
+        {
+            return elements.Where(elm =>
+                {
+                    string attrValue = elm.GetAttribute(attributeName);
+                    if (attrValue == null) return false;
+                    string[] tokens = attrValue.ToLower().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (allowPartialMatch)
+                    {
+                        return tokens.Any(t => t.Contains(value.ToLower()));
+                    }
+                    else
+                    {
+                        return tokens.Any(t => t == value.ToLower());
+                    }
+                }).ToList();
+        }
+        private List<XElement> FilterElementsByInnerText(List<XElement> elements, string tagName, string value, bool allowPartialMatch)
 		{
-			if(allowPartialMatch)
-				return elements.Where(h => (tagName == null || h.Name.LocalName.ToLower() == tagName.ToLower())
-										   && h.Value.ToLower().Trim().Contains(value.ToLower().Trim()))
-					.ToList();
-			return elements.Where(h => (tagName == null || h.Name.LocalName.ToLower() == tagName.ToLower())
-									   && h.Value.ToLower().Trim() == value.ToLower().Trim())
-				.ToList();
+            if (allowPartialMatch)
+            {
+                return elements.Where(h => (tagName == null || h.Name.LocalName.ToLower() == tagName.ToLower())
+                                           && h.Value.ToLower().Trim().Contains(value.ToLower().Trim()))
+                    .ToList();
+            }
+            else
+            {
+                return elements.Where(h => (tagName == null || h.Name.LocalName.ToLower() == tagName.ToLower())
+                                           && h.Value.ToLower().Trim() == value.ToLower().Trim())
+                    .ToList();
+            }
 		}
 		private List<XElement> FindElement(ElementType elementType, FindBy findBy, string value)
 		{
@@ -574,7 +601,7 @@ namespace SimpleBrowser
 			switch(findBy)
 			{
 				case FindBy.Text: return FilterElementsByInnerText(elements, null, value, false);
-				case FindBy.Class: return FilterElementsByAttribute(elements, "class", value, false);
+				case FindBy.Class: return FilterElementsByAttributeNameToken(elements, "class", value, false);
 				case FindBy.Id: return FilterElementsByAttribute(elements, "id", value, false);
 				case FindBy.Name: return FilterElementsByAttribute(elements, "name", value, false);
 				case FindBy.Value:
@@ -585,7 +612,7 @@ namespace SimpleBrowser
 						return newlist;
 					}
 				case FindBy.PartialText: return FilterElementsByInnerText(elements, null, value, true);
-				case FindBy.PartialClass: return FilterElementsByAttribute(elements, "class", value, true);
+				case FindBy.PartialClass: return FilterElementsByAttributeNameToken(elements, "class", value, true);
 				case FindBy.PartialId: return FilterElementsByAttribute(elements, "id", value, true);
 				case FindBy.PartialName: return FilterElementsByAttribute(elements, "name", value, true);
 				case FindBy.PartialValue:
