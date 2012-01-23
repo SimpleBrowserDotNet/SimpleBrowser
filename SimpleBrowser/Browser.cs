@@ -276,6 +276,8 @@ namespace SimpleBrowser
 						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
 						default: return ClickResult.SucceededNoNavigation;
 					}
+				case "option":
+					return SelectOption(element.Element);
 				case "button":
 					switch (element.InputType)
 					{
@@ -337,6 +339,38 @@ namespace SimpleBrowser
 				target.SetAttributeValue("checked", "checked");
 			else // if we found it, it needs to be removed
 				target.SetAttributeValue(attr.Name.LocalName, null);
+			return ClickResult.SucceededNoNavigation;
+		}
+		private ClickResult SelectOption(XElement target)
+		{
+			if (target == null)
+				return ClickResult.Failed;
+			var attr = GetAttribute(target, "selected");
+			var selectBox = target.Ancestors().FirstOrDefault(e => e.Name.LocalName.ToLower() == "select");
+
+			Action updateSiblings = () => { };
+			if (selectBox != null)
+			{
+				// TODO: exception for multiple
+				updateSiblings = () =>
+				{
+					var otherOptions = selectBox.Descendants().Where(e => e.Name.LocalName.ToLower() == "option" && e != target);
+					foreach (var item in otherOptions)
+					{
+						item.SetAttributeValue("selected", null);
+					};
+				};
+				// other impl for updateSiblings
+			}
+			if (attr == null) // if we didnt find it, set it
+			{
+				target.SetAttributeValue("selected", "selected");
+				updateSiblings();
+			}
+			else // if we found it, it needs to be removed
+			{
+				target.SetAttributeValue(attr.Name.LocalName, null);
+			}
 			return ClickResult.SucceededNoNavigation;
 		}
 		private XElement ObtainAncestor(XElement descendent, string ancestorTagName)
