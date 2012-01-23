@@ -351,16 +351,17 @@ namespace SimpleBrowser
 			Action updateSiblings = () => { };
 			if (selectBox != null)
 			{
-				// TODO: exception for multiple
-				updateSiblings = () =>
+				if (GetAttribute(selectBox, "multiple") == null)
 				{
-					var otherOptions = selectBox.Descendants().Where(e => e.Name.LocalName.ToLower() == "option" && e != target);
-					foreach (var item in otherOptions)
+					updateSiblings = () =>
 					{
-						item.SetAttributeValue("selected", null);
+						var otherOptions = selectBox.Descendants().Where(e => e.Name.LocalName.ToLower() == "option" && e != target);
+						foreach (var item in otherOptions)
+						{
+							item.SetAttributeValue("selected", null);
+						};
 					};
-				};
-				// other impl for updateSiblings
+				}
 			}
 			if (attr == null) // if we didnt find it, set it
 			{
