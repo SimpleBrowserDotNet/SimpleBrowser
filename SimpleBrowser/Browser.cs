@@ -284,6 +284,10 @@ namespace SimpleBrowser
 						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
 						default: return ClickResult.SucceededNoNavigation;
 					}
+				case "label":
+					// delegate click to referred element
+					var referredElement = this.Select("#" + element.GetAttributeValue("for"));
+					return htmlElement_Clicked(referredElement.CurrentElement);
 			}
 
 			return ClickResult.SucceededNoNavigation;
