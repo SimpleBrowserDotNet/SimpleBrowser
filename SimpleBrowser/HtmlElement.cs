@@ -107,7 +107,7 @@ namespace SimpleBrowser
 					case "input":
 						var attr = GetAttribute("value");
 						if(attr == null)
-							return null;
+							return ""; // no value attribute means empty string
 						return attr.Value;
 
 					case "select":
