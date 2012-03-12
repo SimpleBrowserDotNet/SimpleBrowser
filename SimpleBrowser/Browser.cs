@@ -795,9 +795,17 @@ namespace SimpleBrowser
 				if(contentType != null)
 					req.ContentType = contentType;
 
+				_lastRequestLog = new HttpRequestLog
+					{
+						ParsedHtml = XDocument.ToString(),
+						Method = method,
+						PostData = userVariables,
+						RequestHeaders = req.Headers,
+						Url = uri
+					};
 				try
 				{
-					using(HttpWebResponse response = (HttpWebResponse)req.GetResponse())
+					using (HttpWebResponse response = (HttpWebResponse)req.GetResponse())
 					{
 						StreamReader reader = new StreamReader(response.GetResponseStream());
 						html = reader.ReadToEnd();
@@ -809,21 +817,14 @@ namespace SimpleBrowser
 						ContentType = response.ContentType;
 						_doc = null;
 						_includeFormValues = null;
-						_lastRequestLog = new HttpRequestLog
-										  {
-											  Text = oldHTML,
-											  ParsedHtml = XDocument.ToString(),
-											  Method = method,
-											  PostData = userVariables,
-											  RequestHeaders = req.Headers,
-											  ResponseHeaders = response.Headers,
-											  StatusCode = (int)response.StatusCode,
-											  Url = uri
-										  };
-						if(method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
+
+						_lastRequestLog.Text = oldHTML;
+						_lastRequestLog.ResponseHeaders = response.Headers;
+						_lastRequestLog.StatusCode = (int)response.StatusCode;
+
+						if (method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
 							_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
-						LogRequestData();
-						if((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
+						if ((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
 						{
 							//url = AdjustUrl(url, response.Headers["Location"]);
 							uri = new Uri(uri, response.Headers["Location"]);
@@ -836,10 +837,17 @@ namespace SimpleBrowser
 						}
 					}
 				}
-				catch(WebException ex)
+				catch (WebException ex)
 				{
+					_lastRequestLog.ResponseHeaders = ex.Response.Headers;
+					_lastRequestLog.StatusCode = (int)ex.Status.GetTypeCode();
+					StreamReader reader = new StreamReader(ex.Response.GetResponseStream());
+					html = reader.ReadToEnd();
+					_lastRequestLog.Text = html;
+
 					LastWebException = ex;
-					switch(ex.Status)
+
+					switch (ex.Status)
 					{
 						case WebExceptionStatus.Timeout:
 							Log("A timeout occurred while trying to load the web page", LogMessageType.Error);
@@ -854,6 +862,10 @@ namespace SimpleBrowser
 							break;
 					}
 					return false;
+				}
+				finally
+				{
+					LogRequestData();
 				}
 			} while(handle301Or302Redirect);
 			Url = uri;
