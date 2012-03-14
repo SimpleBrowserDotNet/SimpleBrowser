@@ -443,6 +443,7 @@ namespace SimpleBrowser
 								case "hidden":
 								case "text":
 								case "password":
+								default:
 									data.Add(name, valueAttr.Value);
 									break;
 							}
