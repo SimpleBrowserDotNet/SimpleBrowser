@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using SimpleBrowser.Elements;
 
 namespace SimpleBrowser
 {
@@ -14,7 +15,7 @@ namespace SimpleBrowser
 			_element = element;
 		}
 
-		private XAttribute GetAttribute(string name)
+		protected XAttribute GetAttribute(string name)
 		{
 			return GetAttribute(Element, name);
 		}
@@ -24,7 +25,7 @@ namespace SimpleBrowser
 			get { return _element; }
 		}
 
-		private XAttribute GetAttribute(XElement x, string name)
+		protected XAttribute GetAttribute(XElement x, string name)
 		{
 			return x.Attributes().Where(h => h.Name.LocalName.ToLower() == name.ToLower()).FirstOrDefault();
 		}
@@ -34,7 +35,7 @@ namespace SimpleBrowser
 			return GetAttributeValue(Element, name);
 		}
 
-		private string GetAttributeValue(XElement x, string name)
+		protected string GetAttributeValue(XElement x, string name)
 		{
 			var attr = GetAttribute(x, name);
 			return attr == null ? null : attr.Value;
@@ -44,28 +45,33 @@ namespace SimpleBrowser
 		{
 			get { return Element.Name.LocalName; }
 		}
+		public virtual string InputType
+		{
+			get { throw new InvalidOperationException("Not an input element"); }
+		}
 
 		public bool Disabled
 		{
 			get { return GetAttribute("disabled") != null; }
 		}
 
-		public bool Checked
+		/// <summary>
+		/// Selected returns a boolean value reflecting to state of certain input element. In the Checkbox and Radiobutton
+		/// it corresponds to the 'checked' attribute, in an option under a selectbox, it more or less reflects the 
+		/// 'selected' attribute
+		/// </summary>
+		public virtual bool Selected
 		{
-			get { return GetAttribute("checked") != null; }
-			set { if(Checked != value) Click(); }
+			get { throw new InvalidOperationException("This element cannot be checked"); }
+			set { throw new InvalidOperationException("This element cannot be checked"); }
 		}
 
-		public string InputType
-		{
-			get { return GetAttributeValue("type"); }
-		}
 
 		public event Func<HtmlElement, ClickResult> Clicked;
 		public event Func<HtmlElement, string, bool> FormSubmitted;
 		public event Action<HtmlElement, string> AspNetPostBackLinkClicked;
 
-		public ClickResult Click()
+		public virtual ClickResult Click()
 		{
 			if(Clicked != null)
 				return Clicked(this);
@@ -97,62 +103,66 @@ namespace SimpleBrowser
 			throw new InvalidOperationException("This method must only be called on <a> elements having a __doPostBack javascript call in the href attribute");
 		}
 
-		public string Value
+		public virtual string Value
 		{
 			get
 			{
-				var name = Element.Name.LocalName.ToLower();
-				switch(name)
-				{
-					case "input":
-						var attr = GetAttribute("value");
-						if(attr == null)
-							return ""; // no value attribute means empty string
-						return attr.Value;
-
-					case "select":
-						var options = Element.Descendants("option");
-						var optionEl = options.Where(d => d.Attribute("selected") != null).FirstOrDefault() ?? options.FirstOrDefault();
-						if(optionEl == null) return null;
-						var valueAttr = optionEl.Attribute("value");
-						return valueAttr == null ? optionEl.Value : valueAttr.Value;
-
-					default:
-						return Element.Value;
-				}
+				return Element.Value;
 			}
 			set
 			{
-				
-				switch(Element.Name.LocalName.ToLower())
-				{
-					case "textarea":
-						Element.RemoveNodes();
-						Element.AddFirst(value);
-						break;
-
-					case "input":
-						Element.SetAttributeValue("value", value);
-						break;
-
-					case "select":
-						foreach(XElement x in Element.Descendants("option"))
-						{
-							var attr = GetAttribute(x, "value");
-							string val = attr == null ? x.Value : attr.Value;
-							x.SetAttributeValue("selected", val == value ? "selected" : null);
-						}
-						break;
-
-					default:
-						throw new InvalidOperationException("Can only set the Value attribute for select, textarea and input elements");
-				}
+				throw new InvalidOperationException("Can only set the Value attribute for select, textarea and input elements");
 			}
 		}
 
 		internal XElement Element
 		{
 			get { return _element; }
+		}
+
+		internal static T CreateFor<T>(XElement element) where T : HtmlElement
+		{
+			var result = CreateFor(element);
+			if (result is T)
+			{
+				return (T)result;
+			}
+			throw new InvalidOperationException("The element was not of the corresponding type");
+		}
+		internal static HtmlElement CreateFor(XElement element)
+		{
+			switch (element.Name.LocalName.ToLower())
+			{
+				case "form":
+					return new FormElement(element);
+				case "input":
+					string type = element.GetAttribute("type");
+					switch (type.ToLower())
+					{
+						case "radio":
+							return new RadioInputElement(element);
+						case "checkbox":
+							return new CheckboxInputElement(element);
+						case "submit":
+						case "image":
+						case "button":
+							return new InputElement(element);
+						default:
+							return new InputElement(element);
+					}
+				case "textarea":
+					return new TextAreaElement(element);
+				case "select":
+					return new SelectElement(element);
+				case "option":
+					return new OptionElement(element);
+				case "a":
+					return new AnchorElement(element);
+				case "label":
+					return new LabelElement(element);
+				default:
+					return new HtmlElement(element);
+			}
 		}
 	}
 }

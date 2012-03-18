@@ -11,6 +11,7 @@ using System.Web;
 using System.Xml.Linq;
 using SimpleBrowser.Parser;
 using SimpleBrowser.Query;
+using SimpleBrowser.Elements;
 
 namespace SimpleBrowser
 {
@@ -248,270 +249,13 @@ namespace SimpleBrowser
 
 		internal HtmlElement CreateHtmlElement(XElement element)
 		{
-			var htmlElement = new HtmlElement(element);
+			var htmlElement = HtmlElement.CreateFor(element);
 			htmlElement.Clicked += htmlElement_Clicked;
 			htmlElement.FormSubmitted += OnHtmlElementSubmittedAsForm;
 			htmlElement.AspNetPostBackLinkClicked += htmlElement_AspNetPostBackLinkClicked;
 			return htmlElement;
 		}
 
-		void htmlElement_AspNetPostBackLinkClicked(HtmlElement element, string name)
-		{
-			Find(ElementType.TextField, FindBy.Name, "__EVENTTARGET").Value = name;
-			OnHtmlElementSubmittedAsForm(element, null);
-		}
-
-		private ClickResult htmlElement_Clicked(HtmlElement element)
-		{
-			switch(element.TagName.ToLower())
-			{
-				case "a": return ClickLink(element.Element);
-				case "input":
-					switch(element.InputType)
-					{
-						case "radio": return CheckRadioButton(element.Element);
-						case "checkbox": return CheckCheckbox(element.Element);
-						case "image":
-						case "button":
-						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
-						default: return ClickResult.SucceededNoNavigation;
-					}
-				case "option":
-					return SelectOption(element.Element);
-				case "button":
-					switch (element.InputType)
-					{
-						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
-						default: return ClickResult.SucceededNoNavigation;
-					}
-				case "label":
-					// delegate click to referred element
-					var referredElement = this.Select("#" + element.GetAttributeValue("for"));
-					return htmlElement_Clicked(referredElement.CurrentElement);
-			}
-
-			return ClickResult.SucceededNoNavigation;
-		}
-
-		private bool OnHtmlElementSubmittedAsForm(HtmlElement element, string url)
-		{
-			return SubmitForm(ObtainAncestor(element.Element, "form"), element.Element, url);
-		}
-		private ClickResult ClickLink(XElement element)
-		{
-			var attr = GetAttribute(element, "href");
-			if (attr == null || attr.Value.StartsWith("#"))
-				return ClickResult.Failed;
-
-			Uri href;
-			string attrValue = HttpUtility.HtmlDecode(attr.Value);
-			if(Uri.IsWellFormedUriString(attrValue, UriKind.Absolute))
-				href = new Uri(attrValue);
-			else
-				href = new Uri(Url, attrValue);
-
-			if(DoRequest(href, "GET", null, null, null, _timeoutMilliseconds))
-				return ClickResult.SucceededNavigationComplete;
-			else
-				return ClickResult.SucceededNavigationError;
-		}
-		private ClickResult CheckRadioButton(XElement target)
-		{
-			if (target == null)
-				return ClickResult.Failed;
-			var nameAttr = GetAttribute(target, "name");
-			if(nameAttr == null)
-				return ClickResult.Failed;
-			var group = FindElements(ElementType.RadioButton)
-				//.Where(h => h.Attributes().Where(k => k.Name.LocalName.ToLower() == "checked").Count() > 0)
-				.Where(h => h.Attributes().Where(k => k.Name.LocalName.ToLower() == "name" && k.Value.ToLower() == nameAttr.Value.ToLower()).Count() > 0)
-				.ToList();
-			foreach(var element in group)
-			{
-				var attr = GetAttribute(element, "checked");
-				var value = ReferenceEquals(element, target) ? "checked" : null;
-				element.SetAttributeValue(attr == null ? "checked" : attr.Name.LocalName, value); // we do it this way to account for case variations
-			}
-			return ClickResult.SucceededNoNavigation;
-		}
-		private ClickResult CheckCheckbox(XElement target)
-		{
-			if (target == null)
-				return ClickResult.Failed;
-			var attr = GetAttribute(target, "checked");
-			if(attr == null) // if we didnt find it, set it
-				target.SetAttributeValue("checked", "checked");
-			else // if we found it, it needs to be removed
-				target.SetAttributeValue(attr.Name.LocalName, null);
-			return ClickResult.SucceededNoNavigation;
-		}
-		private ClickResult SelectOption(XElement target)
-		{
-			if (target == null)
-				return ClickResult.Failed;
-			var attr = GetAttribute(target, "selected");
-			var selectBox = target.Ancestors().FirstOrDefault(e => e.Name.LocalName.ToLower() == "select");
-
-			Action updateSiblings = () => { };
-			if (selectBox != null)
-			{
-				if (GetAttribute(selectBox, "multiple") == null)
-				{
-					updateSiblings = () =>
-					{
-						var otherOptions = selectBox.Descendants().Where(e => e.Name.LocalName.ToLower() == "option" && e != target);
-						foreach (var item in otherOptions)
-						{
-							item.SetAttributeValue("selected", null);
-						};
-					};
-				}
-			}
-			if (attr == null) // if we didnt find it, set it
-			{
-				target.SetAttributeValue("selected", "selected");
-				updateSiblings();
-			}
-			else // if we found it, it needs to be removed
-			{
-				target.SetAttributeValue(attr.Name.LocalName, null);
-			}
-			return ClickResult.SucceededNoNavigation;
-		}
-		private XElement ObtainAncestor(XElement descendent, string ancestorTagName)
-		{
-			if(descendent != null && descendent.Name.LocalName.ToLower() == ancestorTagName)
-				return descendent;
-			if(descendent == null || descendent.Parent == null)
-				throw new InvalidOperationException("The target element does not reside inside an element of type \"" + ancestorTagName + "\"");
-			return ObtainAncestor(descendent.Parent, ancestorTagName);
-		}
-		private bool SubmitForm(XElement form, XElement clickedElement, string url)
-		{
-			if(form==null)
-				return false;
-			if(clickedElement==null)
-				return false;
-			Dictionary<string, bool> radioValuesCompleted = new Dictionary<string, bool>();
-			NameValueCollection data = new NameValueCollection();
-			string[] names = new[] { "input", "textarea", "select" };
-			var elements = form.Descendants().Where(h => names.Contains(h.Name.LocalName.ToLower())).ToList();
-			foreach(var element in elements)
-			{
-				if(GetAttribute(element, "disabled") != null)
-					continue;
-				var nameAttr = GetAttribute(element, "name");
-				if(nameAttr == null)
-					continue;
-				var name = nameAttr.Value;
-				// don't include values from the form if they've already been specified by ExtraFormValues.
-				if(_includeFormValues == null || _includeFormValues[name] == null)
-				{
-					switch(element.Name.LocalName.ToLower())
-					{
-						case "input":
-							var typeAttr = GetAttribute(element, "type");
-							string typeName;
-							if(typeAttr == null)
-								typeName = "text";
-							else
-								typeName = typeAttr.Value;
-							var valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
-							switch(typeName)
-							{
-								case "radio":
-									if(GetAttribute(element, "checked") == null || radioValuesCompleted.ContainsKey(name))
-										continue;
-									radioValuesCompleted.Add(name, true);
-									data.Add(name, valueAttr.Value);
-									break;
-
-								case "checkbox":
-									if(GetAttribute(element, "checked") == null)
-										continue;
-									data.Add(name, valueAttr.Value);
-									break;
-
-								case "submit":
-								case "image":
-									if(!ReferenceEquals(element, clickedElement))
-										continue;
-									if(!string.IsNullOrEmpty(valueAttr.Value))
-										data.Add(name, valueAttr.Value);
-									break;
-
-								case "hidden":
-								case "text":
-								case "password":
-								default:
-									data.Add(name, valueAttr.Value);
-									break;
-							}
-							break;
-
-						case "button":
-							typeAttr = GetAttribute(element, "type");
-							if(typeAttr == null)
-								typeName = "button";
-							else
-								typeName = typeAttr.Value;
-							valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
-							switch(typeName)
-							{
-								case "button":
-								case "submit":
-									if(!ReferenceEquals(element, clickedElement))
-										continue;
-									data.Add(name, valueAttr.Value);
-									break;
-							}
-							break;
-
-						case "textarea":
-							data.Add(name, element.Value);
-							break;
-
-						case "select":
-							var multipleAttr = GetAttribute(element, "multiple");
-							if(multipleAttr != null)
-								foreach(var option in element.Descendants()
-									.Where(h => h.Name.LocalName.ToLower() == "option"
-												&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
-									.ToList())
-									data.Add(name, GetOptionValue(option));
-							else
-							{
-								var option = element.Descendants()
-									.Where(h => h.Name.LocalName.ToLower() == "option"
-												&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
-									.FirstOrDefault();
-								if(option != null)
-									data.Add(name, GetOptionValue(option));
-							}
-							break;
-					}
-				}
-			}
-			var methodAttr = GetAttribute(form, "method");
-			var method = methodAttr == null ? "GET" : methodAttr.Value.ToUpper() == "POST" ? "POST" : "GET";
-			Uri action;
-			if(url == null)
-			{
-				var actionAttr = GetAttribute(form, "action");
-				action = actionAttr == null ? Url : Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ? new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
-			}
-			else
-				action = new Uri(Url, url);
-
-			return DoRequest(action, method, data, null, null, _timeoutMilliseconds);
-		}
-		private string GetOptionValue(XElement option)
-		{
-			var attr = GetAttribute(option, "value");
-			if(attr == null)
-				return option.Value;
-			return attr.Value;
-		}
 		private List<XElement> FindElements(string tagName)
 		{
 			return XDocument.Descendants()
@@ -943,6 +687,197 @@ namespace SimpleBrowser
 			Log("Selected " + result.TotalElementsFound + " element(s) via jQuery selector: " + query, LogMessageType.Internal);
 			return result;
 		}
+
+		#region handling clicks
+		void htmlElement_AspNetPostBackLinkClicked(HtmlElement element, string name)
+		{
+			Find(ElementType.TextField, FindBy.Name, "__EVENTTARGET").Value = name;
+			OnHtmlElementSubmittedAsForm(element, null);
+		}
+
+		/// <summary>
+		/// General click event handler. Will eventually be removed. Alle HtmlElements should handle their own click behavior.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
+		private ClickResult htmlElement_Clicked(HtmlElement element)
+		{
+			switch (element.TagName.ToLower())
+			{
+				case "a": return ClickLink(element.Element);
+				case "input":
+					switch (element.InputType)
+					{
+						case "radio": return ClickResult.SucceededNoOp; 
+						case "checkbox": return ClickResult.SucceededNoOp;
+						case "image":
+						case "button":
+						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
+						default: return ClickResult.SucceededNoNavigation;
+					}
+				case "option":
+					return ClickResult.SucceededNoOp;
+				case "button":
+					switch (element.InputType)
+					{
+						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
+						default: return ClickResult.SucceededNoNavigation;
+					}
+			}
+
+			return ClickResult.SucceededNoNavigation;
+		}
+
+		private bool OnHtmlElementSubmittedAsForm(HtmlElement element, string url)
+		{
+			return SubmitForm(ObtainAncestor(element.Element, "form"), element.Element, url);
+		}
+		private ClickResult ClickLink(XElement element)
+		{
+			var attr = GetAttribute(element, "href");
+			if (attr == null || attr.Value.StartsWith("#"))
+				return ClickResult.Failed;
+
+			Uri href;
+			string attrValue = HttpUtility.HtmlDecode(attr.Value);
+			if (Uri.IsWellFormedUriString(attrValue, UriKind.Absolute))
+				href = new Uri(attrValue);
+			else
+				href = new Uri(Url, attrValue);
+
+			if (DoRequest(href, "GET", null, null, null, _timeoutMilliseconds))
+				return ClickResult.SucceededNavigationComplete;
+			else
+				return ClickResult.SucceededNavigationError;
+		}
+		private XElement ObtainAncestor(XElement descendent, string ancestorTagName)
+		{
+			if (descendent != null && descendent.Name.LocalName.ToLower() == ancestorTagName)
+				return descendent;
+			if (descendent == null || descendent.Parent == null)
+				throw new InvalidOperationException("The target element does not reside inside an element of type \"" + ancestorTagName + "\"");
+			return ObtainAncestor(descendent.Parent, ancestorTagName);
+		}
+		private bool SubmitForm(XElement form, XElement clickedElement, string url)
+		{
+			if (form == null)
+				return false;
+			if (clickedElement == null)
+				return false;
+			Dictionary<string, bool> radioValuesCompleted = new Dictionary<string, bool>();
+			NameValueCollection data = new NameValueCollection();
+			string[] names = new[] { "input", "textarea", "select" };
+			var elements = form.Descendants().Where(h => names.Contains(h.Name.LocalName.ToLower())).ToList();
+			foreach (var element in elements)
+			{
+				if (GetAttribute(element, "disabled") != null)
+					continue;
+				var nameAttr = GetAttribute(element, "name");
+				if (nameAttr == null)
+					continue;
+				var name = nameAttr.Value;
+				// don't include values from the form if they've already been specified by ExtraFormValues.
+				if (_includeFormValues == null || _includeFormValues[name] == null)
+				{
+					switch (element.Name.LocalName.ToLower())
+					{
+						case "input":
+							var typeAttr = GetAttribute(element, "type");
+							string typeName;
+							if (typeAttr == null)
+								typeName = "text";
+							else
+								typeName = typeAttr.Value;
+							var valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
+							switch (typeName)
+							{
+								case "radio":
+									if (GetAttribute(element, "checked") == null || radioValuesCompleted.ContainsKey(name))
+										continue;
+									radioValuesCompleted.Add(name, true);
+									data.Add(name, valueAttr.Value);
+									break;
+
+								case "checkbox":
+									if (GetAttribute(element, "checked") == null)
+										continue;
+									data.Add(name, valueAttr.Value);
+									break;
+
+								case "submit":
+								case "image":
+									if (!ReferenceEquals(element, clickedElement))
+										continue;
+									if (!string.IsNullOrEmpty(valueAttr.Value))
+										data.Add(name, valueAttr.Value);
+									break;
+
+								case "hidden":
+								case "text":
+								case "password":
+								default:
+									data.Add(name, valueAttr.Value);
+									break;
+							}
+							break;
+
+						case "button":
+							typeAttr = GetAttribute(element, "type");
+							if (typeAttr == null)
+								typeName = "button";
+							else
+								typeName = typeAttr.Value;
+							valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
+							switch (typeName)
+							{
+								case "button":
+								case "submit":
+									if (!ReferenceEquals(element, clickedElement))
+										continue;
+									data.Add(name, valueAttr.Value);
+									break;
+							}
+							break;
+
+						case "textarea":
+							data.Add(name, element.Value);
+							break;
+
+						case "select":
+							SelectElement select = HtmlElement.CreateFor<SelectElement>(element);
+							foreach (var option in select.Options)
+							{
+								if (option.Selected)
+								{
+									data.Add(name, GetOptionValue(option.Element));
+								}
+							}
+							break;
+					}
+				}
+			}
+			var methodAttr = GetAttribute(form, "method");
+			var method = methodAttr == null ? "GET" : methodAttr.Value.ToUpper() == "POST" ? "POST" : "GET";
+			Uri action;
+			if (url == null)
+			{
+				var actionAttr = GetAttribute(form, "action");
+				action = actionAttr == null ? Url : Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ? new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
+			}
+			else
+				action = new Uri(Url, url);
+
+			return DoRequest(action, method, data, null, null, _timeoutMilliseconds);
+		}
+		private string GetOptionValue(XElement option)
+		{
+			var attr = GetAttribute(option, "value");
+			if (attr == null)
+				return option.Value;
+			return attr.Value;
+		}
+		#endregion
+
 	}
 }
 
