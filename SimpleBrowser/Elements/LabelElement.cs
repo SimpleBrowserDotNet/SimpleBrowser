@@ -30,7 +30,7 @@ namespace SimpleBrowser.Elements
 					if (id == null) return null;
 					var element = this.Element.Document.Descendants().Where(e => e.GetAttributeCI("id") == id).FirstOrDefault();
 					if (element == null) return null;
-					_for = HtmlElement.CreateFor<HtmlElement>(element);
+					_for = OwningBrowser.CreateHtmlElement<HtmlElement>(element);
 				}
 				return _for;
 			}

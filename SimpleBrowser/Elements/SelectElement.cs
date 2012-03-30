@@ -49,7 +49,7 @@ namespace SimpleBrowser.Elements
 				{
 					var optionElements = Element.Descendants()
 						.Where(e => e.Name.LocalName.ToLower() == "option")
-						.Select(e => HtmlElement.CreateFor(e)).Cast<OptionElement>();
+						.Select(e => this.OwningBrowser.CreateHtmlElement<OptionElement>(e));
 					_options = optionElements;
 				}
 				return _options;
@@ -94,6 +94,16 @@ namespace SimpleBrowser.Elements
 				}
 			}
 		}
+		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+		{
+			foreach (var item in this.Options)
+			{
+				if (item.Selected)
+				{
+					yield return new UserVariableEntry(){Name = this.Name, Value = item.OptionValue};
+				}
+			}
+		}
 	}
 	internal class OptionElement : HtmlElement
 	{
@@ -131,7 +141,7 @@ namespace SimpleBrowser.Elements
 				if (_owner == null)
 				{
 					var selectElement = Element.Ancestors().First(e => e.Name.LocalName.ToLower() == "select");
-					_owner = (SelectElement)HtmlElement.CreateFor(selectElement);
+					_owner = this.OwningBrowser.CreateHtmlElement<SelectElement>(selectElement);
 				}
 				return _owner;
 			}

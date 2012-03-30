@@ -50,5 +50,10 @@ namespace SimpleBrowser
 			else if(attr == null)
 				x.SetAttributeValue(attributeName, value);
 		}
+		public static XElement GetAncestorCI(this XElement x, string elementName)
+		{
+			XElement result = x.Ancestors().Where(a => a.Name.LocalName.ToLower() == elementName).FirstOrDefault();
+			return result;
+		}
 	}
 }

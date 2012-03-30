@@ -24,5 +24,9 @@ namespace SimpleBrowser.Elements
 				Element.AddFirst(value);
 			}
 		}
+		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+		{
+			yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+		}
 	}
 }

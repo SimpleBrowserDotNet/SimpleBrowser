@@ -22,5 +22,9 @@ namespace SimpleBrowser.Elements
 				return attr.Value;
 			}
 		}
+		public virtual IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+		{
+			return new UserVariableEntry[0];
+		}
 	}
 }

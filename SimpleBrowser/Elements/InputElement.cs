@@ -31,8 +31,27 @@ namespace SimpleBrowser.Elements
 		{
 			get { return GetAttributeValue("type"); }
 		}
+		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+		{
+			yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+		}
 	}
-	internal class RadioInputElement : InputElement
+	internal class SelectableInputElement : InputElement
+	{
+		public SelectableInputElement(XElement element)
+			: base(element)
+		{
+		}
+		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+		{
+			if (this.Selected)
+			{
+				yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+			}
+			yield break;
+		}
+	}
+	internal class RadioInputElement : SelectableInputElement
 	{
 		public RadioInputElement(XElement element)
 			: base(element)
@@ -72,12 +91,12 @@ namespace SimpleBrowser.Elements
 			{
 				var others = this.Element.Ancestors(XName.Get("form")).Descendants(XName.Get("input"))
 					.Where(e => e.GetAttributeCI("type") == "radio" && e.GetAttributeCI("name") == this.Name)
-					.Select(e => HtmlElement.CreateFor<RadioInputElement>(e));
+					.Select(e => this.OwningBrowser.CreateHtmlElement<RadioInputElement>(e));
 				return others;
 			}
 		}
 	}
-	internal class CheckboxInputElement : InputElement
+	internal class CheckboxInputElement : SelectableInputElement
 	{
 		public CheckboxInputElement(XElement element)
 			: base(element)

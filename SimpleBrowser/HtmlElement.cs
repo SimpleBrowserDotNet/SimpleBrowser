@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SimpleBrowser.Elements;
+using System.Collections.Specialized;
 
 namespace SimpleBrowser
 {
@@ -67,38 +68,56 @@ namespace SimpleBrowser
 		}
 
 
-		public event Func<HtmlElement, ClickResult> Clicked;
-		public event Func<HtmlElement, string, bool> FormSubmitted;
-		public event Action<HtmlElement, string> AspNetPostBackLinkClicked;
+		public class NavigationArgs
+		{
+			/// <summary>
+			/// This can be a full Url, but also a relative url that can be combined with the current url of the Browser object
+			/// </summary>
+			public string Uri;
+			public string Method = "GET";
+			public NameValueCollection UserVariables = new NameValueCollection();
+			public string PostData = "";
+			public string ContentType = "";
+			public int TimeoutMilliseconds;
+		}
+		public class UserVariableEntry
+		{
+			public string Name;
+			public string Value;
+		}
+
+
+		public event Func<NavigationArgs, bool> NavigationRequested;
 
 		public virtual ClickResult Click()
 		{
-			if(Clicked != null)
-				return Clicked(this);
-
 			return ClickResult.SucceededNoOp;
 		}
 
-		public bool SubmitForm(string url = null)
+		protected virtual bool RequestNavigation(NavigationArgs args)
 		{
-			if(FormSubmitted != null)
-				return FormSubmitted(this, url);
+			if (NavigationRequested != null)
+				return NavigationRequested(args);
+			else
+				return false;
+		}
 
+		public virtual bool SubmitForm(string url = null, HtmlElement clickedElement = null)
+		{
+			XElement formElem = this.Element.GetAncestorCI("form");
+			if (formElem != null)
+			{
+				FormElement form = this.OwningBrowser.CreateHtmlElement<FormElement>(formElem);
+				form.SubmitForm(url, clickedElement);
+			}
 			return false;
 		}
 
 		public void DoAspNetLinkPostBack()
 		{
-			if(TagName == "a")
+			if (this is AnchorElement)
 			{
-				var match = Regex.Match(GetAttributeValue("href"), @"javascript\:__doPostBack\('([^\']*)\'");
-				if(match.Success)
-				{
-					var name = match.Groups[1].Value;
-					if(AspNetPostBackLinkClicked != null)
-						AspNetPostBackLinkClicked(this, name);
-					return;
-				}
+				this.Click();
 			}
 			throw new InvalidOperationException("This method must only be called on <a> elements having a __doPostBack javascript call in the href attribute");
 		}
@@ -119,51 +138,8 @@ namespace SimpleBrowser
 		{
 			get { return _element; }
 		}
+		internal Browser OwningBrowser { get; set; }
 
-		internal static T CreateFor<T>(XElement element) where T : HtmlElement
-		{
-			var result = CreateFor(element);
-			if (result is T)
-			{
-				return (T)result;
-			}
-			throw new InvalidOperationException("The element was not of the corresponding type");
-		}
-		internal static HtmlElement CreateFor(XElement element)
-		{
-			switch (element.Name.LocalName.ToLower())
-			{
-				case "form":
-					return new FormElement(element);
-				case "input":
-					string type = element.GetAttribute("type");
-					switch (type.ToLower())
-					{
-						case "radio":
-							return new RadioInputElement(element);
-						case "checkbox":
-							return new CheckboxInputElement(element);
-						case "submit":
-						case "image":
-						case "button":
-							return new InputElement(element);
-						default:
-							return new InputElement(element);
-					}
-				case "textarea":
-					return new TextAreaElement(element);
-				case "select":
-					return new SelectElement(element);
-				case "option":
-					return new OptionElement(element);
-				case "a":
-					return new AnchorElement(element);
-				case "label":
-					return new LabelElement(element);
-				default:
-					return new HtmlElement(element);
-			}
-		}
 	}
 }
 

@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Elements\AnchorElement.cs" />
+    <Compile Include="Elements\ButtonInputElement.cs" />
     <Compile Include="Elements\FormElement.cs" />
     <Compile Include="Elements\FormElementElement.cs" />
     <Compile Include="Elements\InputElement.cs" />
