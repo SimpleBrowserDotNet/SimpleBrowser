@@ -432,8 +432,6 @@ namespace SimpleBrowser
 		}
 		#endregion
 
-
-
 		#region Finding
 		public HtmlResult Find(ElementType elementType, FindBy findBy, string value)
 		{

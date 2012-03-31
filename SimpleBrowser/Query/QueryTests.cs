@@ -7,7 +7,7 @@ using SimpleBrowser.Query;
 
 namespace SimpleBrowser.Tests
 {
-	[TestClass]
+	[TestClass, Ignore]
 	public class QueryTests
 	{
 		static class TestHtml
