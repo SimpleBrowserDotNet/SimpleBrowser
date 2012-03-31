@@ -284,7 +284,14 @@ namespace SimpleBrowser
 				{
 					using (HttpWebResponse response = (HttpWebResponse)req.GetResponse())
 					{
-						StreamReader reader = new StreamReader(response.GetResponseStream());
+						Encoding responseEncoding = Encoding.UTF8; //default
+						string charSet = response.CharacterSet;
+						if (!String.IsNullOrEmpty(charSet))
+						{
+							responseEncoding = Encoding.GetEncoding(charSet);
+						}
+						
+						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
 						html = reader.ReadToEnd();
 						ResponseText = html;
 						reader.Close();
