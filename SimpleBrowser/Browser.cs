@@ -492,7 +492,7 @@ namespace SimpleBrowser
 			XElement anc = element.CurrentElement.Element;
 			for(; ; )
 			{
-				anc = ObtainAncestor(anc, ancestorTagName);
+				anc = anc.GetAncestorOfSelfCI(ancestorTagName);
 				if(elementAttributes == null)
 					break;
 				bool succeeded = true;
@@ -685,15 +685,6 @@ namespace SimpleBrowser
 			var result = new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
 			Log("Selected " + result.TotalElementsFound + " element(s) via jQuery selector: " + query, LogMessageType.Internal);
 			return result;
-		}
-
-		private XElement ObtainAncestor(XElement descendent, string ancestorTagName)
-		{
-			if (descendent != null && descendent.Name.LocalName.ToLower() == ancestorTagName)
-				return descendent;
-			if (descendent == null || descendent.Parent == null)
-				throw new InvalidOperationException("The target element does not reside inside an element of type \"" + ancestorTagName + "\"");
-			return ObtainAncestor(descendent.Parent, ancestorTagName);
 		}
 
 		#endregion

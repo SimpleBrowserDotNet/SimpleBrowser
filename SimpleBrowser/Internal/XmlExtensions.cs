@@ -55,5 +55,11 @@ namespace SimpleBrowser
 			XElement result = x.Ancestors().Where(a => a.Name.LocalName.ToLower() == elementName).FirstOrDefault();
 			return result;
 		}
+		public static XElement GetAncestorOfSelfCI(this XElement x, string elementName)
+		{
+			XElement result = x.AncestorsAndSelf().Where(a => a.Name.LocalName.ToLower() == elementName).FirstOrDefault();
+			return result;
+		}
+		
 	}
 }
