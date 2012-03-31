@@ -12,7 +12,7 @@ namespace SimpleBrowser.Query.Selectors
 
 		public ClassSelector(string @class)
 		{
-			_class = @class.ToLower();
+			_class = @class;
 		}
 
 		public bool IsTransposeSelector { get { return false; } }

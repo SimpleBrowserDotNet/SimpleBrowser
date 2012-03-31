@@ -73,12 +73,6 @@ namespace SimpleBrowser
 			if(_current == null)
 				throw new InvalidOperationException("The requested operation is not available when Exists is false");
 		}
-		private void AssertElementIsInputType(params string[] type)
-		{
-			if(_current.TagName.ToLower() == "input" && type.Contains(_current.InputType))
-				return;
-			throw new InvalidOperationException("The requested operation is only valid on input elements of type(s) " + type.Concat(", "));
-		}
 		private void AssertElementIsNotDisabled()
 		{
 			if(_current.Disabled)
@@ -164,15 +158,13 @@ namespace SimpleBrowser
 			get
 			{
 				AssertElementExists();
-				AssertElementIsInputType("radio", "checkbox");
-				return _current.Checked;
+				return _current.Selected;
 			}
 			set
 			{
 				AssertElementExists();
-				AssertElementIsInputType("radio", "checkbox");
 				_browser.Log("Setting the checked state of " + HttpUtility.HtmlEncode(XElement.ToString()) + " to " + (value ? "CHECKED" : "UNCHECKED"), LogMessageType.Internal);
-				_current.Checked = value;
+				_current.Selected = value;
 			}
 		}
 

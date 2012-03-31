@@ -48,6 +48,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Elements\AnchorElement.cs" />
+    <Compile Include="Elements\ButtonInputElement.cs" />
+    <Compile Include="Elements\FormElement.cs" />
+    <Compile Include="Elements\FormElementElement.cs" />
+    <Compile Include="Elements\InputElement.cs" />
+    <Compile Include="Elements\LabelElement.cs" />
+    <Compile Include="Elements\SelectElement.cs" />
+    <Compile Include="Elements\TextAreaElement.cs" />
     <Compile Include="HtmlResult.cs" />
     <Compile Include="Enumerations.cs" />
     <Compile Include="HttpRequestLog.cs" />
