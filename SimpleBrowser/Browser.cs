@@ -288,7 +288,14 @@ namespace SimpleBrowser
 						string charSet = response.CharacterSet;
 						if (!String.IsNullOrEmpty(charSet))
 						{
-							responseEncoding = Encoding.GetEncoding(charSet);
+							try
+							{
+								responseEncoding = Encoding.GetEncoding(charSet);
+							}
+							catch (ArgumentException)
+							{
+								responseEncoding = Encoding.UTF8; // try using utf8
+							}
 						}
 						
 						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
