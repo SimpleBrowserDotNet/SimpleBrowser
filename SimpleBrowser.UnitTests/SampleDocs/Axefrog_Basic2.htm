@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+
+
+  <body >
+  <form action="http://localhost/test" method=get>
+    <div class="cb-container">
+    <input name="cb" id="first-checkbox" type=checkbox checked=checked /> <label for="first-checkbox">first</label> 
+    <input name="cb" id="second-checkbox" type=checkbox /> <label for="second-checkbox">second</label> 
+
+    </div>
+    <div class="rb-container">
+    <input name="radios" id="first-radio" type=radio checked=checked value="first"/> <label for="first-radio">first</label> 
+    <input name="radios" id="second-radio" type=radio  value="second"/> <label for="second-radio">second</label> 
+
+    </div>
+    <input type="text" name="textbox" value="textbox content" />
+    <textarea name="textarea_a" readonly=readonly>This is a full text part
+with several line
+breaks in it.
+    </textarea>
+    <select name="optionsList" id="optionsList">
+    <optgroup label="group 1">
+    <option>opt1</option>
+    <option>opt2</option>
+    <option>opt3</option>
+    <option>opt4</option>
+    </optgroup>
+    <optgroup label="group 2">
+    <option>opt5</option>
+    <option>opt6</option>
+    <option>opt7</option>
+    <option>opt8</option>
+    </optgroup>
+
+    </select>
+    <input type="color" name="colorBox" id="colorBox" value="" />
+    <input type="submit" name="submitButton" value="button1" />
+    </form>
+
+    <a href="/search" class="link-relative">Teun</a>
+    <a href="http://www.google.com/search?q=teun" class="clickLink">Teun</a>
+  </body>
+</html>
