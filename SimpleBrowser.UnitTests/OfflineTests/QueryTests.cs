@@ -8,7 +8,7 @@ using SimpleBrowser.UnitTests;
 
 namespace SimpleBrowser.UnitTests.OfflineTests
 {
-	[TestFixture]
+	[TestFixture, Ignore]
 	public class QueryTests
 	{
 		XDocument GetTestDocument()
