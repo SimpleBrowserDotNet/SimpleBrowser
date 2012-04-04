@@ -24,6 +24,7 @@ namespace SimpleBrowser.Query.Selectors
 
         private string RemoveQuotes(string quoted)
         {
+			if (quoted == "") return "";
             if (quoted[0] == quoted[quoted.Length - 1])
             {
                 return quoted.Trim('\'', '"');
@@ -38,7 +39,8 @@ namespace SimpleBrowser.Query.Selectors
             Func<string, bool> complies;
             switch (_op)
             {
-                case null:
+				case "":
+				case null:
                     complies = (v) => (v != null);
                     break;
                 case "=":
