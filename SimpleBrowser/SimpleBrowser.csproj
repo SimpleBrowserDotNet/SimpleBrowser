@@ -80,7 +80,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Query\ExpressionUtil.cs" />
-    <Compile Include="Query\QueryTests.cs" />
     <Compile Include="Query\SelectorParserCatalog.cs" />
     <Compile Include="Query\Selectors\AllSelector.cs" />
     <Compile Include="Query\Selectors\ChildSelector.cs" />
