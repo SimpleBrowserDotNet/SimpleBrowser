@@ -78,6 +78,7 @@ namespace SimpleBrowser
 			public NameValueCollection UserVariables = new NameValueCollection();
 			public string PostData = "";
 			public string ContentType = "";
+			public string EncodingType = "";
 			public int TimeoutMilliseconds;
 		}
 		public class UserVariableEntry
