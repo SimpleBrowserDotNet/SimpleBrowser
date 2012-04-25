@@ -114,17 +114,17 @@ namespace SimpleBrowser
 
 		public bool Navigate(Uri url)
 		{
-			return DoRequest(url, "GET", null, null, null, _timeoutMilliseconds);
+			return DoRequest(url, "GET", null, null, null, null, _timeoutMilliseconds);
 		}
 
 		public bool Navigate(Uri url, string postData, string contentType)
 		{
-			return DoRequest(url, "POST", null, postData, contentType, _timeoutMilliseconds);
+			return DoRequest(url, "POST", null, postData, contentType, null, _timeoutMilliseconds);
 		}
 
-		public bool Navigate(Uri url, NameValueCollection postData, string contentType = null)
+		public bool Navigate(Uri url, NameValueCollection postData, string contentType = null, string encodingType = null)
 		{
-			return DoRequest(url, "POST", postData, null, contentType, _timeoutMilliseconds);
+			return DoRequest(url, "POST", postData, null, contentType, encodingType, _timeoutMilliseconds);
 		}
 
 		public bool Navigate(Uri url, int timeoutMilliseconds)
@@ -172,13 +172,15 @@ namespace SimpleBrowser
 		private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
 		{
 			Uri fullUri = new Uri(this.Url, args.Uri);
-			return DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.TimeoutMilliseconds);
+			if(args.TimeoutMilliseconds == 0)args.TimeoutMilliseconds = _timeoutMilliseconds;
+
+			return DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
 		}
-		private HttpWebRequest PrepareRequestObject(Uri url, string method, int timeoutMilliseconds)
+		private HttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
 		{
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
 			req.Method = method;
-			req.ContentType = "application/x-www-form-urlencoded";
+			req.ContentType = contentType; // "application/x-www-form-urlencoded";
 			req.UserAgent = UserAgent;
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
@@ -191,7 +193,7 @@ namespace SimpleBrowser
 			return req;
 		}
 
-		private bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, int timeoutMilliseconds)
+		private bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
 		{
 			/* IMPORTANT INFORMATION:
 			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
@@ -222,6 +224,7 @@ namespace SimpleBrowser
 			bool handle301Or302Redirect;
 			int maxRedirects = 10;
 			string html;
+			string postBody = "";
 			do
 			{
 				Debug.WriteLine(uri.ToString());
@@ -231,9 +234,10 @@ namespace SimpleBrowser
 					return false;
 				}
 				handle301Or302Redirect = false;
-				HttpWebRequest req = PrepareRequestObject(uri, method, timeoutMilliseconds);
+				HttpWebRequest req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 				foreach (var header in _extraHeaders)
 					req.Headers.Add(header);
+				req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
 				if (_includeFormValues != null)
 				{
 					if (userVariables == null)
@@ -246,7 +250,8 @@ namespace SimpleBrowser
 				{
 					if (method == "POST")
 					{
-						byte[] data = Encoding.ASCII.GetBytes(StringUtil.MakeQueryString(userVariables));
+						postBody = StringUtil.MakeQueryString(userVariables);
+						byte[] data = Encoding.ASCII.GetBytes(postBody);
 						req.ContentLength = data.Length;
 						Stream stream = req.GetRequestStream();
 						stream.Write(data, 0, data.Length);
@@ -255,13 +260,14 @@ namespace SimpleBrowser
 					else
 					{
 						uri = new Uri(uri.Scheme + "://" + uri.Host + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(userVariables));
-						req = PrepareRequestObject(uri, method, timeoutMilliseconds);
+						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 					}
 				}
 				else if (postData != null)
 				{
 					if (method == "GET")
 						throw new InvalidOperationException("Cannot call DoRequest with method GET and non-null postData");
+					postBody = postData;
 					byte[] data = Encoding.ASCII.GetBytes(postData);
 					req.ContentLength = data.Length;
 					Stream stream = req.GetRequestStream();
@@ -276,7 +282,7 @@ namespace SimpleBrowser
 				{
 					ParsedHtml = XDocument.ToString(),
 					Method = method,
-					PostData = userVariables,
+					PostData = postBody,
 					RequestHeaders = req.Headers,
 					Url = uri
 				};
@@ -754,6 +760,9 @@ namespace SimpleBrowser
 						case "button":
 							string buttonType = element.GetAttribute("type");
 							result = new ButtonInputElement(element);
+							break;
+						case "file":
+							result = new FileUploadElement(element);
 							break;
 						default:
 							result = new InputElement(element);

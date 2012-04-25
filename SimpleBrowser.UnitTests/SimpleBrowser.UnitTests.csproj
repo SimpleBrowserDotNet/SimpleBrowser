@@ -47,6 +47,7 @@
     <Compile Include="Helper.cs" />
     <Compile Include="OfflineTests\QueryTests.cs" />
     <Compile Include="OfflineTests\Selectors.cs" />
+    <Compile Include="OfflineTests\Uploading.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -60,6 +61,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SampleDocs\Axefrog_Basic2.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\FileUpload.htm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

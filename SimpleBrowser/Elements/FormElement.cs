@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using System.IO;
 
 namespace SimpleBrowser.Elements
 {
@@ -66,7 +67,52 @@ namespace SimpleBrowser.Elements
 			{
 				navigation.UserVariables.Add(entry.Name, entry.Value);
 			}
+			navigation.EncodingType = this.EncType;
+			if (this.EncType == FormEncoding.MultipartForm)
+			{
+				// create postdata according to multipart specs
+				Guid token = Guid.NewGuid();
+				navigation.UserVariables = null;
+				StringBuilder post = new StringBuilder();
+				foreach (var element in this.Elements)
+				{
+					if (element is IHasRawPostData)
+					{
+						post.AppendFormat("--{0}\n", token);
+						string filename = new FileInfo(element.Value).Name;
+						post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\n{2}\n", element.Name, filename, ((IHasRawPostData)element).GetPostData());
+					}
+					else
+					{
+						var values = element.ValuesToSubmit(element == clickedElement);
+						foreach (var value in values)
+						{
+							post.AppendFormat("--{0}\n", token);
+							post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\n\n{1}\n", value.Name, value.Value);
+
+						}
+					}
+				}
+				post.AppendFormat("--{0}\n", token);
+				navigation.PostData = post.ToString();
+				navigation.ContentType = FormEncoding.MultipartForm + "; boundary=" + token;
+
+			}
 			return RequestNavigation(navigation);
+		}
+		public string EncType
+		{
+			get
+			{
+				string val = this.GetAttributeValue("enctype");
+				if (val == null) val = FormEncoding.FormUrlencode;
+				return val;
+			}
+		}
+		public static class FormEncoding
+		{
+			public const string FormUrlencode = "application/x-www-form-urlencoded";
+			public const string MultipartForm = "multipart/form-data";
 		}
 		
 	}
