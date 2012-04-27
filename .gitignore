@@ -16,3 +16,4 @@ obj/*
 bin
 bin/*
 obj
+*.nupkg
