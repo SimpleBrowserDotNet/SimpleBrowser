@@ -282,7 +282,8 @@ namespace SimpleBrowser
 				{
 					ParsedHtml = XDocument.ToString(),
 					Method = method,
-					PostData = postBody,
+					PostData = userVariables,
+					PostBody = postBody,
 					RequestHeaders = req.Headers,
 					Url = uri
 				};
