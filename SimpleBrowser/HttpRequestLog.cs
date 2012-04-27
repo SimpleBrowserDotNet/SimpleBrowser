@@ -19,7 +19,8 @@ namespace SimpleBrowser
 	{
 		public string Text { get; set; }
 		public string Method { get; set; }
-		public string PostData { get; set; }
+		public NameValueCollection PostData { get; set; }
+		public string PostBody { get; set; }
 		public NameValueCollection QueryStringData { get; set; }
 		public WebHeaderCollection RequestHeaders { get; set; }
 		public WebHeaderCollection ResponseHeaders { get; set; }
@@ -35,10 +36,10 @@ namespace SimpleBrowser
 					new XElement("Url", Url),
 					new XElement("Method", Method),
 					new XElement("StatusCode", StatusCode),
-					new XElement("ResponseText", new XCData(Text)),
-					new XElement("PostData", new XCData(PostData))
-				)
-			);
+					new XElement("ResponseText", new XCData(Text))
+ 				)
+ 			);
+			if(PostData != null) doc.Root.Add(PostData.ToXElement("PostData"));
 			if(RequestHeaders != null) doc.Root.Add(RequestHeaders.ToXElement("RequestHeaders"));
 			if(ResponseHeaders != null) doc.Root.Add(ResponseHeaders.ToXElement("ResponseHeaders"));
 			return doc;
