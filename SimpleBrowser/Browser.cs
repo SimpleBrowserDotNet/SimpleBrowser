@@ -259,7 +259,7 @@ namespace SimpleBrowser
 					}
 					else
 					{
-						uri = new Uri(uri.Scheme + "://" + uri.Host + uri.Port + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(userVariables));
+						uri = new Uri(uri.Scheme + "://" + uri.Host + ":"  + uri.Port + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(userVariables));
 						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 					}
 				}
