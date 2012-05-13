@@ -56,6 +56,7 @@ namespace SimpleBrowser.Elements
 			NavigationArgs navigation = new NavigationArgs();
 			navigation.Uri = url ?? this.Action;
 			navigation.Method = this.Method;
+			navigation.ContentType = FormEncoding.FormUrlencode;
 			List<string> valuePairs = new List<string>();
 			foreach (var entry in Elements.SelectMany(e => 
 					{

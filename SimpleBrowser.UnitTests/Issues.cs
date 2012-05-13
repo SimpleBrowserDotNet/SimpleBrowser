@@ -14,10 +14,23 @@ namespace SimpleBrowser.UnitTests
 		{
 			Browser b = new Browser();
 			b.Navigate("http://localhost:17267/");
+			//b.Navigate("http://localhost/movies/");
 			var link = b.Find(ElementType.Anchor, FindBy.Text, "Create New");
 			link.Click();
+			var box = b.Select("input[name=Title]");
+			box.Value = "1234";
+			box = b.Select("input[name=ReleaseDate]");
+			box.Value = "2011-01-01";
+			box = b.Select("input[name=Genre]");
+			box.Value = "dark";
+			box = b.Select("input[name=Price]");
+			box.Value = "51";
+			box = b.Select("input[name=Rating]");
+			box.Value = "***";
 			link = b.Select("input[type=submit]");
 			link.Click();
+			Assert.That(b.LastWebException == null, "Webexception detected");
+
 		}
 	}
 }
