@@ -14,7 +14,7 @@ namespace SimpleBrowser.Elements
 		}
 		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
 		{
-			if (isClickedElement)
+			if (isClickedElement && !String.IsNullOrEmpty(this.Name))
 			{
 				return base.ValuesToSubmit(isClickedElement);
 			}
