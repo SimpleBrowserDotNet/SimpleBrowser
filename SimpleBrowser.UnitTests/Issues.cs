@@ -12,9 +12,13 @@ namespace SimpleBrowser.UnitTests
 		[Test]
 		public void SampleApp()
 		{
-			Browser b = new Browser();
-			b.Navigate("http://localhost:17267/");
-			//b.Navigate("http://localhost/movies/");
+			Browser b = new Browser(Helper.GetMoviesRequestMocker());
+			HttpRequestLog lastRequest = null;
+			b.RequestLogged += (br, l) =>
+			{
+				lastRequest = l;
+			};
+			b.Navigate("http://localhost/movies/");
 			var link = b.Find(ElementType.Anchor, FindBy.Text, "Create New");
 			link.Click();
 			var box = b.Select("input[name=Title]");
@@ -30,6 +34,7 @@ namespace SimpleBrowser.UnitTests
 			link = b.Select("input[type=submit]");
 			link.Click();
 			Assert.That(b.LastWebException == null, "Webexception detected");
+			Assert.That(lastRequest.PostBody.Contains("&Price=51&"));
 
 		}
 	}

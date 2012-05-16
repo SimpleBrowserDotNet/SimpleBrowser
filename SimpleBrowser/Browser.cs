@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using SimpleBrowser.Parser;
 using SimpleBrowser.Query;
 using SimpleBrowser.Elements;
+using SimpleBrowser.Network;
 
 namespace SimpleBrowser
 {
@@ -24,6 +25,7 @@ namespace SimpleBrowser
 		private XDocument _doc;
 		private HttpRequestLog _lastRequestLog;
 		private List<LogItem> _logs = new List<LogItem>();
+		private IWebRequestFactory _reqFactory;
 
 		static Browser()
 		{
@@ -38,6 +40,12 @@ namespace SimpleBrowser
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
             Cookies = new CookieContainer();
+			_reqFactory = new DefaultRequestFactory();
+		}
+
+		public Browser(IWebRequestFactory requestFactory):this()
+		{
+			_reqFactory = requestFactory;
 		}
 
 		public string UserAgent { get; set; }
@@ -176,9 +184,9 @@ namespace SimpleBrowser
 
 			return DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
 		}
-		private HttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
+		private IHttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
 		{
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+			IHttpWebRequest req = _reqFactory.GetWebRequest(url);
 			req.Method = method;
 			req.ContentType = contentType; // "application/x-www-form-urlencoded";
 			req.UserAgent = UserAgent;
@@ -234,7 +242,7 @@ namespace SimpleBrowser
 					return false;
 				}
 				handle301Or302Redirect = false;
-				HttpWebRequest req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
+				IHttpWebRequest req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 				foreach (var header in _extraHeaders)
 					req.Headers.Add(header);
 				req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
@@ -289,7 +297,7 @@ namespace SimpleBrowser
 				};
 				try
 				{
-					using (HttpWebResponse response = (HttpWebResponse)req.GetResponse())
+					using (IHttpWebResponse response = req.GetResponse())
 					{
 						Encoding responseEncoding = Encoding.UTF8; //default
 						string charSet = response.CharacterSet;
@@ -309,14 +317,12 @@ namespace SimpleBrowser
 						html = reader.ReadToEnd();
 						ResponseText = html;
 						reader.Close();
-						string oldHTML = html;
-						//html = StripAndRebuildHtml(html);
 						CurrentHtml = html;
 						ContentType = response.ContentType;
 						_doc = null;
 						_includeFormValues = null;
 
-						_lastRequestLog.Text = oldHTML;
+						_lastRequestLog.Text = html;
 						_lastRequestLog.ResponseHeaders = response.Headers;
 						_lastRequestLog.StatusCode = (int)response.StatusCode;
 

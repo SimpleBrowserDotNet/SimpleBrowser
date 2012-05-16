@@ -1,1 +1,1 @@
-"c:\Program Files\NuGet 1.6\nuget" Push SimpleBrowser.0.5.2.nupkg
+"c:\Program Files\NuGet 1.6\nuget" Push SimpleBrowser.0.5.3.nupkg

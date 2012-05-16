@@ -4,6 +4,9 @@ release/*
 Bin
 Bin/*
 obj/*
+bin
+bin/*
+obj
 *.csuser
 *.suo
 *.ReSharper
@@ -13,7 +16,6 @@ obj/*
 *.orig
 *.bak
 .hg/*
-bin
-bin/*
-obj
 *.nupkg
+packages/Moq.*
+packages/NUnit.*
