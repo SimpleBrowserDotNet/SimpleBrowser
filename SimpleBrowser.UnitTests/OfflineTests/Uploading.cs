@@ -12,9 +12,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 	public class Uploading
 	{
 		[Test]
-		public void SearchingAnInputElementBySeveralSelectingMethods()
+		public void Uploading_A_File_With_Enctype_MultipartMime()
 		{
-			Browser b = new Browser();
+			Browser b = new Browser(Helper.GetAllways200RequestMocker());
 			b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.FileUpload.htm"));
 			HttpRequestLog lastLog = null;
 			b.RequestLogged += (br, l) =>
