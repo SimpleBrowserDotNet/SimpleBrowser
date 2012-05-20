@@ -72,6 +72,8 @@ namespace SimpleBrowser
 		{
 			if(_current == null)
 				throw new InvalidOperationException("The requested operation is not available when Exists is false");
+			if (!_current.Valid)
+				throw new InvalidOperationException("The requested operation is not available. Navigating makes the existing HtmlResult objects invalid.");
 		}
 		private void AssertElementIsNotDisabled()
 		{

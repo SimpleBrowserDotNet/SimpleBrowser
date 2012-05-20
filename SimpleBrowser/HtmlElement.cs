@@ -56,6 +56,16 @@ namespace SimpleBrowser
 			get { return GetAttribute("disabled") != null; }
 		}
 
+		private bool _valid = true;
+		public bool Valid
+		{
+			get { return _valid; }
+		}
+		public void Invalidate()
+		{
+			_valid = false;
+		}
+
 		/// <summary>
 		/// Selected returns a boolean value reflecting to state of certain input element. In the Checkbox and Radiobutton
 		/// it corresponds to the 'checked' attribute, in an option under a selectbox, it more or less reflects the 

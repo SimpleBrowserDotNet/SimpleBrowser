@@ -20,7 +20,6 @@ namespace SimpleBrowser
 	{
 		private WebProxy _proxy;
 		private int _timeoutMilliseconds = 30000;
-		private Uri _referrerUrl;
 		private NameValueCollection _includeFormValues;
 		private XDocument _doc;
 		private HttpRequestLog _lastRequestLog;
@@ -36,7 +35,6 @@ namespace SimpleBrowser
 
 		public Browser()
 		{
-			CurrentHtml = null;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
             Cookies = new CookieContainer();
@@ -49,20 +47,100 @@ namespace SimpleBrowser
 		}
 
 		public string UserAgent { get; set; }
-		public Uri Url { get; private set; }
-		public string CurrentHtml { get; private set; }
-		public string ResponseText { get; private set; }
-		public string Text { get { return XDocument.Root.Value; } }
-		public string ContentType { get; private set; }
 		public bool RetainLogs { get; set; }
         public CookieContainer Cookies { get; set; }
+
+		public Uri Url { get { return CurrentState.Url; } }
+		public string CurrentHtml { get { return CurrentState.Html; } }
+		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
+		public string Text { get { return XDocument.Root.Value; } }
+		public string ContentType { get { return CurrentState.ContentType; } }
+
+		/// <summary>
+		/// Returns a dictionary reflecting the current navigation history. The keys are integers reflecting the position in the history,
+		/// where the current page equals 0, the history has negative numbers and the future (pages you can navigate forward to) have positive
+		/// numbers.
+		/// </summary>
+		public IDictionary<int,Uri> NavigationHistory
+		{ 
+			get
+			{
+				return _history.Select((s, i) => new { Index = i, State = s })
+					.ToDictionary((i) => i.Index - _historyPosition, (i) => i.State.Url);
+			}
+		}
+
+
+
+		/// <summary>
+		/// Returns the current HTML document parsed and converted to a valid XDocument object. Note that the
+		/// originating HTML does not have to be valid XML; the parser will use a variety of methods to convert any
+		/// invalid markup to valid XML.
+		/// </summary>
+		internal XDocument XDocument
+		{
+			get
+			{
+				if (CurrentState.XDocument == null)
+				{
+					try
+					{
+						CurrentState.XDocument = CurrentHtml.ParseHtml();
+					}
+					catch (Exception ex)
+					{
+						Log("Error converting HTML to XML for URL " + Url, LogMessageType.Error);
+						Log(ex.Message, LogMessageType.Error);
+						Log("<b>Exception Stack Trace:</b><br />" + ex.StackTrace.Replace(Environment.NewLine, "<br />"), LogMessageType.StackTrace);
+						CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
+					}
+				}
+				return CurrentState.XDocument;
+			}
+		}
+
+
+		List<NavigationState> _history = new List<NavigationState>();
+		int _historyPosition = -1;
+		internal class NavigationState
+		{
+			public Uri Url;
+			public string ContentType;
+			public string Html;
+			internal XDocument XDocument;
+		}
+		internal NavigationState CurrentState
+		{
+			get
+			{
+				if (_historyPosition == -1) return null;
+				return _history[_historyPosition];
+			}
+		}
+		internal void AddNavigationState(NavigationState state)
+		{
+			while (_history.Count > _historyPosition + 1)
+			{
+				_history.Remove(_history.Last());
+			}
+			_historyPosition++;
+			_history.Add(state);
+			this.InvalidateAllActiveElements();
+			while (_history.Count > 20)
+			{
+				_history.RemoveAt(0);
+				_historyPosition--;
+			}
+		}
+
+
 
 		public event Action<Browser, string> MessageLogged;
 		public event Action<Browser, HttpRequestLog> RequestLogged;
 
 		public Browser CreateReferenceView()
 		{
-			return new Browser
+			Browser b = new Browser
 			{
 				Cookies = Cookies,
 				_doc = _doc,
@@ -71,18 +149,15 @@ namespace SimpleBrowser
 				_lastRequestLog = _lastRequestLog,
 				_logs = _logs,
 				_proxy = _proxy,
-				_referrerUrl = _referrerUrl,
 				_timeoutMilliseconds = _timeoutMilliseconds,
 				Accept = Accept,
-				ContentType = ContentType,
-				CurrentHtml = CurrentHtml,
 				LastWebException = LastWebException,
 				MessageLogged = MessageLogged,
-				ResponseText = ResponseText,
-				Url = Url,
 				RetainLogs = RetainLogs,
 				UserAgent = UserAgent
 			};
+			b.AddNavigationState(this.CurrentState);
+			return b;
 		}
 
 
@@ -141,6 +216,27 @@ namespace SimpleBrowser
 			return Navigate(url);
 		}
 
+		public bool NavigateBack()
+		{
+			if (_historyPosition > 0)
+			{
+				_historyPosition--;
+				InvalidateAllActiveElements();
+				return true;
+			}
+			return false;
+		}
+
+		public bool NavigateForward()
+		{
+			if (_history.Count > _historyPosition + 1)
+			{
+				_historyPosition++;
+				InvalidateAllActiveElements();
+				return true;
+			}
+			return false;
+		}
 
 		//\/////////////////////////////////////////////////
 		// RAW HTML BROWSER
@@ -148,33 +244,6 @@ namespace SimpleBrowser
 
 
 
-
-		/// <summary>
-		/// Returns the current HTML document parsed and converted to a valid XDocument object. Note that the
-		/// originating HTML does not have to be valid XML; the parser will use a variety of methods to convert any
-		/// invalid markup to valid XML.
-		/// </summary>
-		internal XDocument XDocument
-		{
-			get
-			{
-				if (_doc == null)
-				{
-					try
-					{
-						_doc = CurrentHtml.ParseHtml();
-					}
-					catch (Exception ex)
-					{
-						Log("Error converting HTML to XML for URL " + Url, LogMessageType.Error);
-						Log(ex.Message, LogMessageType.Error);
-						Log("<b>Exception Stack Trace:</b><br />" + ex.StackTrace.Replace(Environment.NewLine, "<br />"), LogMessageType.StackTrace);
-						_doc = HtmlParser.CreateBlankHtmlDocument();
-					}
-				}
-				return _doc;
-			}
-		}
 
 
 		private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
@@ -196,8 +265,8 @@ namespace SimpleBrowser
 			req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
-			if (_referrerUrl != null)
-				req.Referer = _referrerUrl.AbsoluteUri;
+			if(CurrentState != null)
+				req.Referer = this.Url.AbsoluteUri;
 			return req;
 		}
 
@@ -232,6 +301,7 @@ namespace SimpleBrowser
 			bool handle301Or302Redirect;
 			int maxRedirects = 10;
 			string html;
+			string responseContentType;
 			string postBody = "";
 			do
 			{
@@ -288,7 +358,6 @@ namespace SimpleBrowser
 
 				_lastRequestLog = new HttpRequestLog
 				{
-					ParsedHtml = XDocument.ToString(),
 					Method = method,
 					PostData = userVariables,
 					PostBody = postBody,
@@ -315,14 +384,13 @@ namespace SimpleBrowser
 						
 						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
 						html = reader.ReadToEnd();
-						ResponseText = html;
+						responseContentType = response.ContentType;
 						reader.Close();
-						CurrentHtml = html;
-						ContentType = response.ContentType;
 						_doc = null;
 						_includeFormValues = null;
 
 						_lastRequestLog.Text = html;
+						_lastRequestLog.ParsedHtml = html;
 						_lastRequestLog.ResponseHeaders = response.Headers;
 						_lastRequestLog.StatusCode = (int)response.StatusCode;
 
@@ -330,11 +398,9 @@ namespace SimpleBrowser
 							_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
 						if ((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
 						{
-							//url = AdjustUrl(url, response.Headers["Location"]);
 							uri = new Uri(uri, response.Headers["Location"]);
 							handle301Or302Redirect = true;
-							Url = uri;
-							Debug.WriteLine("Redirecting to: " + Url);
+							Debug.WriteLine("Redirecting to: " + uri);
 							method = "GET";
 							postData = null;
 							userVariables = null;
@@ -375,9 +441,7 @@ namespace SimpleBrowser
 					LogRequestData();
 				}
 			} while (handle301Or302Redirect);
-			Url = uri;
-			_referrerUrl = uri;
-			CurrentHtml = html;
+			this.AddNavigationState(new NavigationState() {Html=html, Url=uri, ContentType=contentType});
 			return true;
 		}
 
@@ -420,10 +484,11 @@ namespace SimpleBrowser
 		/// <param name="content">A string containing a</param>
 		public void SetContent(string content)
 		{
-			CurrentHtml = content;
-			ContentType = "image/html";
-			_doc = null;
-			Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
+			if (CurrentState == null) AddNavigationState(new NavigationState());
+			CurrentState.Html = content;
+			CurrentState.ContentType = "image/html";
+			CurrentState.XDocument = null;
+			CurrentState.Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
 		}
 
 		/// <summary>
@@ -744,6 +809,7 @@ namespace SimpleBrowser
 			}
 			throw new InvalidOperationException("The element was not of the corresponding type");
 		}
+		private List<HtmlElement> _allActiveElements = new List<HtmlElement>();
 		private HtmlElement CreateFor(XElement element)
 		{
 			HtmlElement result;
@@ -798,7 +864,15 @@ namespace SimpleBrowser
 					result = new HtmlElement(element);
 					break;
 			}
+			_allActiveElements.Add(result);
 			return result;
+		}
+		private void InvalidateAllActiveElements()
+		{
+			foreach (var element in _allActiveElements)
+			{
+				element.Invalidate();
+			}
 		}
 
 		#endregion
