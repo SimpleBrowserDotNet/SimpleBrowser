@@ -33,7 +33,43 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 		}
 
 		[Test]
-		public void After_navigating_away_htmlresult_should_throw_exception()
+		public void History_Should_Be_Limited_To_20_States()
+		{
+			Browser b = new Browser(Helper.GetAllways200RequestMocker());
+			HttpRequestLog lastRequest = null;
+			b.RequestLogged += (br, l) =>
+			{
+				lastRequest = l;
+			};
+			for (int i = 0; i < 25; i++)
+			{
+				b.Navigate(String.Format("http://localhost/movies{0}/", i));
+			}
+			var history = b.NavigationHistory;
+			Assert.LessOrEqual(history.Keys.Count, 20, "The history shouldn't grow beyond 20");
+			Assert.That(!history.ContainsKey(1));
+			Assert.That(history.ContainsKey(0));
+			Assert.That(history.ContainsKey(-19));
+			Assert.That(!history.ContainsKey(-20));
+		}
+		[Test]
+		public void Navigating_Beyond_History_Boundaries_Should_Return_False()
+		{
+			Browser b = new Browser(Helper.GetAllways200RequestMocker());
+			HttpRequestLog lastRequest = null;
+			b.RequestLogged += (br, l) =>
+			{
+				lastRequest = l;
+			};
+			b.Navigate("http://localhost/movies1/");
+			b.Navigate("http://localhost/movies2/");
+			Assert.False(b.NavigateForward());
+			Assert.True(b.NavigateBack());
+			Assert.False(b.NavigateBack());
+		}
+
+		[Test]
+		public void After_Navigating_Away_HtmlResult_Should_Throw_Exception()
 		{
 			Browser b = new Browser(Helper.GetMoviesRequestMocker());
 			HttpRequestLog lastRequest = null;

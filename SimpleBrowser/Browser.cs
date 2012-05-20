@@ -126,6 +126,11 @@ namespace SimpleBrowser
 			_historyPosition++;
 			_history.Add(state);
 			this.InvalidateAllActiveElements();
+			while (_history.Count > 20)
+			{
+				_history.RemoveAt(0);
+				_historyPosition--;
+			}
 		}
 
 
