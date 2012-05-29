@@ -62,6 +62,7 @@
     <Compile Include="HtmlResult.cs" />
     <Compile Include="Enumerations.cs" />
     <Compile Include="HttpRequestLog.cs" />
+    <Compile Include="Internal\ApacheMimeTypes.cs" />
     <Compile Include="Internal\CollectionExtensions.cs" />
     <Compile Include="Internal\ObjectExtensions.cs" />
     <Compile Include="Internal\StringExtensions.cs" />
