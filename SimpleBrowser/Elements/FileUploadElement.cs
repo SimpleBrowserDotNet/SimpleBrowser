@@ -23,10 +23,10 @@ namespace SimpleBrowser.Elements
 			{
 				// Todo: create a mime type for extensions
 				string extension = new FileInfo(filename).Extension;
-				string contentType = String.Format("Content-Type: {0}\nContent-Transfer-Encoding: base64\n\n", 
+				string contentType = String.Format("Content-Type: {0}\nContent-Transfer-Encoding: binary\n\n", 
 					ApacheMimeTypes.MimeForExtension(extension));
 				byte[] allBytes = File.ReadAllBytes(filename);
-				return contentType + Convert.ToBase64String(allBytes);
+				return contentType + Encoding.GetEncoding(28591).GetString(allBytes);
 			}
 			return "";
 		}

@@ -31,5 +31,6 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			Assert.That(lastLog.Method == "POST");
 		}
 	}
+
 }
  

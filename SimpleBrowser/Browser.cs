@@ -329,7 +329,7 @@ namespace SimpleBrowser
 					if (method == "POST")
 					{
 						postBody = StringUtil.MakeQueryString(userVariables);
-						byte[] data = Encoding.ASCII.GetBytes(postBody);
+						byte[] data = Encoding.GetEncoding(28591).GetBytes(postBody);
 						req.ContentLength = data.Length;
 						Stream stream = req.GetRequestStream();
 						stream.Write(data, 0, data.Length);
@@ -346,7 +346,7 @@ namespace SimpleBrowser
 					if (method == "GET")
 						throw new InvalidOperationException("Cannot call DoRequest with method GET and non-null postData");
 					postBody = postData;
-					byte[] data = Encoding.ASCII.GetBytes(postData);
+					byte[] data = Encoding.GetEncoding(28591).GetBytes(postData);
 					req.ContentLength = data.Length;
 					Stream stream = req.GetRequestStream();
 					stream.Write(data, 0, data.Length);
