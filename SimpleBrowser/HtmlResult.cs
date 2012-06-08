@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 using SimpleBrowser.Query;
+using System.Net;
 
 namespace SimpleBrowser
 {
@@ -141,7 +142,7 @@ namespace SimpleBrowser
 			get
 			{
 				AssertElementExists();
-				return _current.Value;
+				return WebUtility.HtmlDecode(_current.Value);
 			}
 			set
 			{

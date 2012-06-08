@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using System.Xml.XPath;
 
 namespace SimpleBrowser.UnitTests
 {
@@ -37,5 +38,16 @@ namespace SimpleBrowser.UnitTests
 			Assert.That(lastRequest.PostBody.Contains("&Price=51&"));
 
 		}
+
+        [Test]
+        public void HtmlElementValue_ReturnsEncodedValue()
+        {
+            Browser b = new Browser();
+            b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HtmlEncodedValues.htm"));
+
+            var footerDiv = b.Find("footer");
+
+            Assert.That(footerDiv.Value.StartsWith("©"));
+        }
 	}
 }
