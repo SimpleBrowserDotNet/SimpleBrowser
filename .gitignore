@@ -19,3 +19,4 @@ obj
 *.nupkg
 packages/Moq.*
 packages/NUnit.*
+*.ncrunchsolution
