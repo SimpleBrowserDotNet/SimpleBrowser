@@ -151,6 +151,15 @@ namespace SimpleBrowser
 			}
 		}
 
+        /// <summary>
+        /// Gets the decoded Value of the element. For example if the Value is &copy; 2011 the decoded Value will 
+        /// be © 2011
+        /// </summary>
+        public string DecodedValue
+        {
+            get { return HttpUtility.HtmlDecode(Value); }
+        }
+
 		/// <summary>
 		/// Gets or sets whether or not the CHECKED attribute is set for the current element.  Throws an exception if
 		/// Exists is false or if the current element is anything other than a RADIO or CHECKBOX (INPUT) element.
