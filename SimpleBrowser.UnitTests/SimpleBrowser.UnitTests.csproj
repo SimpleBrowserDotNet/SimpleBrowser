@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Helper.cs" />
     <Compile Include="Issues.cs" />
+    <Compile Include="OfflineTests\DecodedValue.cs" />
     <Compile Include="OfflineTests\History.cs" />
     <Compile Include="OfflineTests\QueryTests.cs" />
     <Compile Include="OfflineTests\Selectors.cs" />
@@ -78,6 +79,9 @@
   <ItemGroup>
     <EmbeddedResource Include="SampleDocs\movies1.htm" />
     <EmbeddedResource Include="SampleDocs\movies2.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\DecodedValue.htm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
