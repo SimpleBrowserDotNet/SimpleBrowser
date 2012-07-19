@@ -41,6 +41,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 
 			colorBox = b.Select("input[type=Color]"); // find by Css selector
 			Assert.That(colorBox.Count() == 0, "There should be no element for the expression input[type=Color] (CSS is case sensitive)");
+
+			var clickLink = b.Select(".clickLink"); // find by Css selector
+			Assert.That(clickLink.Count() == 1, "There should be one element for the expression .clickLink");
 		}
 		[Test]
 		public void SearchingAnElementBySeveralSelectingMethods()

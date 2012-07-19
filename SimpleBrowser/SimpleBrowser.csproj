@@ -55,6 +55,7 @@
     <Compile Include="Elements\FileUploadElement.cs" />
     <Compile Include="Elements\FormElement.cs" />
     <Compile Include="Elements\FormElementElement.cs" />
+    <Compile Include="Elements\FrameElement.cs" />
     <Compile Include="Elements\InputElement.cs" />
     <Compile Include="Elements\LabelElement.cs" />
     <Compile Include="Elements\SelectElement.cs" />

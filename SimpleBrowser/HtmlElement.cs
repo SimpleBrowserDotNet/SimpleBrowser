@@ -84,6 +84,7 @@ namespace SimpleBrowser
 			/// This can be a full Url, but also a relative url that can be combined with the current url of the Browser object
 			/// </summary>
 			public string Uri;
+			public string Target;
 			public string Method = "GET";
 			public NameValueCollection UserVariables = new NameValueCollection();
 			public string PostData = "";
@@ -149,7 +150,7 @@ namespace SimpleBrowser
 		{
 			get { return _element; }
 		}
-		internal Browser OwningBrowser { get; set; }
+		internal virtual Browser OwningBrowser { get; set; }
 
 	}
 }

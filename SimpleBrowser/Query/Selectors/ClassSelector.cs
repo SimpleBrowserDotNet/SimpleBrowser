@@ -20,7 +20,12 @@ namespace SimpleBrowser.Query.Selectors
 		public void Execute(XQueryResultsContext context)
 		{
 			context.ResultSetInternal = context.ResultSetInternal
-				.Where(x => x.GetAttributeCI("class") == _class);
+				.Where(x => 
+					{
+						var c = x.GetAttributeCI("class");
+						if(c == null)return false;
+						return c.Split(' ').Contains(_class);
+					});
 		}
 
 		internal static readonly Regex RxSelector = new Regex(@"^\.(?<class>[A-Za-z0-9_\-]+)");

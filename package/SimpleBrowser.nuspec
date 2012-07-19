@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <version>0.5.6</version>
+    <version>0.5.7</version>
     <authors>Nathan Ridley, Teun Duynstee</authors>
     <owners>Nathan Ridley</owners>
     <projectUrl>https://github.com/axefrog/SimpleBrowser</projectUrl>

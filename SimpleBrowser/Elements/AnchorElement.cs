@@ -9,6 +9,7 @@ namespace SimpleBrowser.Elements
 {
 	internal class AnchorElement : HtmlElement
 	{
+
 		public AnchorElement(XElement element)
 			: base(element)
 		{
@@ -18,6 +19,14 @@ namespace SimpleBrowser.Elements
 			get
 			{
 				return this.Element.GetAttributeCI("href");
+			}
+		}
+		public string Target
+		{
+			get
+			{
+				string value = this.Element.GetAttributeCI("target");
+				return value;
 			}
 		}
 
@@ -45,9 +54,12 @@ namespace SimpleBrowser.Elements
 			}
 
 			string url = this.Href;
+			string target = this.Target;
+
 			if (RequestNavigation(new NavigationArgs()
 			{
-				Uri = url
+				Uri = url,
+				Target = target
 			}))
 			{
 				return ClickResult.SucceededNavigationComplete;

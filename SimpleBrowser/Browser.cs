@@ -33,17 +33,61 @@ namespace SimpleBrowser
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
 
-		public Browser()
+		public Browser(IWebRequestFactory requestFactory = null, string name = null)
 		{
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
             Cookies = new CookieContainer();
-			_reqFactory = new DefaultRequestFactory();
+			if (requestFactory == null) requestFactory = new DefaultRequestFactory();
+			_reqFactory = requestFactory;
+			WindowHandle = name;
+			Browser.Register(this);
 		}
 
-		public Browser(IWebRequestFactory requestFactory):this()
+
+		private static List<Browser> _allWindows = new List<Browser>();
+		public static IEnumerable<Browser> Windows
 		{
-			_reqFactory = requestFactory;
+			get
+			{
+				return _allWindows;
+			}
+		}
+		public IEnumerable<Browser> Frames
+		{
+			get
+			{
+				var dummy = this.XDocument; // Parsing the HTML into XDocument will trigger the loading of frames
+				return Browser.Windows.Where(b => b.ParentWindow == this);
+			}
+		}
+		public static void ClearWindows()
+		{
+			_allWindows.Clear();
+		}
+		public static Browser GetWindowByName(string name)
+		{
+			return Windows.FirstOrDefault(b => b.WindowHandle == name);
+		}
+		private static void Register(Browser browser)
+		{
+			_allWindows.Add(browser);
+			if (browser.WindowHandle == null)
+			{
+				browser.WindowHandle = Guid.NewGuid().ToString().Substring(0, 8);
+			}
+		}
+		public string WindowHandle { get; private set; }
+		private Browser ParentWindow { get; set; }
+		internal Browser CreateChildBrowser(string name = null)
+		{
+			Browser child = new Browser(this._reqFactory, name);
+			child.ParentWindow = this;
+			return child;
+		}
+		internal void RemoveChildBrowsers()
+		{
+			_allWindows.RemoveAll((b) => b.ParentWindow == this);
 		}
 
 		public string UserAgent { get; set; }
@@ -94,6 +138,12 @@ namespace SimpleBrowser
 						Log("<b>Exception Stack Trace:</b><br />" + ex.StackTrace.Replace(Environment.NewLine, "<br />"), LogMessageType.StackTrace);
 						CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
 					}
+					// check if we need to create sob-browsers for frames
+					foreach (var frame in this.FindAll("iframe"))
+					{
+						Log("found iframe +" + frame.CurrentElement.Value);  
+					}
+					
 				}
 				return CurrentState.XDocument;
 			}
@@ -245,13 +295,34 @@ namespace SimpleBrowser
 
 
 
+		const string TARGET_SELF = "_self";
+		const string TARGET_BLANK = "_blank";
+		const string TARGET_TOP = "_top";
 
 		private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
 		{
 			Uri fullUri = new Uri(this.Url, args.Uri);
 			if(args.TimeoutMilliseconds == 0)args.TimeoutMilliseconds = _timeoutMilliseconds;
 
-			return DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
+			Browser browserToNav = null;
+			if (args.Target == TARGET_SELF || String.IsNullOrEmpty(args.Target))
+			{
+				browserToNav = this;
+			}
+			else if (args.Target == TARGET_BLANK)
+			{
+				browserToNav = new Browser(this._reqFactory);
+			}
+			else
+			{
+				browserToNav = Browser.Windows.FirstOrDefault(b => b.WindowHandle == args.Target);
+				if (browserToNav == null)
+				{
+					browserToNav = new Browser(this._reqFactory, args.Target);
+				}
+			}
+
+			return browserToNav.DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
 		}
 		private IHttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
 		{
@@ -270,7 +341,7 @@ namespace SimpleBrowser
 			return req;
 		}
 
-		private bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
+		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
 		{
 			/* IMPORTANT INFORMATION:
 			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
@@ -337,7 +408,10 @@ namespace SimpleBrowser
 					}
 					else
 					{
-						uri = new Uri(uri.Scheme + "://" + uri.Host + ":"  + uri.Port + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(userVariables));
+						uri = new Uri(
+							uri.Scheme + "://" + uri.Host + ":"  + uri.Port + uri.AbsolutePath 
+							+ ((userVariables.Count > 0) ? "?" + StringUtil.MakeQueryString(userVariables) : "")
+							);
 						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 					}
 				}
@@ -441,6 +515,7 @@ namespace SimpleBrowser
 					LogRequestData();
 				}
 			} while (handle301Or302Redirect);
+			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
 			this.AddNavigationState(new NavigationState() {Html=html, Url=uri, ContentType=contentType});
 			return true;
 		}
@@ -850,6 +925,10 @@ namespace SimpleBrowser
 					break;
 				case "option":
 					result = new OptionElement(element);
+					break;
+				case "iframe":
+				case "frame":
+					result = new FrameElement(element);
 					break;
 				case "a":
 					result = new AnchorElement(element);

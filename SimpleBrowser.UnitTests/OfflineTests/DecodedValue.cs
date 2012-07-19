@@ -16,7 +16,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.DecodedValue.htm"));
 
             var div = b.Select("div");
-            Assert.That(div.DecodedValue, Is.EqualTo("£ sign"));
-        }
+            Assert.That(div.ToList()[0].DecodedValue, Is.EqualTo("£ sign"));
+			Assert.That(div.ToList()[1].DecodedValue, Is.EqualTo("üü"));
+		}
     }
 }
