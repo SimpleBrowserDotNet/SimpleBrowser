@@ -31,7 +31,7 @@ namespace SimpleBrowser
 			return x.Attributes().Where(h => h.Name.LocalName.ToLower() == name.ToLower()).FirstOrDefault();
 		}
 
-		internal string GetAttributeValue(string name)
+		internal virtual string GetAttributeValue(string name)
 		{
 			return GetAttributeValue(Element, name);
 		}

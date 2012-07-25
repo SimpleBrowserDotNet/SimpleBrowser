@@ -54,6 +54,20 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			Assert.That(Browser.Windows.Count() == 1);
 		}
 		[Test]
+		public void GetAttribute_Backdoor_FrameHandle()
+		{
+			Browser b = new Browser(Helper.GetFramesMock());
+			HttpRequestLog lastRequest = null;
+			b.RequestLogged += (br, l) =>
+			{
+				lastRequest = l;
+			};
+			b.Navigate("http://localhost/");
+			var elm = b.Select("iframe");
+			string handle = elm.GetAttribute("SimpleBrowser.WebDriver:frameWindowHandle");
+			Assert.AreEqual(handle, "frame1");
+		}	
+		[Test]
 		public void Navigating_IFrames_Using_Target()
 		{
 			Browser b = new Browser(Helper.GetFramesMock());

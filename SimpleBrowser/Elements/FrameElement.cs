@@ -12,6 +12,15 @@ namespace SimpleBrowser.Elements
 			: base(element)
 		{
 		}
+		public Browser FrameBrowser { get; private set; }
+		internal override string GetAttributeValue(string name)
+		{
+			if (name == "SimpleBrowser.WebDriver:frameWindowHandle")
+			{
+				return FrameBrowser.WindowHandle;
+			}
+			return base.GetAttributeValue(name);
+		}
 		public string Src
 		{
 			get
@@ -35,9 +44,8 @@ namespace SimpleBrowser.Elements
 			set
 			{
 				base.OwningBrowser = value;
-				Browser frameBrowser = this.OwningBrowser.CreateChildBrowser(this.Name);
-				frameBrowser.Navigate(new Uri(OwningBrowser.Url, this.Src));
-
+				this.FrameBrowser = this.OwningBrowser.CreateChildBrowser(this.Name);
+				this.FrameBrowser.Navigate(new Uri(OwningBrowser.Url, this.Src));
 			}
 		}
 
