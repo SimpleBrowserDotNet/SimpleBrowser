@@ -81,10 +81,20 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			Assert.That(b.Url == new Uri("http://localhost/movies/"));
 			var link = b.Find(ElementType.Anchor, FindBy.Text, "Create New");
 			link.Click();
-			Assert.AreEqual(new Uri("http://localhost/movies/Movies/Create?"), b.Url);
+			Assert.AreEqual(new Uri("http://localhost/movies/Movies/Create"), b.Url);
 			Assert.Throws(typeof(InvalidOperationException), () => link.Click(), "Clicking the link should now throw an exception");
 		}
 
+		[Test]
+		public void Navigating_To_A_Url_With_Querystring_Parameters_Retains_Parameters() 
+		{
+			Browser b = new Browser(Helper.GetMoviesRequestMocker());
+			b.Navigate("http://localhost/movies/");
 
+			var link = b.Find(ElementType.Anchor, FindBy.Text, "Rio Bravo");
+
+			link.Click();
+			Assert.AreEqual(new Uri("http://www.example.com/movie.html?id=4"), b.Url);
+		}
 	}
 }
