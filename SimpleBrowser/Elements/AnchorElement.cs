@@ -55,11 +55,19 @@ namespace SimpleBrowser.Elements
 
 			string url = this.Href;
 			string target = this.Target;
+			string queryStringValues = null;
+
+			if (url != null) {
+				string[] querystring = url.Split(new[] {'?'});
+				if (querystring.Length > 1)
+					queryStringValues = querystring[1];
+			}
 
 			if (RequestNavigation(new NavigationArgs()
 			{
 				Uri = url,
-				Target = target
+				Target = target,
+				UserVariables = StringUtil.MakeCollectionFromQueryString(queryStringValues)
 			}))
 			{
 				return ClickResult.SucceededNavigationComplete;

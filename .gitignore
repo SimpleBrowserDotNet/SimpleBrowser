@@ -20,3 +20,5 @@ obj
 packages/Moq.*
 packages/NUnit.*
 *.ncrunchsolution
+*.ncrunchproject
+_ReSharper.*
