@@ -65,6 +65,20 @@ namespace SimpleBrowser
 		{
 			_allWindows.Clear();
 		}
+
+		public void Close()
+		{
+			_history = null;
+			_allWindows.Remove(this);
+		}
+		private void CheckDisposed()
+		{
+			if (_history == null)
+			{
+				throw new ObjectDisposedException("This browser has been closed. You cannot access the content or history after closing.");
+			}
+		}
+
 		public static Browser GetWindowByName(string name)
 		{
 			return Windows.FirstOrDefault(b => b.WindowHandle == name);
@@ -109,6 +123,7 @@ namespace SimpleBrowser
 		{ 
 			get
 			{
+				CheckDisposed();
 				return _history.Select((s, i) => new { Index = i, State = s })
 					.ToDictionary((i) => i.Index - _historyPosition, (i) => i.State.Url);
 			}
@@ -163,10 +178,12 @@ namespace SimpleBrowser
 		{
 			get
 			{
+				CheckDisposed();
 				if (_historyPosition == -1) return null;
 				return _history[_historyPosition];
 			}
 		}
+
 		internal void AddNavigationState(NavigationState state)
 		{
 			while (_history.Count > _historyPosition + 1)
@@ -268,6 +285,7 @@ namespace SimpleBrowser
 
 		public bool NavigateBack()
 		{
+			CheckDisposed();
 			if (_historyPosition > 0)
 			{
 				_historyPosition--;
@@ -279,6 +297,7 @@ namespace SimpleBrowser
 
 		public bool NavigateForward()
 		{
+			CheckDisposed();
 			if (_history.Count > _historyPosition + 1)
 			{
 				_historyPosition++;

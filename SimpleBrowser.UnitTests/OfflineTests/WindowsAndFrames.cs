@@ -37,6 +37,27 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 
 		}
 		[Test]
+		public void ClosingBrowsers()
+		{
+			Browser b = new Browser(Helper.GetMoviesRequestMocker());
+			HttpRequestLog lastRequest = null;
+			b.RequestLogged += (br, l) =>
+			{
+				lastRequest = l;
+			};
+			b.Navigate("http://localhost/movies/");
+			Assert.That(b.Url == new Uri("http://localhost/movies/"));
+			var link = b.Find(ElementType.Anchor, FindBy.Text, "About us");
+			link.Click();
+			Assert.That(b.Url == new Uri("http://localhost/movies/"));
+			Assert.That(Browser.Windows.Count() == 2);
+			b.Close();
+			Assert.That(Browser.Windows.Count() == 1);
+			Browser.Windows.First().Close();
+			Assert.That(Browser.Windows.Count() == 0);
+			Assert.Throws(typeof(ObjectDisposedException), () => { Uri s = b.Url; });
+		}
+		[Test]
 		public void Page_With_IFrames()
 		{
 			Browser b = new Browser(Helper.GetFramesMock());
