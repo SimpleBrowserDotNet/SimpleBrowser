@@ -68,5 +68,22 @@ namespace SimpleBrowser
 				v[kvp.Key] = kvp.Value;
 			return MakeQueryString(v);
 		}
+
+		public static NameValueCollection MakeCollectionFromQueryString(string queryString)
+		{
+			if (queryString == null)
+				return new NameValueCollection();
+
+			NameValueCollection values = new NameValueCollection();
+			foreach (string kvp in queryString.Split(new[] { "&" }, StringSplitOptions.RemoveEmptyEntries))
+			{
+				string[] val = kvp.Split('=');
+				if (val.Length > 1)
+					values.Add(val[0], val[1]);
+				else if (val.Length == 1)
+					values.Add(val[0], string.Empty);
+			}
+			return values;
+		}
 	}
 }
