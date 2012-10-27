@@ -402,7 +402,16 @@ namespace SimpleBrowser
 					return false;
 				}
 				handle301Or302Redirect = false;
-				IHttpWebRequest req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
+				IHttpWebRequest req = null;
+				try
+				{
+					req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
+				}
+				catch (NotSupportedException e)
+				{
+					// Happens when the URL cannot be parsed (example: 'javascript:')
+					return false;
+				}
 				foreach (var header in _extraHeaders)
 					req.Headers.Add(header);
 				req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
