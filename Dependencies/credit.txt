@@ -1,0 +1,5 @@
+RazorHosting assembly from Rick Strahl:
+http://www.west-wind.com/weblog/posts/864461.aspx
+
+PrettyPrint code used in cshtml logging:
+http://code.google.com/p/google-code-prettify/

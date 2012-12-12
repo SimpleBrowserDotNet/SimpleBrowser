@@ -70,11 +70,19 @@ namespace SimpleBrowser.Parser
 					}
 
 					case TokenType.Comment:
-						topOrRoot().Add(new XComment(token.A));
+						topOrRoot().Add(new XComment(token.Raw));
 						break;
 
 					case TokenType.Text:
-						topOrRoot().Add(new XText(token.A));
+						var parent = topOrRoot();
+						if (parent.Name.LocalName.ToLower() == "textarea")
+						{
+							parent.Add(new XText(token.Raw));
+						}
+						else
+						{
+							parent.Add(new XText(token.A));
+						}
 						break;
 				}
 			}

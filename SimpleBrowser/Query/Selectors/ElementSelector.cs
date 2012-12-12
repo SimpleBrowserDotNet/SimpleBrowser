@@ -25,7 +25,7 @@ namespace SimpleBrowser.Query.Selectors
 				.Where(x => string.Compare(x.Name.LocalName, _name, true) == 0);
 		}
 
-		internal static readonly Regex RxSelector = new Regex("^[A-Za-z]+");
+		internal static readonly Regex RxSelector = new Regex(@"^[A-Za-z][A-Za-z0-9_\-]*");
 	}
 
 	public class ElementSelectorCreator : XQuerySelectorCreator

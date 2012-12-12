@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <version>0.5.11</version>
+    <authors>Nathan Ridley, Teun Duynstee</authors>
+    <owners>Nathan Ridley</owners>
+    <projectUrl>https://github.com/axefrog/SimpleBrowser</projectUrl>
+    <dependencies>
+    </dependencies>
+    <id>SimpleBrowser</id>
+    <title>SimpleBrowser</title>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios.</description>
+    <summary></summary>
+    <tags>headless browser http cookies browserautomation automation</tags>
+  </metadata>
+  <files>
+    <file src="..\SimpleBrowser\bin\Debug\SimpleBrowser.dll" target="lib\net40\SimpleBrowser.dll" />
+    <file src="..\SimpleBrowser\bin\Debug\RazorHosting.dll" target="lib\net40\RazorHosting.dll" />
+  </files>
+</package>

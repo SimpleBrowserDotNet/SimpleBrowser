@@ -11,6 +11,8 @@ using System.Web;
 using System.Xml.Linq;
 using SimpleBrowser.Parser;
 using SimpleBrowser.Query;
+using SimpleBrowser.Elements;
+using SimpleBrowser.Network;
 
 namespace SimpleBrowser
 {
@@ -18,11 +20,11 @@ namespace SimpleBrowser
 	{
 		private WebProxy _proxy;
 		private int _timeoutMilliseconds = 30000;
-		private Uri _referrerUrl;
 		private NameValueCollection _includeFormValues;
-		private CookieContainer _cookies = new CookieContainer();
 		private XDocument _doc;
 		private HttpRequestLog _lastRequestLog;
+		private List<LogItem> _logs = new List<LogItem>();
+		private IWebRequestFactory _reqFactory;
 
 		static Browser()
 		{
@@ -31,33 +33,200 @@ namespace SimpleBrowser
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
 
-		public Browser()
+		public Browser(IWebRequestFactory requestFactory = null, string name = null)
 		{
-			CurrentHtml = null;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
+			RetainLogs = true;
+            Cookies = new CookieContainer();
+			if (requestFactory == null) requestFactory = new DefaultRequestFactory();
+			_reqFactory = requestFactory;
+			WindowHandle = name;
+			Browser.Register(this);
+		}
+
+
+		private static List<Browser> _allWindows = new List<Browser>();
+		public static IEnumerable<Browser> Windows
+		{
+			get
+			{
+				return _allWindows;
+			}
+		}
+		public IEnumerable<Browser> Frames
+		{
+			get
+			{
+				var dummy = this.XDocument; // Parsing the HTML into XDocument will trigger the loading of frames
+				return Browser.Windows.Where(b => b.ParentWindow == this);
+			}
+		}
+		public static void ClearWindows()
+		{
+			_allWindows.Clear();
+		}
+
+		public void Close()
+		{
+			_history = null;
+			_allWindows.Remove(this);
+		}
+		private void CheckDisposed()
+		{
+			if (_history == null)
+			{
+				throw new ObjectDisposedException("This browser has been closed. You cannot access the content or history after closing.");
+			}
+		}
+
+		public static Browser GetWindowByName(string name)
+		{
+			return Windows.FirstOrDefault(b => b.WindowHandle == name);
+		}
+		private static void Register(Browser browser)
+		{
+			_allWindows.Add(browser);
+			if (browser.WindowHandle == null)
+			{
+				browser.WindowHandle = Guid.NewGuid().ToString().Substring(0, 8);
+			}
+		}
+		public string WindowHandle { get; private set; }
+		private Browser ParentWindow { get; set; }
+		internal Browser CreateChildBrowser(string name = null)
+		{
+			Browser child = new Browser(this._reqFactory, name);
+			child.ParentWindow = this;
+			return child;
+		}
+		internal void RemoveChildBrowsers()
+		{
+			_allWindows.RemoveAll((b) => b.ParentWindow == this);
 		}
 
 		public string UserAgent { get; set; }
-		public Uri Url { get; private set; }
-		public string CurrentHtml { get; private set; }
-		public string ResponseText { get; private set; }
-		public string ContentType { get; private set; }
+		public bool RetainLogs { get; set; }
+        public CookieContainer Cookies { get; set; }
+
+		public Uri Url { get { return CurrentState.Url; } }
+		public string CurrentHtml { get { return CurrentState.Html; } }
+		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
+		public string Text { get { return XDocument.Root.Value; } }
+		public string ContentType { get { return CurrentState.ContentType; } }
+
+		/// <summary>
+		/// Returns a dictionary reflecting the current navigation history. The keys are integers reflecting the position in the history,
+		/// where the current page equals 0, the history has negative numbers and the future (pages you can navigate forward to) have positive
+		/// numbers.
+		/// </summary>
+		public IDictionary<int,Uri> NavigationHistory
+		{ 
+			get
+			{
+				CheckDisposed();
+				return _history.Select((s, i) => new { Index = i, State = s })
+					.ToDictionary((i) => i.Index - _historyPosition, (i) => i.State.Url);
+			}
+		}
+
+
+
+		/// <summary>
+		/// Returns the current HTML document parsed and converted to a valid XDocument object. Note that the
+		/// originating HTML does not have to be valid XML; the parser will use a variety of methods to convert any
+		/// invalid markup to valid XML.
+		/// </summary>
+		internal XDocument XDocument
+		{
+			get
+			{
+				if (CurrentState.XDocument == null)
+				{
+					try
+					{
+						CurrentState.XDocument = CurrentHtml.ParseHtml();
+					}
+					catch (Exception ex)
+					{
+						Log("Error converting HTML to XML for URL " + Url, LogMessageType.Error);
+						Log(ex.Message, LogMessageType.Error);
+						Log("<b>Exception Stack Trace:</b><br />" + ex.StackTrace.Replace(Environment.NewLine, "<br />"), LogMessageType.StackTrace);
+						CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
+					}
+					// check if we need to create sob-browsers for frames
+					foreach (var frame in this.FindAll("iframe"))
+					{
+						Log("found iframe +" + frame.CurrentElement.Value);  
+					}
+					
+				}
+				return CurrentState.XDocument;
+			}
+		}
+
+
+		List<NavigationState> _history = new List<NavigationState>();
+		int _historyPosition = -1;
+		internal class NavigationState
+		{
+			public Uri Url;
+			public string ContentType;
+			public string Html;
+			internal XDocument XDocument;
+		}
+		internal NavigationState CurrentState
+		{
+			get
+			{
+				CheckDisposed();
+				if (_historyPosition == -1) return null;
+				return _history[_historyPosition];
+			}
+		}
+
+		internal void AddNavigationState(NavigationState state)
+		{
+			while (_history.Count > _historyPosition + 1)
+			{
+				_history.Remove(_history.Last());
+			}
+			_historyPosition++;
+			_history.Add(state);
+			this.InvalidateAllActiveElements();
+			while (_history.Count > 20)
+			{
+				_history.RemoveAt(0);
+				_historyPosition--;
+			}
+		}
+
+
 
 		public event Action<Browser, string> MessageLogged;
 		public event Action<Browser, HttpRequestLog> RequestLogged;
 
-		public void Log(string message)
+		public Browser CreateReferenceView()
 		{
-			if(MessageLogged != null)
-				MessageLogged(this, message);
+			Browser b = new Browser
+			{
+				Cookies = Cookies,
+				_doc = _doc,
+				_extraHeaders = _extraHeaders,
+				_includeFormValues = _includeFormValues,
+				_lastRequestLog = _lastRequestLog,
+				_logs = _logs,
+				_proxy = _proxy,
+				_timeoutMilliseconds = _timeoutMilliseconds,
+				Accept = Accept,
+				LastWebException = LastWebException,
+				MessageLogged = MessageLogged,
+				RetainLogs = RetainLogs,
+				UserAgent = UserAgent
+			};
+			b.AddNavigationState(this.CurrentState);
+			return b;
 		}
 
-		public void LogRequestData()
-		{
-			HttpRequestLog log = AcquireRequestData();
-			if(log != null && RequestLogged != null)
-				RequestLogged(this, log);
-		}
 
 		private HashSet<string> _extraHeaders = new HashSet<string>();
 		public void SetHeader(string header)
@@ -95,12 +264,17 @@ namespace SimpleBrowser
 
 		public bool Navigate(Uri url)
 		{
-			return DoRequest(url, "GET", null, null, null, _timeoutMilliseconds);
+			return DoRequest(url, "GET", null, null, null, null, _timeoutMilliseconds);
 		}
 
 		public bool Navigate(Uri url, string postData, string contentType)
 		{
-			return DoRequest(url, "POST", null, postData, contentType, _timeoutMilliseconds);
+			return DoRequest(url, "POST", null, postData, contentType, null, _timeoutMilliseconds);
+		}
+
+		public bool Navigate(Uri url, NameValueCollection postData, string contentType = null, string encodingType = null)
+		{
+			return DoRequest(url, "POST", postData, null, contentType, encodingType, _timeoutMilliseconds);
 		}
 
 		public bool Navigate(Uri url, int timeoutMilliseconds)
@@ -109,6 +283,351 @@ namespace SimpleBrowser
 			return Navigate(url);
 		}
 
+		public bool NavigateBack()
+		{
+			CheckDisposed();
+			if (_historyPosition > 0)
+			{
+				_historyPosition--;
+				InvalidateAllActiveElements();
+				return true;
+			}
+			return false;
+		}
+
+		public bool NavigateForward()
+		{
+			CheckDisposed();
+			if (_history.Count > _historyPosition + 1)
+			{
+				_historyPosition++;
+				InvalidateAllActiveElements();
+				return true;
+			}
+			return false;
+		}
+
+		//\/////////////////////////////////////////////////
+		// RAW HTML BROWSER
+		//\/////////////////////////////////////////////////
+
+
+
+
+		const string TARGET_SELF = "_self";
+		const string TARGET_BLANK = "_blank";
+		const string TARGET_TOP = "_top";
+
+		private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
+		{
+			Uri fullUri = new Uri(this.Url, args.Uri);
+			if(args.TimeoutMilliseconds == 0)args.TimeoutMilliseconds = _timeoutMilliseconds;
+
+			Browser browserToNav = null;
+			if (args.Target == TARGET_SELF || String.IsNullOrEmpty(args.Target))
+			{
+				browserToNav = this;
+			}
+			else if (args.Target == TARGET_BLANK)
+			{
+				browserToNav = new Browser(this._reqFactory);
+			}
+			else
+			{
+				browserToNav = Browser.Windows.FirstOrDefault(b => b.WindowHandle == args.Target);
+				if (browserToNav == null)
+				{
+					browserToNav = new Browser(this._reqFactory, args.Target);
+				}
+			}
+
+			return browserToNav.DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
+		}
+		private IHttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
+		{
+			IHttpWebRequest req = _reqFactory.GetWebRequest(url);
+			req.Method = method;
+			req.ContentType = contentType; // "application/x-www-form-urlencoded";
+			req.UserAgent = UserAgent;
+			req.Accept = Accept ?? "*/*";
+			req.Timeout = timeoutMilliseconds;
+			req.AllowAutoRedirect = false;
+			req.CookieContainer = Cookies;
+			if (_proxy != null)
+				req.Proxy = _proxy;
+			if(CurrentState != null)
+				req.Referer = this.Url.AbsoluteUri;
+			return req;
+		}
+
+		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
+		{
+			/* IMPORTANT INFORMATION:
+			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
+			 * generated during the request are ignored and discarded during the internal redirect process. The headers are in
+			 * fact returned, but the normal process where the cookie headers are turned into Cookie objects in the cookie
+			 * container is skipped, thus breaking the login processes of half the sites on the internet.
+			 * 
+			 * The workaround is as follows:
+			 * 1. Turn off AllowAutoRedirect so we can intercept the redirect and do things manually
+			 * 2. Read the Set-Cookie headers from the response and manually insert them into the cookie container
+			 * 3. Get the Location header and redirect to the location specified in the "Location" response header
+			 * 
+			 * Worth noting that even if this bug has been solved in .Net 4 (I haven't checked) we should still use manual
+			 * redirection so that we can properly log responses.
+			 * 
+			 * OBSOLETE ISSUE: (Bug has been resolved in the .Net 4 framework, which this library is now targeted at)
+			 * //CookieContainer also has a horrible bug relating to the specified cookie domain. Basically, if it contains
+			 * //a cookie where the "domain" token is specified as ".domain.xxx" and you attempt to request http://domain.ext,
+			 * //the cookies are not retrievable via that Uri, as you would expect them to be. CookieContainer is incorrectly
+			 * //assuming that the leading dot is a prerequisite specifying that a subdomain is required as opposed to the
+			 * //correct behaviour which would be to take it to mean that the domain and all subdomains are valid for the cookie.
+			 * //http://channel9.msdn.com/forums/TechOff/260235-Bug-in-CookieContainer-where-do-I-report/?CommentID=397315
+			 * //The workaround is as follows:
+			 * //When retrieving the response, iterate through the Set-Cookie header and any cookie that explicitly sets
+			 * //the domain token with a leading dot should also set the cookie without the leading dot.
+			 */
+
+			bool handle301Or302Redirect;
+			int maxRedirects = 10;
+			string html;
+			string responseContentType;
+			string postBody = "";
+			do
+			{
+				Debug.WriteLine(uri.ToString());
+				if (maxRedirects-- == 0)
+				{
+					Log("Too many 302 redirects", LogMessageType.Error);
+					return false;
+				}
+				handle301Or302Redirect = false;
+				IHttpWebRequest req = null;
+				try
+				{
+					req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
+				}
+				catch (NotSupportedException e)
+				{
+					// Happens when the URL cannot be parsed (example: 'javascript:')
+					return false;
+				}
+				foreach (var header in _extraHeaders)
+					req.Headers.Add(header);
+				req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
+				if (_includeFormValues != null)
+				{
+					if (userVariables == null)
+						userVariables = _includeFormValues;
+					else
+						userVariables.Add(_includeFormValues);
+				}
+
+				if (userVariables != null)
+				{
+					if (method == "POST")
+					{
+						postBody = StringUtil.MakeQueryString(userVariables);
+						byte[] data = Encoding.GetEncoding(28591).GetBytes(postBody);
+						req.ContentLength = data.Length;
+						Stream stream = req.GetRequestStream();
+						stream.Write(data, 0, data.Length);
+						stream.Close();
+					}
+					else
+					{
+						uri = new Uri(
+							uri.Scheme + "://" + uri.Host + ":"  + uri.Port + uri.AbsolutePath 
+							+ ((userVariables.Count > 0) ? "?" + StringUtil.MakeQueryString(userVariables) : "")
+							);
+						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
+					}
+				}
+				else if (postData != null)
+				{
+					if (method == "GET")
+						throw new InvalidOperationException("Cannot call DoRequest with method GET and non-null postData");
+					postBody = postData;
+					byte[] data = Encoding.GetEncoding(28591).GetBytes(postData);
+					req.ContentLength = data.Length;
+					Stream stream = req.GetRequestStream();
+					stream.Write(data, 0, data.Length);
+					stream.Close();
+				}
+
+				if (contentType != null)
+					req.ContentType = contentType;
+
+				_lastRequestLog = new HttpRequestLog
+				{
+					Method = method,
+					PostData = userVariables,
+					PostBody = postBody,
+					RequestHeaders = req.Headers,
+					Url = uri
+				};
+				try
+				{
+					using (IHttpWebResponse response = req.GetResponse())
+					{
+						Encoding responseEncoding = Encoding.UTF8; //default
+						string charSet = response.CharacterSet;
+						if (!String.IsNullOrEmpty(charSet))
+						{
+							try
+							{
+								responseEncoding = Encoding.GetEncoding(charSet);
+							}
+							catch (ArgumentException)
+							{
+								responseEncoding = Encoding.UTF8; // try using utf8
+							}
+						}
+						
+						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
+						html = reader.ReadToEnd();
+						responseContentType = response.ContentType;
+						reader.Close();
+						_doc = null;
+						_includeFormValues = null;
+
+						_lastRequestLog.Text = html;
+						_lastRequestLog.ParsedHtml = html;
+						_lastRequestLog.ResponseHeaders = response.Headers;
+						_lastRequestLog.StatusCode = (int)response.StatusCode;
+
+						if (method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
+							_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
+						if ((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
+						{
+							uri = new Uri(uri, response.Headers["Location"]);
+							handle301Or302Redirect = true;
+							Debug.WriteLine("Redirecting to: " + uri);
+							method = "GET";
+							postData = null;
+							userVariables = null;
+						}
+					}
+				}
+				catch (WebException ex)
+				{
+					_lastRequestLog.StatusCode = (int)ex.Status.GetTypeCode();
+					if (ex.Response != null)
+					{
+						_lastRequestLog.ResponseHeaders = ex.Response.Headers;
+						StreamReader reader = new StreamReader(ex.Response.GetResponseStream());
+						html = reader.ReadToEnd();
+						_lastRequestLog.Text = html;
+					}
+
+					LastWebException = ex;
+
+					switch (ex.Status)
+					{
+						case WebExceptionStatus.Timeout:
+							Log("A timeout occurred while trying to load the web page", LogMessageType.Error);
+							break;
+
+						case WebExceptionStatus.ReceiveFailure:
+							Log("The response was cut short prematurely", LogMessageType.Error);
+							break;
+
+						default:
+							Log("An exception was thrown while trying to load the page: " + ex.Message, LogMessageType.Error);
+							break;
+					}
+					return false;
+				}
+				finally
+				{
+					LogRequestData();
+				}
+			} while (handle301Or302Redirect);
+			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
+			this.AddNavigationState(new NavigationState() {Html=html, Url=uri, ContentType=contentType});
+			return true;
+		}
+
+		public string RenderHtmlLogFile(string title = "SimpleBrowser Session Log")
+		{
+			var formatter = new HtmlLogFormatter();
+			return formatter.Render(_logs, title);
+		}
+
+		public WebException LastWebException { get; private set; }
+		public void ClearException()
+		{
+			LastWebException = null;
+		}
+
+		private HttpRequestLog AcquireRequestData()
+		{
+			return _lastRequestLog;
+		}
+
+		/// <summary>
+		/// Performs a culture-invariant text search on the current document, ignoring whitespace, html elements and case, which reduces the 
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
+		public bool ContainsText(string text)
+		{
+			Log("Looking for text: " + text, LogMessageType.Internal);
+			text = HttpUtility.HtmlDecode(text);
+			string source = HttpUtility.HtmlDecode(XDocument.Root.Value).Replace("&nbsp;", " ");
+			var found = new Regex(Regex.Replace(Regex.Escape(text).Replace(@"\ ", " "), @"\s+", @"\s+"), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(source);
+			Log("&rarr; Text " + (found ? "" : "NOT ") + "found!", LogMessageType.Internal);
+			return found;
+		}
+
+		/// <summary>
+		/// Overwrites the CurrentHtml property with new content, allowing it to be queried and analyzed as though it
+		/// was navigated to in the last request.
+		/// </summary>
+		/// <param name="content">A string containing a</param>
+		public void SetContent(string content)
+		{
+			if (CurrentState == null) AddNavigationState(new NavigationState());
+			CurrentState.Html = content;
+			CurrentState.ContentType = "image/html";
+			CurrentState.XDocument = null;
+			CurrentState.Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
+		}
+
+		/// <summary>
+		/// This collection allows you to specify additional key/value pairs that will be sent in the next request. Some
+		/// websites use JavaScript or other dynamic methods to dictate what is submitted to the next page and these
+		/// cannot be determined automatically from the originating HTML. In those cases, investigate the process using
+		/// an HTTP sniffer, such as the HttpFox plugin for Firefox, and determine what values are being sent in the
+		/// form submission. The additional unexpected values can then be automated by populating this property. Any
+		/// values specified here are cleared after each request.
+		/// </summary>
+		public NameValueCollection ExtraFormValues
+		{
+			get { return _includeFormValues ?? (_includeFormValues = new NameValueCollection()); }
+		}
+
+
+		#region Logging
+		public void Log(string message, LogMessageType type = LogMessageType.User)
+		{
+			if (RetainLogs)
+				_logs.Add(new LogMessage(message, type));
+			if (MessageLogged != null)
+				MessageLogged(this, message);
+		}
+
+		public void LogRequestData()
+		{
+			HttpRequestLog log = AcquireRequestData();
+			if (RetainLogs)
+				_logs.Add(log);
+			if (log != null && RequestLogged != null)
+				RequestLogged(this, log);
+		}
+		#endregion
+
+		#region Finding
 		public HtmlResult Find(ElementType elementType, FindBy findBy, string value)
 		{
 			return GetHtmlResult(FindElement(elementType, findBy, value));
@@ -166,7 +685,7 @@ namespace SimpleBrowser
 			XElement anc = element.CurrentElement.Element;
 			for(; ; )
 			{
-				anc = ObtainAncestor(anc, ancestorTagName);
+				anc = anc.GetAncestorOfSelfCI(ancestorTagName);
 				if(elementAttributes == null)
 					break;
 				bool succeeded = true;
@@ -189,241 +708,7 @@ namespace SimpleBrowser
 			return GetHtmlResult(anc);
 		}
 
-		//\/////////////////////////////////////////////////
-		// RAW HTML BROWSER
-		//\/////////////////////////////////////////////////
 
-
-		private HtmlResult GetHtmlResult(List<XElement> list)
-		{
-			List<HtmlElement> xlist = new List<HtmlElement>();
-			foreach(var e in list)
-				xlist.Add(CreateHtmlElement(e));
-			return new HtmlResult(xlist, this);
-		}
-
-		private HtmlResult GetHtmlResult(XElement e)
-		{
-			return new HtmlResult(CreateHtmlElement(e), this);
-		}
-
-		internal HtmlElement CreateHtmlElement(XElement element)
-		{
-			var htmlElement = new HtmlElement(element);
-			htmlElement.Clicked += htmlElement_Clicked;
-			htmlElement.FormSubmitted += OnHtmlElementSubmittedAsForm;
-			htmlElement.AspNetPostBackLinkClicked += htmlElement_AspNetPostBackLinkClicked;
-			return htmlElement;
-		}
-
-		void htmlElement_AspNetPostBackLinkClicked(HtmlElement element, string name)
-		{
-			Find(ElementType.TextField, FindBy.Name, "__EVENTTARGET").Value = name;
-			OnHtmlElementSubmittedAsForm(element);
-		}
-
-		private ClickResult htmlElement_Clicked(HtmlElement element)
-		{
-			Log("Clicked element: " + element.Value);
-
-			switch(element.TagName.ToLower())
-			{
-				case "a": return ClickLink(element.Element);
-				case "input":
-					switch(element.InputType)
-					{
-						case "radio": return CheckRadioButton(element.Element);
-						case "checkbox": return CheckCheckbox(element.Element);
-						case "image":
-						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
-						default: return ClickResult.SucceededNoNavigation;
-					}
-				case "button":
-					switch (element.InputType)
-					{
-						case "submit": return element.SubmitForm() ? ClickResult.SucceededNavigationComplete : ClickResult.SucceededNavigationError;
-						default: return ClickResult.SucceededNoNavigation;
-					}
-			}
-
-			return ClickResult.SucceededNoNavigation;
-		}
-
-		private bool OnHtmlElementSubmittedAsForm(HtmlElement element)
-		{
-			return SubmitForm(ObtainAncestor(element.Element, "form"), element.Element);
-		}
-		private ClickResult ClickLink(XElement element)
-		{
-			var attr = GetAttribute(element, "href");
-			if (attr == null || attr.Value.StartsWith("#"))
-				return ClickResult.Failed;
-
-			Uri href;
-			string attrValue = HttpUtility.HtmlDecode(attr.Value);
-			if(Uri.IsWellFormedUriString(attrValue, UriKind.Absolute))
-				href = new Uri(attrValue);
-			else
-				href = new Uri(Url, attrValue);
-
-			if(DoRequest(href, "GET", null, null, null, _timeoutMilliseconds))
-				return ClickResult.SucceededNavigationComplete;
-			else
-				return ClickResult.SucceededNavigationError;
-		}
-		private ClickResult CheckRadioButton(XElement target)
-		{
-			if (target == null)
-				return ClickResult.Failed;
-			var nameAttr = GetAttribute(target, "name");
-			if(nameAttr == null)
-				return ClickResult.Failed;
-			var group = FindElements(ElementType.RadioButton)
-				//.Where(h => h.Attributes().Where(k => k.Name.LocalName.ToLower() == "checked").Count() > 0)
-				.Where(h => h.Attributes().Where(k => k.Name.LocalName.ToLower() == "name" && k.Value.ToLower() == nameAttr.Value.ToLower()).Count() > 0)
-				.ToList();
-			foreach(var element in group)
-			{
-				var attr = GetAttribute(element, "checked");
-				var value = ReferenceEquals(element, target) ? "checked" : null;
-				element.SetAttributeValue(attr == null ? "checked" : attr.Name.LocalName, value); // we do it this way to account for case variations
-			}
-			return ClickResult.SucceededNoNavigation;
-		}
-		private ClickResult CheckCheckbox(XElement target)
-		{
-			if (target == null)
-				return ClickResult.Failed;
-			var attr = GetAttribute(target, "checked");
-			if(attr == null) // if we didnt find it, set it
-				target.SetAttributeValue("checked", "checked");
-			else // if we found it, it needs to be removed
-				target.SetAttributeValue(attr.Name.LocalName, null);
-			return ClickResult.SucceededNoNavigation;
-		}
-		private XElement ObtainAncestor(XElement descendent, string ancestorTagName)
-		{
-			if(descendent != null && descendent.Name.LocalName.ToLower() == ancestorTagName)
-				return descendent;
-			if(descendent == null || descendent.Parent == null)
-				throw new InvalidOperationException("The target element does not reside inside an element of type \"" + ancestorTagName + "\"");
-			return ObtainAncestor(descendent.Parent, ancestorTagName);
-		}
-		private bool SubmitForm(XElement form, XElement clickedElement)
-		{
-			if(form==null)
-				return false;
-			if(clickedElement==null)
-				return false;
-			Dictionary<string, bool> radioValuesCompleted = new Dictionary<string, bool>();
-			NameValueCollection data = new NameValueCollection();
-			string[] names = new[] { "input", "textarea", "select" };
-			var elements = form.Descendants().Where(h => names.Contains(h.Name.LocalName.ToLower())).ToList();
-			foreach(var element in elements)
-			{
-				if(GetAttribute(element, "disabled") != null)
-					continue;
-				var nameAttr = GetAttribute(element, "name");
-				if(nameAttr == null)
-					continue;
-				var name = nameAttr.Value;
-				switch(element.Name.LocalName.ToLower())
-				{
-					case "input":
-						var typeAttr = GetAttribute(element, "type");
-						string typeName;
-						if(typeAttr == null)
-							typeName = "text";
-						else
-							typeName = typeAttr.Value;
-						var valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
-						switch(typeName)
-						{
-							case "radio":
-								if(GetAttribute(element, "checked") == null || radioValuesCompleted.ContainsKey(name))
-									continue;
-								radioValuesCompleted.Add(name, true);
-								data.Add(name, valueAttr.Value);
-								break;
-
-							case "checkbox":
-								if(GetAttribute(element, "checked") == null)
-									continue;
-								data.Add(name, valueAttr.Value);
-								break;
-
-							case "submit":
-							case "image":
-								if(!ReferenceEquals(element, clickedElement))
-									continue;
-								if(!string.IsNullOrEmpty(valueAttr.Value))
-									data.Add(name, valueAttr.Value);
-								break;
-
-							case "hidden":
-							case "text":
-							case "password":
-								data.Add(name, valueAttr.Value);
-								break;
-						}
-						break;
-
-					case "button":
-						typeAttr = GetAttribute(element, "type");
-						if(typeAttr == null)
-							typeName = "button";
-						else
-							typeName = typeAttr.Value;
-						valueAttr = GetAttribute(element, "value") ?? new XAttribute("value", "");
-						switch(typeName)
-						{
-							case "button":
-							case "submit":
-								if(!ReferenceEquals(element, clickedElement))
-									continue;
-								data.Add(name, valueAttr.Value);
-								break;
-						}
-						break;
-
-					case "textarea":
-						data.Add(name, element.Value);
-						break;
-
-					case "select":
-						var multipleAttr = GetAttribute(element, "multiple");
-						if(multipleAttr != null)
-							foreach(var option in element.Descendants()
-								.Where(h => h.Name.LocalName.ToLower() == "option"
-											&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
-								.ToList())
-								data.Add(name, GetOptionValue(option));
-						else
-						{
-							var option = element.Descendants()
-								.Where(h => h.Name.LocalName.ToLower() == "option"
-											&& h.Attributes().Where(k => k.Name.LocalName.ToLower() == "selected").Count() > 0)
-								.FirstOrDefault();
-							if(option != null)
-								data.Add(name, GetOptionValue(option));
-						}
-						break;
-				}
-			}
-			var methodAttr = GetAttribute(form, "method");
-			var method = methodAttr == null ? "GET" : methodAttr.Value.ToUpper() == "POST" ? "POST" : "GET";
-			var actionAttr = GetAttribute(form, "action");
-			var action = actionAttr == null ? Url : Uri.IsWellFormedUriString(actionAttr.Value, UriKind.Absolute) ? new Uri(actionAttr.Value) : new Uri(Url, actionAttr.Value);
-
-			return DoRequest(action, method, data, null, null, _timeoutMilliseconds);
-		}
-		private string GetOptionValue(XElement option)
-		{
-			var attr = GetAttribute(option, "value");
-			if(attr == null)
-				return option.Value;
-			return attr.Value;
-		}
 		private List<XElement> FindElements(string tagName)
 		{
 			return XDocument.Descendants()
@@ -433,7 +718,7 @@ namespace SimpleBrowser
 		private List<XElement> FindElements(ElementType elementType)
 		{
 			List<XElement> list;
-			switch(elementType)
+			switch (elementType)
 			{
 				case ElementType.Anchor:
 					list = XDocument.Descendants()
@@ -497,25 +782,52 @@ namespace SimpleBrowser
 		}
 		private List<XElement> FilterElementsByAttribute(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)
 		{
-			if(allowPartialMatch)
+			if (allowPartialMatch)
+			{
 				return elements.Where(h => h.Attributes()
 											.Where(k => k.Name.LocalName.ToLower() == attributeName.ToLower()
 														&& k.Value.ToLower().Contains(value.ToLower())).Count() > 0)
 					.ToList();
-			return elements.Where(h => h.Attributes()
-										.Where(k => k.Name.LocalName.ToLower() == attributeName.ToLower()
-													&& k.Value.ToLower() == value.ToLower()).Count() > 0)
-				.ToList();
+			}
+			else
+			{
+				return elements.Where(h => h.Attributes()
+											.Where(k => k.Name.LocalName.ToLower() == attributeName.ToLower()
+														&& k.Value.ToLower() == value.ToLower()).Count() > 0)
+					.ToList();
+			}
+		}
+		private List<XElement> FilterElementsByAttributeNameToken(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)
+		{
+			return elements.Where(elm =>
+			{
+				string attrValue = elm.GetAttribute(attributeName);
+				if (attrValue == null) return false;
+				string[] tokens = attrValue.ToLower().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+				if (allowPartialMatch)
+				{
+					return tokens.Any(t => t.Contains(value.ToLower()));
+				}
+				else
+				{
+					return tokens.Any(t => t == value.ToLower());
+				}
+			}).ToList();
 		}
 		private List<XElement> FilterElementsByInnerText(List<XElement> elements, string tagName, string value, bool allowPartialMatch)
 		{
-			if(allowPartialMatch)
+			if (allowPartialMatch)
+			{
 				return elements.Where(h => (tagName == null || h.Name.LocalName.ToLower() == tagName.ToLower())
 										   && h.Value.ToLower().Trim().Contains(value.ToLower().Trim()))
 					.ToList();
-			return elements.Where(h => (tagName == null || h.Name.LocalName.ToLower() == tagName.ToLower())
-									   && h.Value.ToLower().Trim() == value.ToLower().Trim())
-				.ToList();
+			}
+			else
+			{
+				return elements.Where(h => (tagName == null || h.Name.LocalName.ToLower() == tagName.ToLower())
+										   && h.Value.ToLower().Trim() == value.ToLower().Trim())
+					.ToList();
+			}
 		}
 		private List<XElement> FindElement(ElementType elementType, FindBy findBy, string value)
 		{
@@ -523,10 +835,10 @@ namespace SimpleBrowser
 		}
 		private List<XElement> FindElement(List<XElement> elements, FindBy findBy, string value)
 		{
-			switch(findBy)
+			switch (findBy)
 			{
 				case FindBy.Text: return FilterElementsByInnerText(elements, null, value, false);
-				case FindBy.Class: return FilterElementsByAttribute(elements, "class", value, false);
+				case FindBy.Class: return FilterElementsByAttributeNameToken(elements, "class", value, false);
 				case FindBy.Id: return FilterElementsByAttribute(elements, "id", value, false);
 				case FindBy.Name: return FilterElementsByAttribute(elements, "name", value, false);
 				case FindBy.Value:
@@ -537,7 +849,7 @@ namespace SimpleBrowser
 						return newlist;
 					}
 				case FindBy.PartialText: return FilterElementsByInnerText(elements, null, value, true);
-				case FindBy.PartialClass: return FilterElementsByAttribute(elements, "class", value, true);
+				case FindBy.PartialClass: return FilterElementsByAttributeNameToken(elements, "class", value, true);
 				case FindBy.PartialId: return FilterElementsByAttribute(elements, "id", value, true);
 				case FindBy.PartialName: return FilterElementsByAttribute(elements, "name", value, true);
 				case FindBy.PartialValue:
@@ -557,246 +869,121 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
-		/// Returns the current HTML document parsed and converted to a valid XDocument object. Note that the
-		/// originating HTML does not have to be valid XML; the parser will use a variety of methods to convert any
-		/// invalid markup to valid XML.
-		/// </summary>
-		internal XDocument XDocument
-		{
-			get
-			{
-				if(_doc == null)
-				{
-					try
-					{
-						_doc = CurrentHtml.ParseHtml();
-					}
-					catch(Exception ex)
-					{
-						Log("Error converting HTML to XML for URL " + Url);
-						Log(ex.Message);
-						_doc = HtmlParser.CreateBlankHtmlDocument();
-					}
-				}
-				return _doc;
-			}
-		}
-
-		private HttpWebRequest PrepareRequestObject(Uri url, string method, int timeoutMilliseconds)
-		{
-			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-			req.Method = method;
-			req.ContentType = "application/x-www-form-urlencoded";
-			req.UserAgent = UserAgent;
-			req.Accept = Accept ?? "*/*";
-			req.Timeout = timeoutMilliseconds;
-			req.AllowAutoRedirect = false;
-			req.CookieContainer = _cookies;
-			if(_proxy != null)
-				req.Proxy = _proxy;
-			if(_referrerUrl != null)
-				req.Referer = _referrerUrl.ToString();
-			return req;
-		}
-
-		private bool DoRequest(Uri uri, string method, NameValueCollection postVars, string postData, string contentType, int timeoutMilliseconds)
-		{
-			/* IMPORTANT INFORMATION:
-			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
-			 * generated during the request are ignored and discarded during the internal redirect process. The headers are in
-			 * fact returned, but the normal process where the cookie headers are turned into Cookie objects in the cookie
-			 * container is skipped, thus breaking the login processes of half the sites on the internet.
-			 * 
-			 * The workaround is as follows:
-			 * 1. Turn off AllowAutoRedirect so we can intercept the redirect and do things manually
-			 * 2. Read the Set-Cookie headers from the response and manually insert them into the cookie container
-			 * 3. Get the Location header and redirect to the location specified in the "Location" response header
-			 * 
-			 * Worth noting that even if this bug has been solved in .Net 4 (I haven't checked) we should still use manual
-			 * redirection so that we can properly log responses.
-			 * 
-			 * OBSOLETE ISSUE: (Bug has been resolved in the .Net 4 framework, which this library is now targeted at)
-			 * //CookieContainer also has a horrible bug relating to the specified cookie domain. Basically, if it contains
-			 * //a cookie where the "domain" token is specified as ".domain.xxx" and you attempt to request http://domain.ext,
-			 * //the cookies are not retrievable via that Uri, as you would expect them to be. CookieContainer is incorrectly
-			 * //assuming that the leading dot is a prerequisite specifying that a subdomain is required as opposed to the
-			 * //correct behaviour which would be to take it to mean that the domain and all subdomains are valid for the cookie.
-			 * //http://channel9.msdn.com/forums/TechOff/260235-Bug-in-CookieContainer-where-do-I-report/?CommentID=397315
-			 * //The workaround is as follows:
-			 * //When retrieving the response, iterate through the Set-Cookie header and any cookie that explicitly sets
-			 * //the domain token with a leading dot should also set the cookie without the leading dot.
-			 */
-
-			bool handle301Or302Redirect;
-			int maxRedirects = 10;
-			string html;
-			do
-			{
-				Debug.WriteLine(uri.ToString());
-				if(maxRedirects-- == 0)
-				{
-					Log("Too many 302 redirects");
-					return false;
-				}
-				handle301Or302Redirect = false;
-				HttpWebRequest req = PrepareRequestObject(uri, method, timeoutMilliseconds);
-				foreach(var header in _extraHeaders)
-					req.Headers.Add(header);
-				if(_includeFormValues != null)
-				{
-					if(postVars == null)
-						postVars = _includeFormValues;
-					else
-						postVars.Add(_includeFormValues);
-				}
-
-				if(postVars != null)
-				{
-					if(method == "POST")
-					{
-						byte[] data = Encoding.ASCII.GetBytes(StringUtil.MakeQueryString(postVars));
-						req.ContentLength = data.Length;
-						Stream stream = req.GetRequestStream();
-						stream.Write(data, 0, data.Length);
-						stream.Close();
-					}
-					else
-					{
-						uri = new Uri(uri.Scheme + "://" + uri.Host + uri.AbsolutePath + "?" + StringUtil.MakeQueryString(postVars));
-						req = PrepareRequestObject(uri, method, timeoutMilliseconds);
-					}
-				}
-				else if(postData != null)
-				{
-					if(method == "GET")
-						throw new InvalidOperationException("Cannot call DoRequest with method GET and non-null postData");
-					byte[] data = Encoding.ASCII.GetBytes(postData);
-					req.ContentLength = data.Length;
-					Stream stream = req.GetRequestStream();
-					stream.Write(data, 0, data.Length);
-					stream.Close();
-				}
-
-				if(contentType != null)
-					req.ContentType = contentType;
-
-				try
-				{
-					using(HttpWebResponse response = (HttpWebResponse)req.GetResponse())
-					{
-						StreamReader reader = new StreamReader(response.GetResponseStream());
-						html = reader.ReadToEnd();
-						ResponseText = html;
-						reader.Close();
-						string oldHTML = html;
-						//html = StripAndRebuildHtml(html);
-						CurrentHtml = html;
-						ContentType = response.ContentType;
-						_doc = null;
-						_includeFormValues = null;
-						_lastRequestLog = new HttpRequestLog
-										  {
-											  Text = oldHTML,
-											  ParsedHtml = XDocument.ToString(),
-											  Method = method,
-											  PostData = postVars,
-											  RequestHeaders = req.Headers,
-											  ResponseHeaders = response.Headers,
-											  StatusCode = (int)response.StatusCode,
-											  Url = uri
-										  };
-						LogRequestData();
-						if((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
-						{
-							//url = AdjustUrl(url, response.Headers["Location"]);
-							uri = new Uri(uri, response.Headers["Location"]);
-							handle301Or302Redirect = true;
-							Url = uri;
-							Debug.WriteLine("Redirecting to: " + Url);
-							method = "GET";
-							postData = null;
-						}
-					}
-				}
-				catch(WebException ex)
-				{
-					LastWebException = ex;
-					switch(ex.Status)
-					{
-						case WebExceptionStatus.Timeout:
-							Log("A timeout occurred while trying to load the web page");
-							break;
-
-						case WebExceptionStatus.ReceiveFailure:
-							Log("The response was cut short prematurely");
-							break;
-
-						default:
-							Log("An exception was thrown while trying to load the page: " + ex.Message);
-							break;
-					}
-					return false;
-				}
-			} while(handle301Or302Redirect);
-			Url = uri;
-			_referrerUrl = uri;
-			CurrentHtml = html;
-			return true;
-		}
-
-		public WebException LastWebException { get; private set; }
-
-		private HttpRequestLog AcquireRequestData()
-		{
-			return _lastRequestLog;
-		}
-
-		/// <summary>
-		/// Performs a culture-invariant text search on the current document, ignoring whitespace, html elements and case, which reduces the 
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public bool ContainsText(string text)
-		{
-			text = HttpUtility.HtmlDecode(text);
-			string source = HttpUtility.HtmlDecode(XDocument.Root.Value).Replace("&nbsp;", " ");
-			return new Regex(Regex.Replace(Regex.Escape(text).Replace(@"\ ", " "), @"\s+", @"\s+"), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(source);
-		}
-
-		/// <summary>
-		/// Overwrites the CurrentHtml property with new content, allowing it to be queried and analyzed as though it
-		/// was navigated to in the last request.
-		/// </summary>
-		/// <param name="content">A string containing a</param>
-		public void SetContent(string content)
-		{
-			CurrentHtml = content;
-			ContentType = "image/html";
-			_doc = null;
-		}
-
-		/// <summary>
-		/// This collection allows you to specify additional key/value pairs that will be sent in the next request. Some
-		/// websites use JavaScript or other dynamic methods to dictate what is submitted to the next page and these
-		/// cannot be determined automatically from the originating HTML. In those cases, investigate the process using
-		/// an HTTP sniffer, such as the HttpFox plugin for Firefox, and determine what values are being sent in the
-		/// form submission. The additional unexpected values can then be automated by populating this property. Any
-		/// values specified here are cleared after each request.
-		/// </summary>
-		public NameValueCollection ExtraFormValues
-		{
-			get { return _includeFormValues ?? (_includeFormValues = new NameValueCollection()); }
-		}
-
-		/// <summary>
 		/// This is an alternative to Find and allows the use of jQuery selector syntax to locate elements on the page.
 		/// </summary>
 		/// <param name="query">The query to use to locate elements</param>
 		/// <returns>An HtmlResult object containing zero or more matches</returns>
 		public HtmlResult Select(string query)
 		{
-			return new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
+			var result = new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
+			Log("Selected " + result.TotalElementsFound + " element(s) via jQuery selector: " + query, LogMessageType.Internal);
+			return result;
 		}
+
+		#endregion
+
+		#region Creating HtmlResults with HtmlElements
+		private HtmlResult GetHtmlResult(List<XElement> list)
+		{
+			List<HtmlElement> xlist = new List<HtmlElement>();
+			foreach (var e in list)
+				xlist.Add(CreateHtmlElement(e));
+			return new HtmlResult(xlist, this);
+		}
+
+		private HtmlResult GetHtmlResult(XElement e)
+		{
+			return new HtmlResult(CreateHtmlElement(e), this);
+		}
+
+		internal HtmlElement CreateHtmlElement(XElement element)
+		{
+			var htmlElement = CreateFor(element);
+			htmlElement.OwningBrowser = this;
+			htmlElement.NavigationRequested += htmlElement_NavigationRequested;
+			return htmlElement;
+		}
+		internal T CreateHtmlElement<T>(XElement element) where T : HtmlElement
+		{
+			var result = CreateHtmlElement(element);
+			if (result is T)
+			{
+				return (T)result;
+			}
+			throw new InvalidOperationException("The element was not of the corresponding type");
+		}
+		private List<HtmlElement> _allActiveElements = new List<HtmlElement>();
+		private HtmlElement CreateFor(XElement element)
+		{
+			HtmlElement result;
+			switch (element.Name.LocalName.ToLower())
+			{
+				case "form":
+					result = new FormElement(element);
+					break;
+				case "input":
+					string type = element.GetAttribute("type") ?? "";
+					switch (type.ToLower())
+					{
+						case "radio":
+							result = new RadioInputElement(element);
+							break;
+						case "checkbox":
+							result = new CheckboxInputElement(element);
+							break;
+						case "submit":
+						case "image":
+						case "button":
+							string buttonType = element.GetAttribute("type");
+							result = new ButtonInputElement(element);
+							break;
+						case "file":
+							result = new FileUploadElement(element);
+							break;
+						default:
+							result = new InputElement(element);
+							break;
+					}
+					break;
+				case "textarea":
+					result = new TextAreaElement(element);
+					break;
+				case "select":
+					result = new SelectElement(element);
+					break;
+				case "option":
+					result = new OptionElement(element);
+					break;
+				case "iframe":
+				case "frame":
+					result = new FrameElement(element);
+					break;
+				case "a":
+					result = new AnchorElement(element);
+					break;
+				case "label":
+					result = new LabelElement(element);
+					break;
+				case "button":
+					result = new ButtonInputElement(element);
+					break;
+				default:
+					result = new HtmlElement(element);
+					break;
+			}
+			_allActiveElements.Add(result);
+			return result;
+		}
+		private void InvalidateAllActiveElements()
+		{
+			foreach (var element in _allActiveElements)
+			{
+				element.Invalidate();
+			}
+		}
+
+		#endregion
+
 	}
 }
 

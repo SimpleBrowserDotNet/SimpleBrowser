@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml.Linq;
 using SimpleBrowser.Query;
 
@@ -29,6 +30,7 @@ namespace SimpleBrowser
 			_current = results.Count > 0 ? results[0] : null;
 			_list = results;
 			_browser = browser;
+			_browser.Log("New HTML result set obtained, containing " + results.Count + " element(s)", LogMessageType.Internal);
 		}
 
 		internal HtmlResult(HtmlElement result, Browser browser)
@@ -70,12 +72,8 @@ namespace SimpleBrowser
 		{
 			if(_current == null)
 				throw new InvalidOperationException("The requested operation is not available when Exists is false");
-		}
-		private void AssertElementIsInputType(params string[] type)
-		{
-			if(_current.TagName.ToLower() == "input" && type.Contains(_current.InputType))
-				return;
-			throw new InvalidOperationException("The requested operation is only valid on input elements of type(s) " + type.Concat(", "));
+			if (!_current.Valid)
+				throw new InvalidOperationException("The requested operation is not available. Navigating makes the existing HtmlResult objects invalid.");
 		}
 		private void AssertElementIsNotDisabled()
 		{
@@ -148,9 +146,19 @@ namespace SimpleBrowser
 			set
 			{
 				AssertElementExists();
+				_browser.Log("Setting the value of " + HttpUtility.HtmlEncode(XElement.ToString()) + " to " + HttpUtility.HtmlEncode(value.ShortenTo(30, true)), LogMessageType.Internal);
 				_current.Value = value;
 			}
 		}
+
+        /// <summary>
+        /// Gets the decoded Value of the element. For example if the Value is &copy; 2011 the decoded Value will 
+        /// be © 2011
+        /// </summary>
+        public string DecodedValue
+        {
+            get { return HttpUtility.HtmlDecode(Value); }
+        }
 
 		/// <summary>
 		/// Gets or sets whether or not the CHECKED attribute is set for the current element.  Throws an exception if
@@ -161,14 +169,13 @@ namespace SimpleBrowser
 			get
 			{
 				AssertElementExists();
-				AssertElementIsInputType("radio", "checkbox");
-				return _current.Checked;
+				return _current.Selected;
 			}
 			set
 			{
 				AssertElementExists();
-				AssertElementIsInputType("radio", "checkbox");
-				_current.Checked = value;
+				_browser.Log("Setting the checked state of " + HttpUtility.HtmlEncode(XElement.ToString()) + " to " + (value ? "CHECKED" : "UNCHECKED"), LogMessageType.Internal);
+				_current.Selected = value;
 			}
 		}
 
@@ -184,20 +191,23 @@ namespace SimpleBrowser
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
+			_browser.Log("Clicking element: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
 			return _current.Click();
 		}
 
 		/// <summary>
-		/// This method therefore can be used on any element contained within a form, or the form element itself. The
-		/// form will be serialized and submitted as close as possible to the way it would be in a normal browser
-		/// request. In addition, any values currently in the ExtraFormValues property of the Browser object will be
-		/// submitted as well.
+		/// This method can be used on any element contained within a form, or the form element itself. The form will be 
+		/// serialized and submitted as close as possible to the way it would be in a normal browser request. In
+		/// addition, any values currently in the ExtraFormValues property of the Browser object will be submitted as
+		/// well.
 		/// </summary>
-		public void SubmitForm()
+		/// <param name="url">Optional. If specified, the form will be submitted to this URL instead.</param>
+		public void SubmitForm(string url = null)
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
-			_current.SubmitForm();
+			_browser.Log("Submitting parent/ancestor form of: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
+			_current.SubmitForm(url);
 		}
 
 		/// <summary>
@@ -207,6 +217,7 @@ namespace SimpleBrowser
 		public void DoAspNetLinkPostBack()
 		{
 			AssertElementExists();
+			_browser.Log("Performing ASP.Net postback click for : " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
 			_current.DoAspNetLinkPostBack();
 		}
 
