@@ -8,7 +8,23 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 {
 	[TestFixture]
 	public class Selectors
-	{
+    {
+        [Test]
+        public void CanFindElementsByAttributeWithHyphenInName()
+        {
+            Browser b = new Browser();
+            b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HyphenAttributes.htm"));
+
+            var element = b.Find("meta", new { http_equiv = "refresh" });
+            Assert.AreEqual("5;URL='http://example.com/'", element.GetAttribute("content"));
+
+            element = b.Find("input", new { data_foo = "bar" });
+            Assert.AreEqual("bar", element.GetAttribute("data-foo"));
+
+            element = b.Find(ElementType.TextField, new { data_foo = "bar" });
+            Assert.AreEqual("bar", element.GetAttribute("data-foo"));
+        }
+
 		[Test]
 		public void SearchingAnInputElementBySeveralSelectingMethods()
 		{

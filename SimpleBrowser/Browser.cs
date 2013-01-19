@@ -657,7 +657,7 @@ namespace SimpleBrowser
 				object o = p.GetValue(elementAttributes, null);
 				if(o == null)
 					continue;
-				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
+                list = FilterElementsByAttributeName(list, p, o.ToString());
 			}
 			return GetHtmlResult(list);
 		}
@@ -670,21 +670,26 @@ namespace SimpleBrowser
 				object o = p.GetValue(elementAttributes, null);
 				if(o == null)
 					continue;
-
-                var matchesByAttribute = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
-                if (!matchesByAttribute.Any())
-                {
-                    if (p.Name.Contains('_'))
-                    {
-                        var attributeName = p.Name.Replace('_', '-');
-                        matchesByAttribute = FilterElementsByAttribute(list, attributeName, o.ToString(), false);
-                    }
-                }
-
-                list = matchesByAttribute;
+                list = FilterElementsByAttributeName(list, p, o.ToString());
 			}
 			return GetHtmlResult(list);
 		}
+
+        private List<XElement> FilterElementsByAttributeName(List<XElement> list, System.Reflection.PropertyInfo p, string value)
+        {
+            var matchesByAttribute = FilterElementsByAttribute(list, p.Name, value, false);
+            if (!matchesByAttribute.Any())
+            {
+                if (p.Name.Contains('_'))
+                {
+                    var attributeName  = p.Name.Replace('_', '-');
+                    matchesByAttribute = FilterElementsByAttribute(list, attributeName, value, false);
+                }
+            }
+
+            list = matchesByAttribute;
+            return list;
+        }
 
 		public HtmlResult FindAll(string tagName)
 		{
