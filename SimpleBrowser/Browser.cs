@@ -110,6 +110,10 @@ namespace SimpleBrowser
 
 		public Uri Url { get { return CurrentState.Url; } }
 		public string CurrentHtml { get { return CurrentState.Html; } }
+        /// <summary>
+        /// Obtain the XDocument of the current state to allow XDocument Queries.
+        /// </summary>
+        public XDocument Document { get  { return XDocument; } }
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 		public string Text { get { return XDocument.Root.Value; } }
 		public string ContentType { get { return CurrentState.ContentType; } }
