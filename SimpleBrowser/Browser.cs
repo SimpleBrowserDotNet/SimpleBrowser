@@ -670,7 +670,18 @@ namespace SimpleBrowser
 				object o = p.GetValue(elementAttributes, null);
 				if(o == null)
 					continue;
-				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
+
+                var matchesByAttribute = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
+                if (!matchesByAttribute.Any())
+                {
+                    if (p.Name.Contains('_'))
+                    {
+                        var attributeName = p.Name.Replace('_', '-');
+                        matchesByAttribute = FilterElementsByAttribute(list, attributeName, o.ToString(), false);
+                    }
+                }
+
+                list = matchesByAttribute;
 			}
 			return GetHtmlResult(list);
 		}
