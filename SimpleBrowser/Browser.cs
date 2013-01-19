@@ -105,6 +105,7 @@ namespace SimpleBrowser
 		}
 
 		public string UserAgent { get; set; }
+        public bool UseGZip {get; set;}
 		public bool RetainLogs { get; set; }
         public CookieContainer Cookies { get; set; }
 
@@ -356,7 +357,11 @@ namespace SimpleBrowser
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
-			req.CookieContainer = Cookies;
+            if (UseGZip)
+            {
+                req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+            }
+            req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
 			if(CurrentState != null)

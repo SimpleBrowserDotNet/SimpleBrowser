@@ -26,6 +26,18 @@ namespace SimpleBrowser.Network
 			return new WebResponseWrapper((HttpWebResponse)_wr.GetResponse());
 		}
 
+        public DecompressionMethods AutomaticDecompression
+        {
+            get
+            {
+                return _wr.AutomaticDecompression;
+            }
+            set
+            {
+                _wr.AutomaticDecompression = value;
+            }
+        }
+
 		public long ContentLength
 		{
 			get
