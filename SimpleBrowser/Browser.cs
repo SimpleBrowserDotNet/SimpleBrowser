@@ -37,7 +37,7 @@ namespace SimpleBrowser
 		{
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
-            Cookies = new CookieContainer();
+			Cookies = new CookieContainer();
 			if (requestFactory == null) requestFactory = new DefaultRequestFactory();
 			_reqFactory = requestFactory;
 			WindowHandle = name;
@@ -103,19 +103,14 @@ namespace SimpleBrowser
 		{
 			_allWindows.RemoveAll((b) => b.ParentWindow == this);
 		}
-        
-        public string Referer { get; set; }
+		
 		public string UserAgent { get; set; }
 		public bool UseGZip {get; set;}
 		public bool RetainLogs { get; set; }
-        public CookieContainer Cookies { get; set; }
+		public CookieContainer Cookies { get; set; }
 
 		public Uri Url { get { return CurrentState.Url; } }
 		public string CurrentHtml { get { return CurrentState.Html; } }
-        /// <summary>
-        /// Obtain the XDocument of the current state to allow XDocument Queries.
-        /// </summary>
-        public XDocument Document { get  { return XDocument; } }
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 		public string Text { get { return XDocument.Root.Value; } }
 		public string ContentType { get { return CurrentState.ContentType; } }
@@ -358,22 +353,15 @@ namespace SimpleBrowser
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
-            if (UseGZip)
-            {
-                req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
-            }
-            req.CookieContainer = Cookies;
+			if (UseGZip)
+			{
+				req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+			}
+			req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
-            if (!string.IsNullOrWhiteSpace(Referer))
-            {
-                req.Referer = Referer;
-            }
-            else
-            {
-                if (CurrentState != null)
-                    req.Referer = this.Url.AbsoluteUri;
-            }
+            if (CurrentState != null)
+                req.Referer = this.Url.AbsoluteUri;
             return req;
 		}
 
@@ -577,7 +565,7 @@ namespace SimpleBrowser
 			LastWebException = null;
 		}
 
-		public HttpRequestLog AcquireRequestData()
+		private HttpRequestLog AcquireRequestData()
 		{
 			return _lastRequestLog;
 		}
