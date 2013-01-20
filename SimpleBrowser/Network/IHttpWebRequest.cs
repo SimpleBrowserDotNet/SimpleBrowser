@@ -16,6 +16,8 @@ namespace SimpleBrowser.Network
 		long ContentLength { get; set; }
 
 		WebHeaderCollection Headers { get; set; }
+		
+		DecompressionMethods AutomaticDecompression { get; set; }
 
 		string ContentType { get; set; }
 
