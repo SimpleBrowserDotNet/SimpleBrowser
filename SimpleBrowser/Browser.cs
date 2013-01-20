@@ -569,7 +569,7 @@ namespace SimpleBrowser
 			LastWebException = null;
 		}
 
-		private HttpRequestLog AcquireRequestData()
+		public HttpRequestLog AcquireRequestData()
 		{
 			return _lastRequestLog;
 		}
