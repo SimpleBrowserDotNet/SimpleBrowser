@@ -252,7 +252,9 @@ namespace SimpleBrowser.Parser
                 //If we find this, we are going to adjust
                 if (newToken.A.IndexOf("<") > -1)
                 {
-                    context.Index += match.Value.Substring(2).IndexOf("<") + 2;
+                    var index = match.Value.Substring(2).IndexOf("<");
+                    newToken.A = newToken.A.Substring(0, index);
+                    context.Index += index + 2;
                 }
                 else
                 {
