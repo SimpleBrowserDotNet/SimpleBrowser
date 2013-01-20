@@ -246,8 +246,18 @@ namespace SimpleBrowser.Parser
 			}
 			else
 			{
-				context.Tokens.Add(new HtmlParserToken { Type = TokenType.CloseElement, Raw = match.Value, A = match.Groups["name"].Value });
-				context.Index += match.Length;
+                var newToken = new HtmlParserToken { Type = TokenType.CloseElement, Raw = match.Value, A = match.Groups["name"].Value };
+                context.Tokens.Add(newToken);
+                //HACK there might be a tag inside of a tag (Incorrectly closed tag) like </strong</td>
+                //If we find this, we are going to adjust
+                if (newToken.A.IndexOf("<") > -1)
+                {
+                    context.Index += match.Value.Substring(2).IndexOf("<") + 2;
+                }
+                else
+                {
+                    context.Index += match.Length;                
+                }
 			}
 		}
 	}
