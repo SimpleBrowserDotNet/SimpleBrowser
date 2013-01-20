@@ -103,13 +103,19 @@ namespace SimpleBrowser
 		{
 			_allWindows.RemoveAll((b) => b.ParentWindow == this);
 		}
-
+        
+        public string Referer { get; set; }
 		public string UserAgent { get; set; }
+        public bool UseGZip {get; set;}
 		public bool RetainLogs { get; set; }
         public CookieContainer Cookies { get; set; }
 
 		public Uri Url { get { return CurrentState.Url; } }
 		public string CurrentHtml { get { return CurrentState.Html; } }
+        /// <summary>
+        /// Obtain the XDocument of the current state to allow XDocument Queries.
+        /// </summary>
+        public XDocument Document { get  { return XDocument; } }
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 		public string Text { get { return XDocument.Root.Value; } }
 		public string ContentType { get { return CurrentState.ContentType; } }
@@ -352,12 +358,23 @@ namespace SimpleBrowser
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
-			req.CookieContainer = Cookies;
+            if (UseGZip)
+            {
+                req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+            }
+            req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
-			if(CurrentState != null)
-				req.Referer = this.Url.AbsoluteUri;
-			return req;
+            if (!string.IsNullOrWhiteSpace(Referer))
+            {
+                req.Referer = Referer;
+            }
+            else
+            {
+                if (CurrentState != null)
+                    req.Referer = this.Url.AbsoluteUri;
+            }
+            return req;
 		}
 
 		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
@@ -560,7 +577,7 @@ namespace SimpleBrowser
 			LastWebException = null;
 		}
 
-		private HttpRequestLog AcquireRequestData()
+		public HttpRequestLog AcquireRequestData()
 		{
 			return _lastRequestLog;
 		}
