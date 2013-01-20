@@ -37,7 +37,7 @@ namespace SimpleBrowser
 		{
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
-            Cookies = new CookieContainer();
+			Cookies = new CookieContainer();
 			if (requestFactory == null) requestFactory = new DefaultRequestFactory();
 			_reqFactory = requestFactory;
 			WindowHandle = name;
@@ -103,10 +103,11 @@ namespace SimpleBrowser
 		{
 			_allWindows.RemoveAll((b) => b.ParentWindow == this);
 		}
-
+		
 		public string UserAgent { get; set; }
+		public bool UseGZip {get; set;}
 		public bool RetainLogs { get; set; }
-        public CookieContainer Cookies { get; set; }
+		public CookieContainer Cookies { get; set; }
 
 		public Uri Url { get { return CurrentState.Url; } }
 		public string CurrentHtml { get { return CurrentState.Html; } }
@@ -352,12 +353,16 @@ namespace SimpleBrowser
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
+			if (UseGZip)
+			{
+				req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+			}
 			req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
-			if(CurrentState != null)
-				req.Referer = this.Url.AbsoluteUri;
-			return req;
+            if (CurrentState != null)
+                req.Referer = this.Url.AbsoluteUri;
+            return req;
 		}
 
 		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
