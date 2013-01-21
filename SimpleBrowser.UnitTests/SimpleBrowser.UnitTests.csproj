@@ -58,6 +58,7 @@
     <Compile Include="OfflineTests\QueryTests.cs" />
     <Compile Include="OfflineTests\Selectors.cs" />
     <Compile Include="OfflineTests\Uploading.cs" />
+    <Compile Include="OnlineTests\VerifyGZipEncoding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
