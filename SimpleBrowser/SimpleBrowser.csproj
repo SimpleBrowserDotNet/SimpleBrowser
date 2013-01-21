@@ -70,6 +70,7 @@
     <Compile Include="Internal\StringUtil.cs" />
     <Compile Include="Internal\XmlExtensions.cs" />
     <Compile Include="HtmlLogFormatter.cs" />
+    <Compile Include="NavigationState.cs" />
     <Compile Include="Network\IHttpWebRequest.cs" />
     <Compile Include="Network\IHttpWebResponse.cs" />
     <Compile Include="Network\IWebRequestFactory.cs" />
