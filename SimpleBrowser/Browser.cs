@@ -28,7 +28,7 @@ namespace SimpleBrowser
 
 		static Browser()
 		{
-			if(ServicePointManager.Expect100Continue)
+			if (ServicePointManager.Expect100Continue)
 				ServicePointManager.Expect100Continue = false;
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
@@ -38,7 +38,8 @@ namespace SimpleBrowser
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
 			Cookies = new CookieContainer();
-			if (requestFactory == null) requestFactory = new DefaultRequestFactory();
+			if (requestFactory == null)
+				requestFactory = new DefaultRequestFactory();
 			_reqFactory = requestFactory;
 			WindowHandle = name;
 			Browser.Register(this);
@@ -103,9 +104,9 @@ namespace SimpleBrowser
 		{
 			_allWindows.RemoveAll((b) => b.ParentWindow == this);
 		}
-		
+
 		public string UserAgent { get; set; }
-		public bool UseGZip {get; set;}
+		public bool UseGZip { get; set; }
 		public bool RetainLogs { get; set; }
 		public CookieContainer Cookies { get; set; }
 
@@ -120,8 +121,8 @@ namespace SimpleBrowser
 		/// where the current page equals 0, the history has negative numbers and the future (pages you can navigate forward to) have positive
 		/// numbers.
 		/// </summary>
-		public IDictionary<int,Uri> NavigationHistory
-		{ 
+		public IDictionary<int, Uri> NavigationHistory
+		{
 			get
 			{
 				CheckDisposed();
@@ -157,9 +158,9 @@ namespace SimpleBrowser
 					// check if we need to create sob-browsers for frames
 					foreach (var frame in this.FindAll("iframe"))
 					{
-						Log("found iframe +" + frame.CurrentElement.Value);  
+						Log("found iframe +" + frame.CurrentElement.Value);
 					}
-					
+
 				}
 				return CurrentState.XDocument;
 			}
@@ -180,7 +181,8 @@ namespace SimpleBrowser
 			get
 			{
 				CheckDisposed();
-				if (_historyPosition == -1) return null;
+				if (_historyPosition == -1)
+					return null;
 				return _history[_historyPosition];
 			}
 		}
@@ -322,7 +324,8 @@ namespace SimpleBrowser
 		private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
 		{
 			Uri fullUri = new Uri(this.Url, args.Uri);
-			if(args.TimeoutMilliseconds == 0)args.TimeoutMilliseconds = _timeoutMilliseconds;
+			if (args.TimeoutMilliseconds == 0)
+				args.TimeoutMilliseconds = _timeoutMilliseconds;
 
 			Browser browserToNav = null;
 			if (args.Target == TARGET_SELF || String.IsNullOrEmpty(args.Target))
@@ -360,12 +363,12 @@ namespace SimpleBrowser
 			req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
-            if (CurrentState != null)
-                req.Referer = this.Url.AbsoluteUri;
-            return req;
+			if (CurrentState != null)
+				req.Referer = this.Url.AbsoluteUri;
+			return req;
 		}
 
-		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
+		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
 		{
 			/* IMPORTANT INFORMATION:
 			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
@@ -442,7 +445,7 @@ namespace SimpleBrowser
 					else
 					{
 						uri = new Uri(
-							uri.Scheme + "://" + uri.Host + ":"  + uri.Port + uri.AbsolutePath 
+							uri.Scheme + "://" + uri.Host + ":" + uri.Port + uri.AbsolutePath
 							+ ((userVariables.Count > 0) ? "?" + StringUtil.MakeQueryString(userVariables) : "")
 							);
 						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
@@ -488,7 +491,7 @@ namespace SimpleBrowser
 								responseEncoding = Encoding.UTF8; // try using utf8
 							}
 						}
-						
+
 						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
 						html = reader.ReadToEnd();
 						responseContentType = response.ContentType;
@@ -549,7 +552,7 @@ namespace SimpleBrowser
 				}
 			} while (handle301Or302Redirect);
 			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
-			this.AddNavigationState(new NavigationState() {Html=html, Url=uri, ContentType=contentType});
+			this.AddNavigationState(new NavigationState() { Html = html, Url = uri, ContentType = contentType });
 			return true;
 		}
 
@@ -592,7 +595,8 @@ namespace SimpleBrowser
 		/// <param name="content">A string containing a</param>
 		public void SetContent(string content)
 		{
-			if (CurrentState == null) AddNavigationState(new NavigationState());
+			if (CurrentState == null)
+				AddNavigationState(new NavigationState());
 			CurrentState.Html = content;
 			CurrentState.ContentType = "image/html";
 			CurrentState.XDocument = null;
@@ -657,10 +661,10 @@ namespace SimpleBrowser
 		public HtmlResult Find(ElementType elementType, object elementAttributes)
 		{
 			var list = FindElements(elementType);
-			foreach(var p in elementAttributes.GetType().GetProperties())
+			foreach (var p in elementAttributes.GetType().GetProperties())
 			{
 				object o = p.GetValue(elementAttributes, null);
-				if(o == null)
+				if (o == null)
 					continue;
 				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
 			}
@@ -670,10 +674,10 @@ namespace SimpleBrowser
 		public HtmlResult Find(string tagName, object elementAttributes)
 		{
 			var list = FindElements(tagName);
-			foreach(var p in elementAttributes.GetType().GetProperties())
+			foreach (var p in elementAttributes.GetType().GetProperties())
 			{
 				object o = p.GetValue(elementAttributes, null);
-				if(o == null)
+				if (o == null)
 					continue;
 				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
 			}
@@ -688,25 +692,25 @@ namespace SimpleBrowser
 		public HtmlResult FindClosestAncestor(HtmlResult element, string ancestorTagName, object elementAttributes = null)
 		{
 			XElement anc = element.CurrentElement.Element;
-			for(; ; )
+			for (; ; )
 			{
 				anc = anc.GetAncestorOfSelfCI(ancestorTagName);
-				if(elementAttributes == null)
+				if (elementAttributes == null)
 					break;
 				bool succeeded = true;
-				foreach(var p in elementAttributes.GetType().GetProperties())
+				foreach (var p in elementAttributes.GetType().GetProperties())
 				{
 					object o = p.GetValue(elementAttributes, null);
-					if(o == null)
+					if (o == null)
 						continue;
 					var attr = GetAttribute(anc, p.Name);
-					if(attr == null || attr.Value.ToLower() != o.ToString().ToLower())
+					if (attr == null || attr.Value.ToLower() != o.ToString().ToLower())
 					{
 						succeeded = false;
 						break;
 					}
 				}
-				if(succeeded)
+				if (succeeded)
 					break;
 				anc = anc.Parent;
 			}
@@ -807,7 +811,8 @@ namespace SimpleBrowser
 			return elements.Where(elm =>
 			{
 				string attrValue = elm.GetAttribute(attributeName);
-				if (attrValue == null) return false;
+				if (attrValue == null)
+					return false;
 				string[] tokens = attrValue.ToLower().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 				if (allowPartialMatch)
 				{
@@ -842,10 +847,14 @@ namespace SimpleBrowser
 		{
 			switch (findBy)
 			{
-				case FindBy.Text: return FilterElementsByInnerText(elements, null, value, false);
-				case FindBy.Class: return FilterElementsByAttributeNameToken(elements, "class", value, false);
-				case FindBy.Id: return FilterElementsByAttribute(elements, "id", value, false);
-				case FindBy.Name: return FilterElementsByAttribute(elements, "name", value, false);
+				case FindBy.Text:
+					return FilterElementsByInnerText(elements, null, value, false);
+				case FindBy.Class:
+					return FilterElementsByAttributeNameToken(elements, "class", value, false);
+				case FindBy.Id:
+					return FilterElementsByAttribute(elements, "id", value, false);
+				case FindBy.Name:
+					return FilterElementsByAttribute(elements, "name", value, false);
 				case FindBy.Value:
 					{
 						var newlist = FilterElementsByAttribute(elements, "value", value, false);
@@ -853,10 +862,14 @@ namespace SimpleBrowser
 						newlist.AddRange(FilterElementsByInnerText(elements, "button", value, false));
 						return newlist;
 					}
-				case FindBy.PartialText: return FilterElementsByInnerText(elements, null, value, true);
-				case FindBy.PartialClass: return FilterElementsByAttributeNameToken(elements, "class", value, true);
-				case FindBy.PartialId: return FilterElementsByAttribute(elements, "id", value, true);
-				case FindBy.PartialName: return FilterElementsByAttribute(elements, "name", value, true);
+				case FindBy.PartialText:
+					return FilterElementsByInnerText(elements, null, value, true);
+				case FindBy.PartialClass:
+					return FilterElementsByAttributeNameToken(elements, "class", value, true);
+				case FindBy.PartialId:
+					return FilterElementsByAttribute(elements, "id", value, true);
+				case FindBy.PartialName:
+					return FilterElementsByAttribute(elements, "name", value, true);
 				case FindBy.PartialValue:
 					{
 						var newlist = FilterElementsByAttribute(elements, "value", value, true);
