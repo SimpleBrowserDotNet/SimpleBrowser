@@ -341,7 +341,7 @@ namespace SimpleBrowser
 
 		public void LogRequestData()
 		{
-			HttpRequestLog log = AcquireRequestData();
+			HttpRequestLog log = RequestData();
 			if (RetainLogs)
 				_logs.Add(log);
 			if (log != null && RequestLogged != null)
@@ -413,6 +413,15 @@ namespace SimpleBrowser
 		{
 			var formatter = new HtmlLogFormatter();
 			return formatter.Render(_logs, title);
+		}
+
+		/// <summary>
+		/// Return the information related to the last request
+		/// </summary>
+		/// <returns></returns>
+		public HttpRequestLog RequestData()
+		{
+			return _lastRequestLog;
 		}
 
 		/// <summary>
@@ -701,11 +710,6 @@ namespace SimpleBrowser
 		#endregion internal methods end
 
 		#region private methods start
-
-		private HttpRequestLog AcquireRequestData()
-		{
-			return _lastRequestLog;
-		}
 
 		private void CheckDisposed()
 		{
