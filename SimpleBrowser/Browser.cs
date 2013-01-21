@@ -18,6 +18,17 @@ namespace SimpleBrowser
 {
 	public class Browser
 	{
+		const string TARGET_SELF = "_self";
+		const string TARGET_BLANK = "_blank";
+		const string TARGET_TOP = "_top";
+
+		private static List<Browser> _allWindows = new List<Browser>();
+
+		private HashSet<string> _extraHeaders = new HashSet<string>();
+		private List<HtmlElement> _allActiveElements = new List<HtmlElement>();
+		private List<NavigationState> _history = new List<NavigationState>();
+		private int _historyPosition = -1;
+
 		private WebProxy _proxy;
 		private int _timeoutMilliseconds = 30000;
 		private NameValueCollection _includeFormValues;
@@ -28,7 +39,7 @@ namespace SimpleBrowser
 
 		static Browser()
 		{
-			if(ServicePointManager.Expect100Continue)
+			if (ServicePointManager.Expect100Continue)
 				ServicePointManager.Expect100Continue = false;
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
@@ -38,21 +49,39 @@ namespace SimpleBrowser
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
 			Cookies = new CookieContainer();
-			if (requestFactory == null) requestFactory = new DefaultRequestFactory();
+			if (requestFactory == null)
+				requestFactory = new DefaultRequestFactory();
 			_reqFactory = requestFactory;
 			WindowHandle = name;
 			Browser.Register(this);
 		}
 
+		public event Action<Browser, string> MessageLogged;
+		public event Action<Browser, HttpRequestLog> RequestLogged;
 
-		private static List<Browser> _allWindows = new List<Browser>();
-		public static IEnumerable<Browser> Windows
+		#region public properties start
+
+		public string Accept { get; set; }
+
+		public string ContentType { get { return CurrentState.ContentType; } }
+
+		public CookieContainer Cookies { get; set; }
+
+		public string CurrentHtml { get { return CurrentState.Html; } }
+
+		/// <summary>
+		/// This collection allows you to specify additional key/value pairs that will be sent in the next request. Some
+		/// websites use JavaScript or other dynamic methods to dictate what is submitted to the next page and these
+		/// cannot be determined automatically from the originating HTML. In those cases, investigate the process using
+		/// an HTTP sniffer, such as the HttpFox plugin for Firefox, and determine what values are being sent in the
+		/// form submission. The additional unexpected values can then be automated by populating this property. Any
+		/// values specified here are cleared after each request.
+		/// </summary>
+		public NameValueCollection ExtraFormValues
 		{
-			get
-			{
-				return _allWindows;
-			}
+			get { return _includeFormValues ?? (_includeFormValues = new NameValueCollection()); }
 		}
+
 		public IEnumerable<Browser> Frames
 		{
 			get
@@ -61,67 +90,16 @@ namespace SimpleBrowser
 				return Browser.Windows.Where(b => b.ParentWindow == this);
 			}
 		}
-		public static void ClearWindows()
-		{
-			_allWindows.Clear();
-		}
 
-		public void Close()
-		{
-			_history = null;
-			_allWindows.Remove(this);
-		}
-		private void CheckDisposed()
-		{
-			if (_history == null)
-			{
-				throw new ObjectDisposedException("This browser has been closed. You cannot access the content or history after closing.");
-			}
-		}
-
-		public static Browser GetWindowByName(string name)
-		{
-			return Windows.FirstOrDefault(b => b.WindowHandle == name);
-		}
-		private static void Register(Browser browser)
-		{
-			_allWindows.Add(browser);
-			if (browser.WindowHandle == null)
-			{
-				browser.WindowHandle = Guid.NewGuid().ToString().Substring(0, 8);
-			}
-		}
-		public string WindowHandle { get; private set; }
-		private Browser ParentWindow { get; set; }
-		internal Browser CreateChildBrowser(string name = null)
-		{
-			Browser child = new Browser(this._reqFactory, name);
-			child.ParentWindow = this;
-			return child;
-		}
-		internal void RemoveChildBrowsers()
-		{
-			_allWindows.RemoveAll((b) => b.ParentWindow == this);
-		}
-		
-		public string UserAgent { get; set; }
-		public bool UseGZip {get; set;}
-		public bool RetainLogs { get; set; }
-		public CookieContainer Cookies { get; set; }
-
-		public Uri Url { get { return CurrentState.Url; } }
-		public string CurrentHtml { get { return CurrentState.Html; } }
-		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
-		public string Text { get { return XDocument.Root.Value; } }
-		public string ContentType { get { return CurrentState.ContentType; } }
+		public WebException LastWebException { get; private set; }
 
 		/// <summary>
 		/// Returns a dictionary reflecting the current navigation history. The keys are integers reflecting the position in the history,
 		/// where the current page equals 0, the history has negative numbers and the future (pages you can navigate forward to) have positive
 		/// numbers.
 		/// </summary>
-		public IDictionary<int,Uri> NavigationHistory
-		{ 
+		public IDictionary<int, Uri> NavigationHistory
+		{
 			get
 			{
 				CheckDisposed();
@@ -130,14 +108,34 @@ namespace SimpleBrowser
 			}
 		}
 
+		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 
+		public bool RetainLogs { get; set; }
+
+		public string Text { get { return XDocument.Root.Value; } }
+
+		public Uri Url { get { return CurrentState.Url; } }
+
+		public string UserAgent { get; set; }
+
+		public bool UseGZip { get; set; }
+
+		public string WindowHandle { get; private set; }
+
+		public static IEnumerable<Browser> Windows
+		{
+			get
+			{
+				return _allWindows;
+			}
+		}
 
 		/// <summary>
 		/// Returns the current HTML document parsed and converted to a valid XDocument object. Note that the
 		/// originating HTML does not have to be valid XML; the parser will use a variety of methods to convert any
 		/// invalid markup to valid XML.
 		/// </summary>
-		internal XDocument XDocument
+		public XDocument XDocument
 		{
 			get
 			{
@@ -157,54 +155,69 @@ namespace SimpleBrowser
 					// check if we need to create sob-browsers for frames
 					foreach (var frame in this.FindAll("iframe"))
 					{
-						Log("found iframe +" + frame.CurrentElement.Value);  
+						Log("found iframe +" + frame.CurrentElement.Value);
 					}
-					
+
 				}
 				return CurrentState.XDocument;
 			}
 		}
 
+		#endregion public properties end
 
-		List<NavigationState> _history = new List<NavigationState>();
-		int _historyPosition = -1;
-		internal class NavigationState
-		{
-			public Uri Url;
-			public string ContentType;
-			public string Html;
-			internal XDocument XDocument;
-		}
+		#region internal properties start
+
 		internal NavigationState CurrentState
 		{
 			get
 			{
 				CheckDisposed();
-				if (_historyPosition == -1) return null;
+				if (_historyPosition == -1)
+					return null;
 				return _history[_historyPosition];
 			}
 		}
 
-		internal void AddNavigationState(NavigationState state)
+		#endregion internal properties end
+
+		#region private properties start
+
+		private Browser ParentWindow { get; set; }
+
+		#endregion private properties end
+
+		#region public methods start
+
+		public void ClearException()
 		{
-			while (_history.Count > _historyPosition + 1)
-			{
-				_history.Remove(_history.Last());
-			}
-			_historyPosition++;
-			_history.Add(state);
-			this.InvalidateAllActiveElements();
-			while (_history.Count > 20)
-			{
-				_history.RemoveAt(0);
-				_historyPosition--;
-			}
+			LastWebException = null;
 		}
 
+		public static void ClearWindows()
+		{
+			_allWindows.Clear();
+		}
 
+		public void Close()
+		{
+			_history = null;
+			_allWindows.Remove(this);
+		}
 
-		public event Action<Browser, string> MessageLogged;
-		public event Action<Browser, HttpRequestLog> RequestLogged;
+		/// <summary>
+		/// Performs a culture-invariant text search on the current document, ignoring whitespace, html elements and case, which reduces the 
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
+		public bool ContainsText(string text)
+		{
+			Log("Looking for text: " + text, LogMessageType.Internal);
+			text = HttpUtility.HtmlDecode(text);
+			string source = HttpUtility.HtmlDecode(XDocument.Root.Value).Replace("&nbsp;", " ");
+			var found = new Regex(Regex.Replace(Regex.Escape(text).Replace(@"\ ", " "), @"\s+", @"\s+"), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(source);
+			Log("&rarr; Text " + (found ? "" : "NOT ") + "found!", LogMessageType.Internal);
+			return found;
+		}
 
 		public Browser CreateReferenceView()
 		{
@@ -228,30 +241,113 @@ namespace SimpleBrowser
 			return b;
 		}
 
-
-		private HashSet<string> _extraHeaders = new HashSet<string>();
-		public void SetHeader(string header)
+		public static Browser GetWindowByName(string name)
 		{
-			_extraHeaders.Add(header);
+			return Windows.FirstOrDefault(b => b.WindowHandle == name);
 		}
 
-		public string Accept { get; set; }
+		#region Finding
 
-		public void RemoveHeader(string header)
+		public HtmlResult Find(ElementType elementType, FindBy findBy, string value)
 		{
-			_extraHeaders.Remove(header);
+			return GetHtmlResult(FindElement(elementType, findBy, value));
 		}
 
-		public void SetProxy(string host, int port)
+		public HtmlResult Find(string tagName, FindBy findBy, string value)
 		{
-			_proxy = new WebProxy(host, port);
+			return GetHtmlResult(FindElement(FindElements(tagName), findBy, value));
 		}
 
-		public void SetProxy(string host, int port, string username, string password)
+		public HtmlResult Find(string id)
 		{
-			SetProxy(host, port);
-			_proxy.Credentials = new NetworkCredential(username, password);
+			return GetHtmlResult(FilterElementsByAttribute(XDocument.Descendants().ToList(), "id", id, false));
 		}
+
+		public HtmlResult Find(ElementType elementType, string attributeName, string attributeValue)
+		{
+			var elementsOfCorrectType = FindElements(elementType);
+			return GetHtmlResult(FilterElementsByAttribute(elementsOfCorrectType, attributeName, attributeValue, false));
+		}
+
+		public HtmlResult Find(ElementType elementType, object elementAttributes)
+		{
+			var list = FindElements(elementType);
+			foreach (var p in elementAttributes.GetType().GetProperties())
+			{
+				object o = p.GetValue(elementAttributes, null);
+				if (o == null)
+					continue;
+				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
+			}
+			return GetHtmlResult(list);
+		}
+
+		public HtmlResult Find(string tagName, object elementAttributes)
+		{
+			var list = FindElements(tagName);
+			foreach (var p in elementAttributes.GetType().GetProperties())
+			{
+				object o = p.GetValue(elementAttributes, null);
+				if (o == null)
+					continue;
+				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
+			}
+			return GetHtmlResult(list);
+		}
+
+		public HtmlResult FindAll(string tagName)
+		{
+			return GetHtmlResult(FindElements(tagName));
+		}
+
+		public HtmlResult FindClosestAncestor(HtmlResult element, string ancestorTagName, object elementAttributes = null)
+		{
+			XElement anc = element.CurrentElement.Element;
+			for (; ; )
+			{
+				anc = anc.GetAncestorOfSelfCI(ancestorTagName);
+				if (elementAttributes == null)
+					break;
+				bool succeeded = true;
+				foreach (var p in elementAttributes.GetType().GetProperties())
+				{
+					object o = p.GetValue(elementAttributes, null);
+					if (o == null)
+						continue;
+					var attr = GetAttribute(anc, p.Name);
+					if (attr == null || attr.Value.ToLower() != o.ToString().ToLower())
+					{
+						succeeded = false;
+						break;
+					}
+				}
+				if (succeeded)
+					break;
+				anc = anc.Parent;
+			}
+			return GetHtmlResult(anc);
+		}
+
+		#endregion Finding
+
+		#region Logging
+		public void Log(string message, LogMessageType type = LogMessageType.User)
+		{
+			if (RetainLogs)
+				_logs.Add(new LogMessage(message, type));
+			if (MessageLogged != null)
+				MessageLogged(this, message);
+		}
+
+		public void LogRequestData()
+		{
+			HttpRequestLog log = RequestData();
+			if (RetainLogs)
+				_logs.Add(log);
+			if (log != null && RequestLogged != null)
+				RequestLogged(this, log);
+		}
+		#endregion
 
 		public bool Navigate(string url)
 		{
@@ -308,64 +404,116 @@ namespace SimpleBrowser
 			return false;
 		}
 
-		//\/////////////////////////////////////////////////
-		// RAW HTML BROWSER
-		//\/////////////////////////////////////////////////
-
-
-
-
-		const string TARGET_SELF = "_self";
-		const string TARGET_BLANK = "_blank";
-		const string TARGET_TOP = "_top";
-
-		private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
+		public void RemoveHeader(string header)
 		{
-			Uri fullUri = new Uri(this.Url, args.Uri);
-			if(args.TimeoutMilliseconds == 0)args.TimeoutMilliseconds = _timeoutMilliseconds;
-
-			Browser browserToNav = null;
-			if (args.Target == TARGET_SELF || String.IsNullOrEmpty(args.Target))
-			{
-				browserToNav = this;
-			}
-			else if (args.Target == TARGET_BLANK)
-			{
-				browserToNav = new Browser(this._reqFactory);
-			}
-			else
-			{
-				browserToNav = Browser.Windows.FirstOrDefault(b => b.WindowHandle == args.Target);
-				if (browserToNav == null)
-				{
-					browserToNav = new Browser(this._reqFactory, args.Target);
-				}
-			}
-
-			return browserToNav.DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
-		}
-		private IHttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
-		{
-			IHttpWebRequest req = _reqFactory.GetWebRequest(url);
-			req.Method = method;
-			req.ContentType = contentType; // "application/x-www-form-urlencoded";
-			req.UserAgent = UserAgent;
-			req.Accept = Accept ?? "*/*";
-			req.Timeout = timeoutMilliseconds;
-			req.AllowAutoRedirect = false;
-			if (UseGZip)
-			{
-				req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
-			}
-			req.CookieContainer = Cookies;
-			if (_proxy != null)
-				req.Proxy = _proxy;
-            if (CurrentState != null)
-                req.Referer = this.Url.AbsoluteUri;
-            return req;
+			_extraHeaders.Remove(header);
 		}
 
-		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType,  int timeoutMilliseconds)
+		public string RenderHtmlLogFile(string title = "SimpleBrowser Session Log")
+		{
+			var formatter = new HtmlLogFormatter();
+			return formatter.Render(_logs, title);
+		}
+
+		/// <summary>
+		/// Return the information related to the last request
+		/// </summary>
+		/// <returns></returns>
+		public HttpRequestLog RequestData()
+		{
+			return _lastRequestLog;
+		}
+
+		/// <summary>
+		/// This is an alternative to Find and allows the use of jQuery selector syntax to locate elements on the page.
+		/// </summary>
+		/// <param name="query">The query to use to locate elements</param>
+		/// <returns>An HtmlResult object containing zero or more matches</returns>
+		public HtmlResult Select(string query)
+		{
+			var result = new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
+			Log("Selected " + result.TotalElementsFound + " element(s) via jQuery selector: " + query, LogMessageType.Internal);
+			return result;
+		}
+
+		/// <summary>
+		/// Overwrites the CurrentHtml property with new content, allowing it to be queried and analyzed as though it
+		/// was navigated to in the last request.
+		/// </summary>
+		/// <param name="content">A string containing a</param>
+		public void SetContent(string content)
+		{
+			if (CurrentState == null)
+				AddNavigationState(new NavigationState());
+			CurrentState.Html = content;
+			CurrentState.ContentType = "image/html";
+			CurrentState.XDocument = null;
+			CurrentState.Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
+		}
+
+		public void SetHeader(string header)
+		{
+			_extraHeaders.Add(header);
+		}
+
+		public void SetProxy(string host, int port)
+		{
+			_proxy = new WebProxy(host, port);
+		}
+
+		public void SetProxy(string host, int port, string username, string password)
+		{
+			SetProxy(host, port);
+			_proxy.Credentials = new NetworkCredential(username, password);
+		}
+
+		#endregion public methods end
+
+		#region internal methods start
+
+		internal void AddNavigationState(NavigationState state)
+		{
+			while (_history.Count > _historyPosition + 1)
+			{
+				_history.Remove(_history.Last());
+			}
+			_historyPosition++;
+			_history.Add(state);
+			this.InvalidateAllActiveElements();
+			while (_history.Count > 20)
+			{
+				_history.RemoveAt(0);
+				_historyPosition--;
+			}
+		}
+
+		internal Browser CreateChildBrowser(string name = null)
+		{
+			Browser child = new Browser(this._reqFactory, name);
+			child.ParentWindow = this;
+			return child;
+		}
+
+		internal HtmlElement CreateHtmlElement(XElement element)
+		{
+			var htmlElement = HtmlElement.CreateFor(element);
+			_allActiveElements.Add(htmlElement);
+			htmlElement.OwningBrowser = this;
+			htmlElement.NavigationRequested += htmlElement_NavigationRequested;
+			return htmlElement;
+		}
+
+		internal T CreateHtmlElement<T>(XElement element) where T : HtmlElement
+		{
+			var result = CreateHtmlElement(element);
+			if (result is T)
+			{
+				return (T)result;
+			}
+			throw new InvalidOperationException("The element was not of the corresponding type");
+		}
+
+		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
 		{
 			/* IMPORTANT INFORMATION:
 			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
@@ -442,7 +590,7 @@ namespace SimpleBrowser
 					else
 					{
 						uri = new Uri(
-							uri.Scheme + "://" + uri.Host + ":"  + uri.Port + uri.AbsolutePath 
+							uri.Scheme + "://" + uri.Host + ":" + uri.Port + uri.AbsolutePath
 							+ ((userVariables.Count > 0) ? "?" + StringUtil.MakeQueryString(userVariables) : "")
 							);
 						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
@@ -488,7 +636,7 @@ namespace SimpleBrowser
 								responseEncoding = Encoding.UTF8; // try using utf8
 							}
 						}
-						
+
 						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
 						html = reader.ReadToEnd();
 						responseContentType = response.ContentType;
@@ -549,170 +697,29 @@ namespace SimpleBrowser
 				}
 			} while (handle301Or302Redirect);
 			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
-			this.AddNavigationState(new NavigationState() {Html=html, Url=uri, ContentType=contentType});
+			this.AddNavigationState(new NavigationState() { Html = html, Url = uri, ContentType = contentType });
 			return true;
 		}
 
-		public string RenderHtmlLogFile(string title = "SimpleBrowser Session Log")
+
+		internal void RemoveChildBrowsers()
 		{
-			var formatter = new HtmlLogFormatter();
-			return formatter.Render(_logs, title);
+			_allWindows.RemoveAll((b) => b.ParentWindow == this);
 		}
 
-		public WebException LastWebException { get; private set; }
-		public void ClearException()
-		{
-			LastWebException = null;
-		}
+		#endregion internal methods end
 
-		private HttpRequestLog AcquireRequestData()
-		{
-			return _lastRequestLog;
-		}
+		#region private methods start
 
-		/// <summary>
-		/// Performs a culture-invariant text search on the current document, ignoring whitespace, html elements and case, which reduces the 
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public bool ContainsText(string text)
+		private void CheckDisposed()
 		{
-			Log("Looking for text: " + text, LogMessageType.Internal);
-			text = HttpUtility.HtmlDecode(text);
-			string source = HttpUtility.HtmlDecode(XDocument.Root.Value).Replace("&nbsp;", " ");
-			var found = new Regex(Regex.Replace(Regex.Escape(text).Replace(@"\ ", " "), @"\s+", @"\s+"), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).IsMatch(source);
-			Log("&rarr; Text " + (found ? "" : "NOT ") + "found!", LogMessageType.Internal);
-			return found;
+			if (_history == null)
+			{
+				throw new ObjectDisposedException("This browser has been closed. You cannot access the content or history after closing.");
+			}
 		}
-
-		/// <summary>
-		/// Overwrites the CurrentHtml property with new content, allowing it to be queried and analyzed as though it
-		/// was navigated to in the last request.
-		/// </summary>
-		/// <param name="content">A string containing a</param>
-		public void SetContent(string content)
-		{
-			if (CurrentState == null) AddNavigationState(new NavigationState());
-			CurrentState.Html = content;
-			CurrentState.ContentType = "image/html";
-			CurrentState.XDocument = null;
-			CurrentState.Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
-		}
-
-		/// <summary>
-		/// This collection allows you to specify additional key/value pairs that will be sent in the next request. Some
-		/// websites use JavaScript or other dynamic methods to dictate what is submitted to the next page and these
-		/// cannot be determined automatically from the originating HTML. In those cases, investigate the process using
-		/// an HTTP sniffer, such as the HttpFox plugin for Firefox, and determine what values are being sent in the
-		/// form submission. The additional unexpected values can then be automated by populating this property. Any
-		/// values specified here are cleared after each request.
-		/// </summary>
-		public NameValueCollection ExtraFormValues
-		{
-			get { return _includeFormValues ?? (_includeFormValues = new NameValueCollection()); }
-		}
-
-
-		#region Logging
-		public void Log(string message, LogMessageType type = LogMessageType.User)
-		{
-			if (RetainLogs)
-				_logs.Add(new LogMessage(message, type));
-			if (MessageLogged != null)
-				MessageLogged(this, message);
-		}
-
-		public void LogRequestData()
-		{
-			HttpRequestLog log = AcquireRequestData();
-			if (RetainLogs)
-				_logs.Add(log);
-			if (log != null && RequestLogged != null)
-				RequestLogged(this, log);
-		}
-		#endregion
 
 		#region Finding
-		public HtmlResult Find(ElementType elementType, FindBy findBy, string value)
-		{
-			return GetHtmlResult(FindElement(elementType, findBy, value));
-		}
-
-		public HtmlResult Find(string tagName, FindBy findBy, string value)
-		{
-			return GetHtmlResult(FindElement(FindElements(tagName), findBy, value));
-		}
-
-		public HtmlResult Find(string id)
-		{
-			return GetHtmlResult(FilterElementsByAttribute(XDocument.Descendants().ToList(), "id", id, false));
-		}
-
-		public HtmlResult Find(ElementType elementType, string attributeName, string attributeValue)
-		{
-			var elementsOfCorrectType = FindElements(elementType);
-			return GetHtmlResult(FilterElementsByAttribute(elementsOfCorrectType, attributeName, attributeValue, false));
-		}
-
-		public HtmlResult Find(ElementType elementType, object elementAttributes)
-		{
-			var list = FindElements(elementType);
-			foreach(var p in elementAttributes.GetType().GetProperties())
-			{
-				object o = p.GetValue(elementAttributes, null);
-				if(o == null)
-					continue;
-				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
-			}
-			return GetHtmlResult(list);
-		}
-
-		public HtmlResult Find(string tagName, object elementAttributes)
-		{
-			var list = FindElements(tagName);
-			foreach(var p in elementAttributes.GetType().GetProperties())
-			{
-				object o = p.GetValue(elementAttributes, null);
-				if(o == null)
-					continue;
-				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
-			}
-			return GetHtmlResult(list);
-		}
-
-		public HtmlResult FindAll(string tagName)
-		{
-			return GetHtmlResult(FindElements(tagName));
-		}
-
-		public HtmlResult FindClosestAncestor(HtmlResult element, string ancestorTagName, object elementAttributes = null)
-		{
-			XElement anc = element.CurrentElement.Element;
-			for(; ; )
-			{
-				anc = anc.GetAncestorOfSelfCI(ancestorTagName);
-				if(elementAttributes == null)
-					break;
-				bool succeeded = true;
-				foreach(var p in elementAttributes.GetType().GetProperties())
-				{
-					object o = p.GetValue(elementAttributes, null);
-					if(o == null)
-						continue;
-					var attr = GetAttribute(anc, p.Name);
-					if(attr == null || attr.Value.ToLower() != o.ToString().ToLower())
-					{
-						succeeded = false;
-						break;
-					}
-				}
-				if(succeeded)
-					break;
-				anc = anc.Parent;
-			}
-			return GetHtmlResult(anc);
-		}
-
 
 		private List<XElement> FindElements(string tagName)
 		{
@@ -720,6 +727,7 @@ namespace SimpleBrowser
 				.Where(h => h.Name.LocalName.ToLower() == tagName.ToLower())
 				.ToList();
 		}
+
 		private List<XElement> FindElements(ElementType elementType)
 		{
 			List<XElement> list;
@@ -785,6 +793,7 @@ namespace SimpleBrowser
 			}
 			return list;
 		}
+
 		private List<XElement> FilterElementsByAttribute(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)
 		{
 			if (allowPartialMatch)
@@ -802,12 +811,14 @@ namespace SimpleBrowser
 					.ToList();
 			}
 		}
+
 		private List<XElement> FilterElementsByAttributeNameToken(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)
 		{
 			return elements.Where(elm =>
 			{
 				string attrValue = elm.GetAttribute(attributeName);
-				if (attrValue == null) return false;
+				if (attrValue == null)
+					return false;
 				string[] tokens = attrValue.ToLower().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 				if (allowPartialMatch)
 				{
@@ -834,18 +845,24 @@ namespace SimpleBrowser
 					.ToList();
 			}
 		}
+		
 		private List<XElement> FindElement(ElementType elementType, FindBy findBy, string value)
 		{
 			return FindElement(FindElements(elementType), findBy, value);
 		}
+
 		private List<XElement> FindElement(List<XElement> elements, FindBy findBy, string value)
 		{
 			switch (findBy)
 			{
-				case FindBy.Text: return FilterElementsByInnerText(elements, null, value, false);
-				case FindBy.Class: return FilterElementsByAttributeNameToken(elements, "class", value, false);
-				case FindBy.Id: return FilterElementsByAttribute(elements, "id", value, false);
-				case FindBy.Name: return FilterElementsByAttribute(elements, "name", value, false);
+				case FindBy.Text:
+					return FilterElementsByInnerText(elements, null, value, false);
+				case FindBy.Class:
+					return FilterElementsByAttributeNameToken(elements, "class", value, false);
+				case FindBy.Id:
+					return FilterElementsByAttribute(elements, "id", value, false);
+				case FindBy.Name:
+					return FilterElementsByAttribute(elements, "name", value, false);
 				case FindBy.Value:
 					{
 						var newlist = FilterElementsByAttribute(elements, "value", value, false);
@@ -853,10 +870,14 @@ namespace SimpleBrowser
 						newlist.AddRange(FilterElementsByInnerText(elements, "button", value, false));
 						return newlist;
 					}
-				case FindBy.PartialText: return FilterElementsByInnerText(elements, null, value, true);
-				case FindBy.PartialClass: return FilterElementsByAttributeNameToken(elements, "class", value, true);
-				case FindBy.PartialId: return FilterElementsByAttribute(elements, "id", value, true);
-				case FindBy.PartialName: return FilterElementsByAttribute(elements, "name", value, true);
+				case FindBy.PartialText:
+					return FilterElementsByInnerText(elements, null, value, true);
+				case FindBy.PartialClass:
+					return FilterElementsByAttributeNameToken(elements, "class", value, true);
+				case FindBy.PartialId:
+					return FilterElementsByAttribute(elements, "id", value, true);
+				case FindBy.PartialName:
+					return FilterElementsByAttribute(elements, "name", value, true);
 				case FindBy.PartialValue:
 					{
 						var newlist = FilterElementsByAttribute(elements, "value", value, true);
@@ -868,26 +889,14 @@ namespace SimpleBrowser
 					return null;
 			}
 		}
+
+		#endregion
+
 		private XAttribute GetAttribute(XElement element, string name)
 		{
 			return element.Attributes().Where(h => h.Name.LocalName.ToLower() == name.ToLower()).FirstOrDefault();
 		}
 
-		/// <summary>
-		/// This is an alternative to Find and allows the use of jQuery selector syntax to locate elements on the page.
-		/// </summary>
-		/// <param name="query">The query to use to locate elements</param>
-		/// <returns>An HtmlResult object containing zero or more matches</returns>
-		public HtmlResult Select(string query)
-		{
-			var result = new HtmlResult(XQuery.Execute(query, XDocument).Select(CreateHtmlElement).ToList(), this);
-			Log("Selected " + result.TotalElementsFound + " element(s) via jQuery selector: " + query, LogMessageType.Internal);
-			return result;
-		}
-
-		#endregion
-
-		#region Creating HtmlResults with HtmlElements
 		private HtmlResult GetHtmlResult(List<XElement> list)
 		{
 			List<HtmlElement> xlist = new List<HtmlElement>();
@@ -901,84 +910,33 @@ namespace SimpleBrowser
 			return new HtmlResult(CreateHtmlElement(e), this);
 		}
 
-		internal HtmlElement CreateHtmlElement(XElement element)
+		private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
 		{
-			var htmlElement = CreateFor(element);
-			htmlElement.OwningBrowser = this;
-			htmlElement.NavigationRequested += htmlElement_NavigationRequested;
-			return htmlElement;
-		}
-		internal T CreateHtmlElement<T>(XElement element) where T : HtmlElement
-		{
-			var result = CreateHtmlElement(element);
-			if (result is T)
+			Uri fullUri = new Uri(this.Url, args.Uri);
+			if (args.TimeoutMilliseconds == 0)
+				args.TimeoutMilliseconds = _timeoutMilliseconds;
+
+			Browser browserToNav = null;
+			if (args.Target == TARGET_SELF || String.IsNullOrEmpty(args.Target))
 			{
-				return (T)result;
+				browserToNav = this;
 			}
-			throw new InvalidOperationException("The element was not of the corresponding type");
-		}
-		private List<HtmlElement> _allActiveElements = new List<HtmlElement>();
-		private HtmlElement CreateFor(XElement element)
-		{
-			HtmlElement result;
-			switch (element.Name.LocalName.ToLower())
+			else if (args.Target == TARGET_BLANK)
 			{
-				case "form":
-					result = new FormElement(element);
-					break;
-				case "input":
-					string type = element.GetAttribute("type") ?? "";
-					switch (type.ToLower())
-					{
-						case "radio":
-							result = new RadioInputElement(element);
-							break;
-						case "checkbox":
-							result = new CheckboxInputElement(element);
-							break;
-						case "submit":
-						case "image":
-						case "button":
-							string buttonType = element.GetAttribute("type");
-							result = new ButtonInputElement(element);
-							break;
-						case "file":
-							result = new FileUploadElement(element);
-							break;
-						default:
-							result = new InputElement(element);
-							break;
-					}
-					break;
-				case "textarea":
-					result = new TextAreaElement(element);
-					break;
-				case "select":
-					result = new SelectElement(element);
-					break;
-				case "option":
-					result = new OptionElement(element);
-					break;
-				case "iframe":
-				case "frame":
-					result = new FrameElement(element);
-					break;
-				case "a":
-					result = new AnchorElement(element);
-					break;
-				case "label":
-					result = new LabelElement(element);
-					break;
-				case "button":
-					result = new ButtonInputElement(element);
-					break;
-				default:
-					result = new HtmlElement(element);
-					break;
+				browserToNav = new Browser(this._reqFactory);
 			}
-			_allActiveElements.Add(result);
-			return result;
+			else
+			{
+				browserToNav = Browser.Windows.FirstOrDefault(b => b.WindowHandle == args.Target);
+				if (browserToNav == null)
+				{
+					browserToNav = new Browser(this._reqFactory, args.Target);
+				}
+			}
+
+			return browserToNav.DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
 		}
+
 		private void InvalidateAllActiveElements()
 		{
 			foreach (var element in _allActiveElements)
@@ -987,7 +945,37 @@ namespace SimpleBrowser
 			}
 		}
 
-		#endregion
+		private IHttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
+		{
+			IHttpWebRequest req = _reqFactory.GetWebRequest(url);
+			req.Method = method;
+			req.ContentType = contentType; // "application/x-www-form-urlencoded";
+			req.UserAgent = UserAgent;
+			req.Accept = Accept ?? "*/*";
+			req.Timeout = timeoutMilliseconds;
+			req.AllowAutoRedirect = false;
+			if (UseGZip)
+			{
+				req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+			}
+			req.CookieContainer = Cookies;
+			if (_proxy != null)
+				req.Proxy = _proxy;
+			if (CurrentState != null)
+				req.Referer = this.Url.AbsoluteUri;
+			return req;
+		}
+
+		private static void Register(Browser browser)
+		{
+			_allWindows.Add(browser);
+			if (browser.WindowHandle == null)
+			{
+				browser.WindowHandle = Guid.NewGuid().ToString().Substring(0, 8);
+			}
+		}
+
+		#endregion private methods end
 
 	}
 }
