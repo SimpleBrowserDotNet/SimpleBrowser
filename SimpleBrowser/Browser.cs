@@ -130,27 +130,12 @@ namespace SimpleBrowser
 			}
 		}
 
-		#endregion public properties end
-
-		#region internal properties start
-
-		internal NavigationState CurrentState
-		{
-			get
-			{
-				CheckDisposed();
-				if (_historyPosition == -1)
-					return null;
-				return _history[_historyPosition];
-			}
-		}
-
 		/// <summary>
 		/// Returns the current HTML document parsed and converted to a valid XDocument object. Note that the
 		/// originating HTML does not have to be valid XML; the parser will use a variety of methods to convert any
 		/// invalid markup to valid XML.
 		/// </summary>
-		internal XDocument XDocument
+		public XDocument XDocument
 		{
 			get
 			{
@@ -175,6 +160,21 @@ namespace SimpleBrowser
 
 				}
 				return CurrentState.XDocument;
+			}
+		}
+
+		#endregion public properties end
+
+		#region internal properties start
+
+		internal NavigationState CurrentState
+		{
+			get
+			{
+				CheckDisposed();
+				if (_historyPosition == -1)
+					return null;
+				return _history[_historyPosition];
 			}
 		}
 
