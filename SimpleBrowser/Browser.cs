@@ -651,7 +651,6 @@ namespace SimpleBrowser
 						_includeFormValues = null;
 
 						_lastRequestLog.Text = html;
-						_lastRequestLog.ParsedHtml = html;
 						_lastRequestLog.ResponseHeaders = response.Headers;
 						_lastRequestLog.StatusCode = (int)response.StatusCode;
 
