@@ -10,6 +10,22 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 	public class History
 	{
 		[Test]
+		public void When_Testing_Initial_Referer()
+		{
+			Browser b = new Browser(Helper.GetAllways200RequestMocker());
+			HttpRequestLog lastRequest = null;
+			b.RequestLogged += (br, l) =>
+			{
+				lastRequest = l;
+			};
+			b.Referer = "http://localhost/thisisatest/";
+			Assert.IsNull(b.CurrentState);
+			Assert.AreEqual(b.Referer, "http://localhost/thisisatest/");
+			b.Navigate("http://localhost/movies1/");
+
+		}
+
+		[Test]
 		public void When_Navigate_Back_Current_Url_Should_Change()
 		{
 			Browser b = new Browser(Helper.GetMoviesRequestMocker());
