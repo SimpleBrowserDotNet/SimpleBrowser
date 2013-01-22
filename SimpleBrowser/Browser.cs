@@ -560,7 +560,7 @@ namespace SimpleBrowser
 				{
 					req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 				}
-				catch (NotSupportedException e)
+				catch (NotSupportedException)
 				{
 					// Happens when the URL cannot be parsed (example: 'javascript:')
 					return false;
@@ -583,9 +583,10 @@ namespace SimpleBrowser
 						postBody = StringUtil.MakeQueryString(userVariables);
 						byte[] data = Encoding.GetEncoding(28591).GetBytes(postBody);
 						req.ContentLength = data.Length;
-						Stream stream = req.GetRequestStream();
-						stream.Write(data, 0, data.Length);
-						stream.Close();
+						using (Stream stream = req.GetRequestStream())
+						{
+							stream.Write(data, 0, data.Length);
+						}
 					}
 					else
 					{
@@ -603,9 +604,10 @@ namespace SimpleBrowser
 					postBody = postData;
 					byte[] data = Encoding.GetEncoding(28591).GetBytes(postData);
 					req.ContentLength = data.Length;
-					Stream stream = req.GetRequestStream();
-					stream.Write(data, 0, data.Length);
-					stream.Close();
+					using (Stream stream = req.GetRequestStream())
+					{
+						stream.Write(data, 0, data.Length);
+					}
 				}
 
 				if (contentType != null)
@@ -636,11 +638,15 @@ namespace SimpleBrowser
 								responseEncoding = Encoding.UTF8; // try using utf8
 							}
 						}
-
-						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
-						html = reader.ReadToEnd();
-						responseContentType = response.ContentType;
-						reader.Close();
+						//ensure the stream is disposed
+						using (Stream rs = response.GetResponseStream())
+						{
+							using (StreamReader reader = new StreamReader(rs, responseEncoding))
+							{
+								html = reader.ReadToEnd();
+								responseContentType = response.ContentType;
+							}
+						}
 						_doc = null;
 						_includeFormValues = null;
 
@@ -668,8 +674,14 @@ namespace SimpleBrowser
 					if (ex.Response != null)
 					{
 						_lastRequestLog.ResponseHeaders = ex.Response.Headers;
-						StreamReader reader = new StreamReader(ex.Response.GetResponseStream());
-						html = reader.ReadToEnd();
+						//ensure the stream is disposed
+						using (Stream rs = ex.Response.GetResponseStream())
+						{
+							using (StreamReader reader = new StreamReader(rs))
+							{
+								html = reader.ReadToEnd();
+							}
+						}
 						_lastRequestLog.Text = html;
 					}
 
