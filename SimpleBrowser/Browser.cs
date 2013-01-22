@@ -108,6 +108,11 @@ namespace SimpleBrowser
 			}
 		}
 
+		/// <summary>
+		/// Set the Initial Http Referer
+		/// </summary>
+		public string Referer { get; set; }
+
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 
 		public bool RetainLogs { get; set; }
@@ -857,7 +862,7 @@ namespace SimpleBrowser
 					.ToList();
 			}
 		}
-		
+
 		private List<XElement> FindElement(ElementType elementType, FindBy findBy, string value)
 		{
 			return FindElement(FindElements(elementType), findBy, value);
@@ -975,6 +980,8 @@ namespace SimpleBrowser
 				req.Proxy = _proxy;
 			if (CurrentState != null)
 				req.Referer = this.Url.AbsoluteUri;
+			else if (!string.IsNullOrWhiteSpace(Referer))
+				req.Referer = Referer;
 			return req;
 		}
 
