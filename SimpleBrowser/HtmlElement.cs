@@ -120,7 +120,7 @@ namespace SimpleBrowser
 			if (formElem != null)
 			{
 				FormElement form = this.OwningBrowser.CreateHtmlElement<FormElement>(formElem);
-				form.SubmitForm(url, clickedElement);
+				return form.SubmitForm(url, clickedElement);
 			}
 			return false;
 		}
