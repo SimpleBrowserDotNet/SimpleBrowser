@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SimpleBrowser.Elements;
 using System.Collections.Specialized;
+using System.Collections.Generic;
 
 namespace SimpleBrowser
 {
@@ -104,6 +105,67 @@ namespace SimpleBrowser
 		public virtual ClickResult Click()
 		{
 			return ClickResult.SucceededNoOp;
+		}
+
+		internal static HtmlElement CreateFor(XElement element)
+		{
+			HtmlElement result;
+			switch (element.Name.LocalName.ToLower())
+			{
+				case "form":
+					result = new FormElement(element);
+					break;
+				case "input":
+					string type = element.GetAttribute("type") ?? "";
+					switch (type.ToLower())
+					{
+						case "radio":
+							result = new RadioInputElement(element);
+							break;
+						case "checkbox":
+							result = new CheckboxInputElement(element);
+							break;
+						case "submit":
+						case "image":
+						case "button":
+							string buttonType = element.GetAttribute("type");
+							result = new ButtonInputElement(element);
+							break;
+						case "file":
+							result = new FileUploadElement(element);
+							break;
+						default:
+							result = new InputElement(element);
+							break;
+					}
+					break;
+				case "textarea":
+					result = new TextAreaElement(element);
+					break;
+				case "select":
+					result = new SelectElement(element);
+					break;
+				case "option":
+					result = new OptionElement(element);
+					break;
+				case "iframe":
+				case "frame":
+					result = new FrameElement(element);
+					break;
+				case "a":
+					result = new AnchorElement(element);
+					break;
+				case "label":
+					result = new LabelElement(element);
+					break;
+				case "button":
+					result = new ButtonInputElement(element);
+					break;
+				default:
+					result = new HtmlElement(element);
+					break;
+			}
+			return result;
 		}
 
 		protected virtual bool RequestNavigation(NavigationArgs args)
