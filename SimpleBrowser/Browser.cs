@@ -567,7 +567,8 @@ namespace SimpleBrowser
 				}
 				foreach (var header in _extraHeaders)
 					req.Headers.Add(header);
-				req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
+				if (encodingType != null)
+					req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
 				if (_includeFormValues != null)
 				{
 					if (userVariables == null)
