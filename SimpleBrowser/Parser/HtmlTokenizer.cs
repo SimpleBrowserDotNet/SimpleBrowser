@@ -234,7 +234,7 @@ namespace SimpleBrowser.Parser
 			elementToken.Raw = context.Html.Substring(start, context.Index - start);
 		}
 
-		static Regex RxReadCloseAttribute = new Regex(@"\</(?<name>[^\s=\>]+)[^\>]*\>");
+		static Regex RxReadCloseAttribute = new Regex(@"\</(?<name>[^\s=\/>]+)[^\>]*\>");
 		private static void ReadCloseElement(ParserContext context)
 		{
 			var match = RxReadCloseAttribute.Match(context.Html, context.Index);
