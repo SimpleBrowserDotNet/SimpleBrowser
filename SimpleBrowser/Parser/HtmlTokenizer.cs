@@ -42,7 +42,7 @@ namespace SimpleBrowser.Parser
 			return context.Tokens;
 		}
 
-		static Regex RxNextToken = new Regex(@"\<((\!((?<doctype>DOCTYPE)|(?<comment>(--)?)))|(?<xmldecl>\?\s?xml)|(?<element>[a-z])|(?<close>/[a-z]))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		static Regex RxNextToken = new Regex(@"\<((\!((?<doctype>DOCTYPE)|(?<cdata>\[CDATA\[)|(?<comment>(--)?)))|(?<xmldecl>\?\s?xml)|(?<element>[a-z])|(?<close>/[a-z])|())", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		static Regex RxNextScriptCloseToken = new Regex(@"\<(?<close>/s(?=cript))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		static void ReadNext(ParserContext context)
 		{
@@ -73,6 +73,8 @@ namespace SimpleBrowser.Parser
 						ReadComment(context);
 					else if(match.Groups["close"].Success)
 						ReadCloseElement(context);
+					else if(match.Groups["cdata"].Success)
+						ReadCdata(context);
 					else
 						ReadElement(context);
 				}
@@ -120,6 +122,36 @@ namespace SimpleBrowser.Parser
 			{
 				n = context.Html.IndexOf('>', context.Index);
 				if(n == -1)
+				{
+					len = Math.Max(0, context.Html.Length - innerStart);
+					context.Index = context.Html.Length;
+				}
+				else
+				{
+					len = Math.Max(0, n - innerStart);
+					context.Index = n + 1;
+				}
+			}
+			context.Tokens.Add(new HtmlParserToken { Type = TokenType.Comment, A = len == 0 ? null : context.Html.Substring(innerStart, len), Raw = context.Html.Substring(start, context.Index - start) });
+		}
+
+		static Regex RxStartCdata = new Regex(@"\<\!\[CDATA\[", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		private static void ReadCdata(ParserContext context)
+		{
+			int len;
+			var n = context.Html.IndexOf("]]>", context.Index);
+			var match = RxStartCdata.Match(context.Html, context.Index);
+			var start = match.Index;
+			var innerStart = match.Index + match.Length;
+			if (n > -1)
+			{
+				len = Math.Max(0, n - innerStart);
+				context.Index = n + 3;
+			}
+			else
+			{
+				n = context.Html.IndexOf('>', context.Index);
+				if (n == -1)
 				{
 					len = Math.Max(0, context.Html.Length - innerStart);
 					context.Index = context.Html.Length;
@@ -234,7 +266,7 @@ namespace SimpleBrowser.Parser
 			elementToken.Raw = context.Html.Substring(start, context.Index - start);
 		}
 
-		static Regex RxReadCloseAttribute = new Regex(@"\</(?<name>[^\s=\/>]+)[^\>]*\>");
+		static Regex RxReadCloseAttribute = new Regex(@"\</(?<name>[^\s=\>/]+)[^\>]*\>");
 		private static void ReadCloseElement(ParserContext context)
 		{
 			var match = RxReadCloseAttribute.Match(context.Html, context.Index);
@@ -258,7 +290,7 @@ namespace SimpleBrowser.Parser
 				}
 				else
 				{
-					context.Index += match.Length;				
+					context.Index += match.Length;
 				}
 			}
 		}
