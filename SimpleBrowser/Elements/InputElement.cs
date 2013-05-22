@@ -123,5 +123,9 @@ namespace SimpleBrowser.Elements
 				}
 			}
 		}
+		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+		{
+			yield return new UserVariableEntry() { Name = this.Name, Value = string.IsNullOrEmpty(this.Value) ? "on" : this.Value };
+		}
 	}
 }
