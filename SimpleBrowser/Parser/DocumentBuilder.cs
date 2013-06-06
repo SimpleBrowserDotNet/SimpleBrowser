@@ -70,7 +70,11 @@ namespace SimpleBrowser.Parser
 					}
 
 					case TokenType.Comment:
-						topOrRoot().Add(new XComment(token.Raw));
+						topOrRoot().Add(new XComment(token.A));
+						break;
+
+					case TokenType.Cdata:
+						topOrRoot().Add(new XCData(token.A));
 						break;
 
 					case TokenType.Text:

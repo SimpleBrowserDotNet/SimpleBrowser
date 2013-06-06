@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- Valid comment -->
+<! -- Malformed comment -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Comment Elements Unit Test Sample HTML Document</title>
+</head>
+<body>
+<![if gt IE 9]>
+<a id="link1" href="http://www.microsoft.com">Downlevel-revealed conditional comment test</a>
+<![endif]>
+<!--[if gt IE 10]>
+<a id="link2" href="http://www.microsoft.com">Downlevel-hidden conditional comment test</a>
+<![endif]-->
+<![CDATA[Some content]]>
+<p>
+This is a test of the various types of elements with tags that open with &lt;!<br />
+As of this writing, those include:<br />
+&lt;!DOCTYPE&gt;<br />
+&lt;!-- comments &gt; (well-formed and malformed comment opening tag)<br />
+&lt;![CDATA[data]]&gt;<br />
+&lt;![conditional comments]&gt; (for example, the Microsoft specific &lt;![if gt IE 7]&gt;)<br />
+</p>
+</body>
+</html>
