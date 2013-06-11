@@ -128,7 +128,6 @@ namespace SimpleBrowser
 						case "submit":
 						case "image":
 						case "button":
-							string buttonType = element.GetAttribute("type");
 							result = new ButtonInputElement(element);
 							break;
 						case "file":

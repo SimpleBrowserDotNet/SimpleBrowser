@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C0A2F5F6-088D-44E8-BBE3-400A8F84C0D3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SimpleBrowser.UnitTests</RootNamespace>
+    <AssemblyName>SimpleBrowser.UnitTests</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\packages\Moq.4.0.10827\NET40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\Dependencies\nunit.framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Helper.cs" />
+    <Compile Include="Issues.cs" />
+    <Compile Include="OfflineTests\CommentElements.cs" />
+    <Compile Include="OfflineTests\WeirdUrls.cs" />
+    <Compile Include="OfflineTests\WindowsAndFrames.cs" />
+    <Compile Include="OfflineTests\DecodedValue.cs" />
+    <Compile Include="OfflineTests\History.cs" />
+    <Compile Include="OfflineTests\QueryTests.cs" />
+    <Compile Include="OfflineTests\Selectors.cs" />
+    <Compile Include="OfflineTests\Uploading.cs" />
+    <Compile Include="OnlineTests\VerifyGZipEncoding.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleBrowser\SimpleBrowser.Mono.csproj">
+      <Project>{041EB5E9-DE14-41BA-B59D-F77612578CD6}</Project>
+      <Name>SimpleBrowser.Mono</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\SimpleForm.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\Axefrog_Basic2.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\FileUpload.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\movies1.htm" />
+    <EmbeddedResource Include="SampleDocs\movies2.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\DecodedValue.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\framecontainer.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\DecodedValue-malformed.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\CommentElements.htm" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -19,12 +19,12 @@ namespace SimpleBrowser.Query.Selectors
 
 		public void Execute(XQueryResultsContext context)
 		{
-			var ids = context.ResultSetInternal.Where(x => x.HasAttributeCI("id")).Select(x => x.GetAttributeCI("id")).ToArray();
+			// var ids = context.ResultSetInternal.Where(x => x.HasAttributeCI("id")).Select(x => x.GetAttributeCI("id")).ToArray();
 			var results = context.ResultSetInternal.Where(x => string.Compare(x.GetAttributeCI("id"), _id, true) == 0);
 			context.ResultSetInternal = results;
 		}
 
-        internal static readonly Regex RxSelector = new Regex(@"^\#(?<id>[A-Za-z_][A-Za-z0-9_\-:\.]+)");
+		internal static readonly Regex RxSelector = new Regex(@"^\#(?<id>[A-Za-z_][A-Za-z0-9_\-:\.]+)");
 	}
 
 	public class IdSelectorCreator : XQuerySelectorCreator

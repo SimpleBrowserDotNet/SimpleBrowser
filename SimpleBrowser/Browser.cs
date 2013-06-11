@@ -86,7 +86,6 @@ namespace SimpleBrowser
 		{
 			get
 			{
-				var dummy = this.XDocument; // Parsing the HTML into XDocument will trigger the loading of frames
 				return Browser.Windows.Where(b => b.ParentWindow == this);
 			}
 		}
@@ -233,10 +232,10 @@ namespace SimpleBrowser
 				_timeoutMilliseconds = _timeoutMilliseconds,
 				Accept = Accept,
 				LastWebException = LastWebException,
-				MessageLogged = MessageLogged,
 				RetainLogs = RetainLogs,
 				UserAgent = UserAgent
 			};
+			b.MessageLogged = MessageLogged;
 			b.AddNavigationState(this.CurrentState);
 			return b;
 		}
@@ -544,7 +543,6 @@ namespace SimpleBrowser
 			bool handle301Or302Redirect;
 			int maxRedirects = 10;
 			string html;
-			string responseContentType;
 			string postBody = "";
 			do
 			{
@@ -560,7 +558,7 @@ namespace SimpleBrowser
 				{
 					req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 				}
-				catch (NotSupportedException e)
+				catch (NotSupportedException)
 				{
 					// Happens when the URL cannot be parsed (example: 'javascript:')
 					return false;
@@ -640,7 +638,6 @@ namespace SimpleBrowser
 
 						StreamReader reader = new StreamReader(response.GetResponseStream(), responseEncoding);
 						html = reader.ReadToEnd();
-						responseContentType = response.ContentType;
 						reader.Close();
 						_doc = null;
 						_includeFormValues = null;
