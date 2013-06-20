@@ -6,6 +6,21 @@
 <title>Comment Elements Unit Test Sample HTML Document</title>
 </head>
 <body>
+<script type="text/javascript">
+<!--
+    var theForm = document.forms['form1'];
+    if (!theForm) {
+        theForm = document.form1;
+    }
+    function __doPostBack(eventTarget, eventArgument) {
+        if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+            theForm.__EVENTTARGET.value = eventTarget;
+            theForm.__EVENTARGUMENT.value = eventArgument;
+            theForm.submit();
+        }
+    }
+// -->
+</script>
 <![if gt IE 9]>
 <a id="link1" href="http://www.microsoft.com">Downlevel-revealed conditional comment test</a>
 <![endif]>

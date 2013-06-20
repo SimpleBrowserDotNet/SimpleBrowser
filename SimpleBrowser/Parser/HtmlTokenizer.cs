@@ -49,13 +49,24 @@ namespace SimpleBrowser.Parser
 			while(!context.EndOfString)
 			{
 				Match match;
-				if(context.InScriptTag)
+				if (context.InScriptTag)
 				{
 					match = RxNextScriptCloseToken.Match(context.Html, context.Index);
-					context.InScriptTag = false;
+					Match commentMatch = RxNextToken.Match(context.Html, context.Index);
+					if (commentMatch.Index < match.Index && commentMatch.Groups["comment"].Success)
+					{
+						match = commentMatch;
+					}
+					else
+					{
+						context.InScriptTag = false;
+					}
 				}
 				else
+				{
 					match = RxNextToken.Match(context.Html, context.Index);
+				}
+
 				if(match.Success)
 				{
 					var len = match.Index - context.Index;

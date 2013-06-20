@@ -83,5 +83,45 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			var comment = comments.First();
 			Assert.That(comment.ToString(), Is.EqualTo("<![CDATA[Some content]]>"));
 		}
+
+		/// <summary>
+		/// Tests a comment inside of a script element
+		/// </summary>
+		public void HtmlElement_Script_Comment()
+		{
+			Browser b = new Browser();
+			b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.CommentElements.htm"));
+
+			string text = b.Text;
+			HtmlResult scriptElement = b.Find("script", new { type = "text/javascript" });
+			if (scriptElement.Exists)
+			{
+				// Test that the script element has at least one child element.
+				// (This test is of questionable usefulness.)
+				Assert.That(scriptElement.XElement.DescendantNodes().Count() > 0, "Script element does not have a child element");
+
+				// Test that the child element is a comment element.
+				var comments = from node in scriptElement.XElement.DescendantNodes()
+							   where node.NodeType == XmlNodeType.Comment
+							   select node as XComment;
+
+				Assert.That(comments.Count() > 0, "Script element does not have a child element");
+
+				// Test that the child element contains the sample script text.
+				var comment = comments.First().ToString().Replace('\r', ' ').Replace('\n', ' ');
+				Assert.That(
+					comment.Equals(
+						"<!--      var theForm = document.forms['form1'];      if (!theForm) {          theForm = document.form1;      }      function __doPostBack(eventTarget, eventArgument) {          if (!theForm.onsubmit || (theForm.onsubmit() != false)) {              theForm.__EVENTTARGET.value = eventTarget;              theForm.__EVENTARGUMENT.value = eventArgument;              theForm.submit();          }      }  // -->"),
+					"The comment text does not match the expected value");
+
+				// Test that content of the comment does not appear in the browser text.
+				Assert.That(b.ContainsText("theForm") == false, "Script comment appears in the 'visible' browser text.");
+				Assert.That(b.Text.Contains("theForm") == false, "Script comment appears in the 'visible' browser text.");
+			}
+			else
+			{
+				Assert.Fail("Unable to find script tag in sample content.");
+			}
+		}
 	}
 }
