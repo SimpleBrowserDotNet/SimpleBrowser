@@ -22,3 +22,5 @@ obj
 packages/Moq.*
 packages/NUnit.*
 *.ncrunchsolution
+
+SimpleBrowser/StyleCop.Cache
