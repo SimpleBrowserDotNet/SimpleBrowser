@@ -43,7 +43,7 @@ namespace SimpleBrowser.Parser
 		}
 
 		static Regex RxNextToken = new Regex(@"\<((\!((?<doctype>DOCTYPE)|(?<cdata>\[CDATA\[)|(?<comment>(\s)?--)|(?<conditional>\[)))|(?<xmldecl>\?\s?xml)|(?<element>[a-z])|(?<close>/[a-z])|())", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-		static Regex RxNextScriptCloseToken = new Regex(@"\<(?<close>/s(?=cript))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		static Regex RxNextScriptToken = new Regex(@"\<((?<comment>!(\s)?--)|(?<close>/script\>))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		static void ReadNext(ParserContext context)
 		{
 			while(!context.EndOfString)
@@ -51,13 +51,9 @@ namespace SimpleBrowser.Parser
 				Match match;
 				if (context.InScriptTag)
 				{
-					match = RxNextScriptCloseToken.Match(context.Html, context.Index);
-					Match commentMatch = RxNextToken.Match(context.Html, context.Index);
-					if (commentMatch.Index < match.Index && commentMatch.Groups["comment"].Success)
-					{
-						match = commentMatch;
-					}
-					else
+					match = RxNextScriptToken.Match(context.Html, context.Index);
+
+					if (match.Groups["close"].Success)
 					{
 						context.InScriptTag = false;
 					}
