@@ -191,6 +191,7 @@ namespace SimpleBrowser
 			if (this is AnchorElement)
 			{
 				this.Click();
+				return;
 			}
 			throw new InvalidOperationException("This method must only be called on <a> elements having a __doPostBack javascript call in the href attribute");
 		}
