@@ -65,7 +65,10 @@ namespace SimpleBrowser.Elements
 					}
 					))
 			{
-				navigation.UserVariables.Add(entry.Name, entry.Value);
+				if (entry != null)
+				{
+					navigation.UserVariables.Add(entry.Name, entry.Value);
+				}
 			}
 			navigation.EncodingType = this.EncType;
 			if (this.EncType == FormEncoding.MultipartForm)
@@ -114,6 +117,5 @@ namespace SimpleBrowser.Elements
 			public const string FormUrlencode = "application/x-www-form-urlencoded";
 			public const string MultipartForm = "multipart/form-data";
 		}
-		
 	}
 }

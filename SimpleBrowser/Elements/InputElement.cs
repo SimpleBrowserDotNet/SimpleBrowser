@@ -157,21 +157,28 @@ namespace SimpleBrowser.Elements
 		public override bool Selected
 		{
 			get { return GetAttribute("checked") != null; }
-			set 
+			set
 			{
 				if (value)
 				{
 					this.Element.SetAttributeValue("checked", "true");
 				}
-				else 
-				{ 
-					this.Element.RemoveAttributeCI("checked"); 
+				else
+				{
+					this.Element.RemoveAttributeCI("checked");
 				}
 			}
 		}
 		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
 		{
-			yield return new UserVariableEntry() { Name = this.Name, Value = string.IsNullOrEmpty(this.Value) ? "on" : this.Value };
+			if (this.XElement.HasAttributeCI("checked"))
+			{
+				yield return new UserVariableEntry() { Name = this.Name, Value = string.IsNullOrEmpty(this.Value) ? "on" : this.Value };
+			}
+			else
+			{
+				yield return null;
+			}
 		}
 	}
 }
