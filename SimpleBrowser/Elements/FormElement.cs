@@ -93,9 +93,11 @@ namespace SimpleBrowser.Elements
 						var values = element.ValuesToSubmit(element == clickedElement);
 						foreach (var value in values)
 						{
-							post.AppendFormat("--{0}\n", token);
-							post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\n\n{1}\n", value.Name, value.Value);
-
+							if (value != null)
+							{
+								post.AppendFormat("--{0}\n", token);
+								post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\n\n{1}\n", value.Name, value.Value);
+							}
 						}
 					}
 				}
