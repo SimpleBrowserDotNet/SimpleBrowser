@@ -67,6 +67,9 @@ namespace SimpleBrowser.Elements
 			{
 				if (entry != null)
 				{
+					// This call to Remove() guarantees that for each element with a duplicate name
+					// only the last element on the form is submitted.
+					navigation.UserVariables.Remove(entry.Name);
 					navigation.UserVariables.Add(entry.Name, entry.Value);
 				}
 			}
