@@ -65,13 +65,10 @@ namespace SimpleBrowser.Elements
 					}
 					))
 			{
-				if (entry != null)
-				{
-					// This call to Remove() guarantees that for each element with a duplicate name
-					// only the last element on the form is submitted.
-					navigation.UserVariables.Remove(entry.Name);
-					navigation.UserVariables.Add(entry.Name, entry.Value);
-				}
+				// This call to Remove() guarantees that for each element with a duplicate name
+				// only the last element on the form is submitted.
+				navigation.UserVariables.Remove(entry.Name);
+				navigation.UserVariables.Add(entry.Name, entry.Value);
 			}
 			navigation.EncodingType = this.EncType;
 			if (this.EncType == FormEncoding.MultipartForm)
@@ -93,11 +90,8 @@ namespace SimpleBrowser.Elements
 						var values = element.ValuesToSubmit(element == clickedElement);
 						foreach (var value in values)
 						{
-							if (value != null)
-							{
-								post.AppendFormat("--{0}\n", token);
-								post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\n\n{1}\n", value.Name, value.Value);
-							}
+							post.AppendFormat("--{0}\n", token);
+							post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\n\n{1}\n", value.Name, value.Value);
 						}
 					}
 				}

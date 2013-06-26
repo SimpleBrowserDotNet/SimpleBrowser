@@ -175,10 +175,7 @@ namespace SimpleBrowser.Elements
 			{
 				yield return new UserVariableEntry() { Name = this.Name, Value = string.IsNullOrEmpty(this.Value) ? "on" : this.Value };
 			}
-			else
-			{
-				yield return null;
-			}
+			yield break;
 		}
 	}
 }
