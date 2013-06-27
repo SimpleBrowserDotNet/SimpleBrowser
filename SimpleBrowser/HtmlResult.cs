@@ -202,23 +202,23 @@ namespace SimpleBrowser
 		/// well.
 		/// </summary>
 		/// <param name="url">Optional. If specified, the form will be submitted to this URL instead.</param>
-		public void SubmitForm(string url = null)
+		public bool SubmitForm(string url = null)
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
 			_browser.Log("Submitting parent/ancestor form of: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
-			_current.SubmitForm(url);
+			return _current.SubmitForm(url);
 		}
 
 		/// <summary>
 		/// This method is designed for use on Asp.Net WebForms sites where the anchor link being clicked only has a postback
 		/// javascript function as its method of navigating to the next page.
 		/// </summary>
-		public void DoAspNetLinkPostBack()
+		public ClickResult DoAspNetLinkPostBack()
 		{
 			AssertElementExists();
 			_browser.Log("Performing ASP.Net postback click for : " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
-			_current.DoAspNetLinkPostBack();
+			return _current.DoAspNetLinkPostBack();
 		}
 
 		/// <summary>
