@@ -128,6 +128,7 @@ namespace SimpleBrowser
 						case "submit":
 						case "image":
 						case "button":
+						case "reset":
 							result = new ButtonInputElement(element);
 							break;
 						case "file":
