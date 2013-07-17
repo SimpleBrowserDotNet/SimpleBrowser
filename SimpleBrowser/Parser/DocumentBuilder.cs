@@ -16,7 +16,15 @@ namespace SimpleBrowser.Parser
 		private DocumentBuilder(List<HtmlParserToken> tokens)
 		{
 			_tokens = tokens;
-			_doc = XDocument.Parse("<?xml version=\"1.0\"?><html />");
+			string doctype = string.Empty;
+			HtmlParserToken doctypeToken = tokens.Where(t => t.Type == TokenType.DocTypeDeclaration).First();
+			if (doctypeToken != null)
+			{
+				doctype = doctypeToken.Raw;
+			}
+
+			_doc = XDocument.Parse(string.Format("<?xml version=\"1.0\"?>{0}<html />", doctype));
+			_doc.DocumentType.InternalSubset = null;
 		}
 
 		public static XDocument Parse(List<HtmlParserToken> tokens)

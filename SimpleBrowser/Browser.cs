@@ -65,6 +65,8 @@ namespace SimpleBrowser
 
 		public string ContentType { get { return CurrentState.ContentType; } }
 
+		public string DocumentType { get { return CurrentState.XDocument.DocumentType.ToString(); } }
+
 		public CookieContainer Cookies { get; set; }
 
 		public string CurrentHtml { get { return CurrentState.Html; } }
