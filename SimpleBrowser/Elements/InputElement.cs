@@ -79,7 +79,11 @@ namespace SimpleBrowser.Elements
 
 		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
 		{
-			yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+			if (!String.IsNullOrEmpty(this.Name))
+			{
+				yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+			}
+			yield break;
 		}
 	}
 
@@ -91,7 +95,7 @@ namespace SimpleBrowser.Elements
 		}
 		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
 		{
-			if (this.Selected)
+			if (this.Selected && !String.IsNullOrEmpty(this.Name))
 			{
 				yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
 			}
@@ -172,7 +176,7 @@ namespace SimpleBrowser.Elements
 		}
 		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
 		{
-			if (this.XElement.HasAttributeCI("checked"))
+			if (this.XElement.HasAttributeCI("checked") && !String.IsNullOrEmpty(this.Name))
 			{
 				yield return new UserVariableEntry() { Name = this.Name, Value = string.IsNullOrEmpty(this.Value) ? "on" : this.Value };
 			}

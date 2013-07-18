@@ -54,7 +54,11 @@ namespace SimpleBrowser.Elements
 
 		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
 		{
-			yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+			if (!String.IsNullOrEmpty(this.Name))
+			{
+				yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+			}
+			yield break;
 		}
 	}
 }
