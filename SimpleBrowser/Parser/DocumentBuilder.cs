@@ -24,7 +24,10 @@ namespace SimpleBrowser.Parser
 			}
 
 			_doc = XDocument.Parse(string.Format("<?xml version=\"1.0\"?>{0}<html />", doctype));
-			_doc.DocumentType.InternalSubset = null;
+			if (_doc.DocumentType != null)
+			{
+				_doc.DocumentType.InternalSubset = null;
+			}
 		}
 
 		public static XDocument Parse(List<HtmlParserToken> tokens)
