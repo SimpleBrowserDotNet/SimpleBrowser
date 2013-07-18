@@ -17,7 +17,7 @@ namespace SimpleBrowser.Parser
 		{
 			_tokens = tokens;
 			string doctype = string.Empty;
-			HtmlParserToken doctypeToken = tokens.Where(t => t.Type == TokenType.DocTypeDeclaration).First();
+			HtmlParserToken doctypeToken = tokens.Where(t => t.Type == TokenType.DocTypeDeclaration).FirstOrDefault();
 			if (doctypeToken != null)
 			{
 				doctype = doctypeToken.Raw;
