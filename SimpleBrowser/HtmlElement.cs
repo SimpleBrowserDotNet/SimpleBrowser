@@ -107,9 +107,14 @@ namespace SimpleBrowser
 			return ClickResult.SucceededNoOp;
 		}
 
+		public virtual ClickResult Click(uint x, uint y)
+		{
+			return Click();
+		}
+
 		internal static HtmlElement CreateFor(XElement element)
 		{
-			HtmlElement result;
+			HtmlElement result  = null;
 			switch (element.Name.LocalName.ToLower())
 			{
 				case "form":
@@ -125,11 +130,12 @@ namespace SimpleBrowser
 						case "checkbox":
 							result = new CheckboxInputElement(element);
 							break;
-						case "submit":
 						case "image":
+							result = new ImageInputElement(element);
+							break;
+						case "submit":
 						case "button":
 						case "reset":
-							result = new ButtonInputElement(element);
 							break;
 						case "file":
 							result = new FileUploadElement(element);

@@ -186,6 +186,8 @@ namespace SimpleBrowser
 		/// element is a checkbox, the CHECKED value will be toggled on or off. If the element is a radio button, other
 		/// radio buttons in the group will have their CHECKED attribute removed and the current element will have its
 		/// CHECKED element set.
+		/// NOTE: If the element IS an INPUT TYPE=IMAGE element, this method will "click" the image input as though the
+		/// element had focus and the space bar or enter key was pressed to activate the element, performing the click.
 		/// </summary>
 		public ClickResult Click()
 		{
@@ -193,6 +195,21 @@ namespace SimpleBrowser
 			AssertElementIsNotDisabled();
 			_browser.Log("Clicking element: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
 			return _current.Click();
+		}
+
+		/// <summary>
+		/// Simulates a click on an element at the specified coorinates, which has differing effects depending on the
+		/// element type. If the element IS an INPUT TYPE=IMAGE element, this method will "click" the image input as
+		/// though the element had been clicked with a pointing device (i.e., a mouse) at the specified coordinates.
+		/// If the element does not support being clicked at specified coordinates (i.e., the element IS NOT an INPUT
+		/// TYPE=IMAGE element), the element will be clicked as though the Click() method (without parameters) been called.
+		/// </summary>
+		public ClickResult Click(uint x, uint y)
+		{
+			AssertElementExists();
+			AssertElementIsNotDisabled();
+			_browser.Log("Clicking element: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
+			return _current.Click(x, y);
 		}
 
 		/// <summary>
