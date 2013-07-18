@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace SimpleBrowser.Parser
@@ -23,7 +24,16 @@ namespace SimpleBrowser.Parser
 				doctype = doctypeToken.Raw;
 			}
 
-			_doc = XDocument.Parse(string.Format("<?xml version=\"1.0\"?>{0}<html />", doctype));
+			try
+			{
+				_doc = XDocument.Parse(string.Format("<?xml version=\"1.0\"?>{0}<html />", doctype));
+			}
+			catch (XmlException)
+			{
+				// System.Xml.Linq.XDocument throws an XmlException if it encounters a DOCTYPE it
+				// can't parse. If this occurs, do not use the DOCTYPE from the page.
+				_doc = XDocument.Parse("<?xml version=\"1.0\"?><html />");
+			}
 			if (_doc.DocumentType != null)
 			{
 				_doc.DocumentType.InternalSubset = null;
