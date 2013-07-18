@@ -28,7 +28,8 @@ namespace SimpleBrowser.Elements
 				// Verifies that the input element type allowed to have a maxlength attribute
 				string inputType = Element.GetAttributeCI("type");
 				bool maxLengthAble = false;
-				if (inputType.ToLower() == "text" ||
+				if (inputType == null || // According to the HTML5 specification, if the type attribute does not exist, by default, the input element is a text input.
+					inputType.ToLower() == "text" ||
 					inputType.ToLower() == "password" ||
 					inputType.ToLower() == "search" ||
 					inputType.ToLower() == "tel" ||
