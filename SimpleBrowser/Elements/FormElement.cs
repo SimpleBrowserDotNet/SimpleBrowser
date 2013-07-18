@@ -87,7 +87,12 @@ namespace SimpleBrowser.Elements
 					}
 					else
 					{
-						var values = element.ValuesToSubmit(element.Element == clickedElement.Element);
+						bool isClickedElement = false;
+						if (clickedElement != null)
+						{
+							isClickedElement = element.Element == clickedElement.Element;
+						}
+						var values = element.ValuesToSubmit(isClickedElement);
 						foreach (var value in values)
 						{
 							post.AppendFormat("--{0}\n", token);
