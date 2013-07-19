@@ -36,7 +36,9 @@ namespace SimpleBrowser.Parser
 			}
 			if (_doc.DocumentType != null)
 			{
+#if !__MonoCS__
 				_doc.DocumentType.InternalSubset = null;
+#endif
 			}
 		}
 
