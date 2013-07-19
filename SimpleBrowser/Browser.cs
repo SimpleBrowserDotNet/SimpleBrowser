@@ -48,6 +48,7 @@ namespace SimpleBrowser
 		{
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
+			UseGZip = true;
 			Cookies = new CookieContainer();
 			if (requestFactory == null)
 				requestFactory = new DefaultRequestFactory();
