@@ -5,14 +5,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
+using SimpleBrowser.Network;
 using SimpleBrowser.Parser;
 using SimpleBrowser.Query;
-using SimpleBrowser.Elements;
-using SimpleBrowser.Network;
 
 namespace SimpleBrowser
 {
@@ -279,7 +279,7 @@ namespace SimpleBrowser
 				object o = p.GetValue(elementAttributes, null);
 				if (o == null)
 					continue;
-				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
+				list = FilterElementsByAttributeName(list, p, o.ToString(), false);
 			}
 			return GetHtmlResult(list);
 		}
@@ -811,6 +811,22 @@ namespace SimpleBrowser
 														&& k.Value.ToLower() == value.ToLower()).Count() > 0)
 					.ToList();
 			}
+		}
+
+		private List<XElement> FilterElementsByAttributeName(List<XElement> list, PropertyInfo p, string value, bool allowPartialMatch)
+		{
+			var matchesByAttribute = FilterElementsByAttribute(list, p.Name, value, allowPartialMatch);
+			if (!matchesByAttribute.Any())
+			{
+				if (p.Name.Contains('_'))
+				{
+					var attributeName = p.Name.Replace('_', '-');
+					matchesByAttribute = FilterElementsByAttribute(list, attributeName, value, allowPartialMatch);
+				}
+			}
+
+			list = matchesByAttribute;
+			return list;
 		}
 
 		private List<XElement> FilterElementsByAttributeNameToken(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)
