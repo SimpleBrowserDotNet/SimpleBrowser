@@ -568,6 +568,7 @@ namespace SimpleBrowser
 				}
 				foreach (var header in _extraHeaders)
 					req.Headers.Add(header);
+                
 				if (encodingType != null)
 					req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
 				if (_includeFormValues != null)
@@ -967,6 +968,7 @@ namespace SimpleBrowser
 			IHttpWebRequest req = _reqFactory.GetWebRequest(url);
 			req.Method = method;
 			req.ContentType = contentType; // "application/x-www-form-urlencoded";
+            req.Headers.Add("Host", url.Host);
 			req.UserAgent = UserAgent;
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
@@ -980,6 +982,7 @@ namespace SimpleBrowser
 				req.Proxy = _proxy;
 			if (CurrentState != null)
 				req.Referer = this.Url.AbsoluteUri;
+            
 			return req;
 		}
 
