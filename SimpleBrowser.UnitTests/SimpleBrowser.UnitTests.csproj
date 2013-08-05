@@ -53,6 +53,7 @@
     <Compile Include="Issues.cs" />
     <Compile Include="OfflineTests\CommentElements.cs" />
     <Compile Include="OfflineTests\Forms.cs" />
+    <Compile Include="OfflineTests\Http.cs" />
     <Compile Include="OfflineTests\WeirdUrls.cs" />
     <Compile Include="OfflineTests\WindowsAndFrames.cs" />
     <Compile Include="OfflineTests\DecodedValue.cs" />
