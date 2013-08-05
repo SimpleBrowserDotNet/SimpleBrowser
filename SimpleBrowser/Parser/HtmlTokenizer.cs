@@ -260,7 +260,7 @@ namespace SimpleBrowser.Parser
 		 */
 
 		static Regex RxReadTagName = new Regex(@"[A-Za-z][A-Za-z0-9]*");
-		static Regex RxReadAttribute = new Regex(@"(?<name>([^\='""\<\>\s/]|/(?=\>))[^\=\<\>\s]*)(?<eq>\s*=\s*(?<quote>'|"")?(?(quote)(?<value>(?(\k<quote>)|.)*)|(?<value>([^\s\<\>/]|/(?=\>))*))\k<quote>?)?", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		static Regex RxReadAttribute = new Regex(@"(?<name>([^\='""\<\>\s/]|/(?=\>))[^\=\<\>\s]*)(?<eq>\s*=\s*(?<quote>'|"")?(?(quote)(?<value>(?(\k<quote>)|.)*)|(?<value>([^\s\<\>]|/(?=\>))*))\k<quote>?)?", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		private static void ReadElement(ParserContext context)
 		{
 			var start = context.Index;
