@@ -101,6 +101,7 @@
     <Compile Include="Query\Selectors\DescendentSelector.cs" />
     <Compile Include="Query\Selectors\ElementSelector.cs" />
     <Compile Include="Query\Selectors\IdSelector.cs" />
+    <Compile Include="Query\Selectors\NeighbourSelector.cs" />
     <Compile Include="Query\XQuery.cs" />
     <Compile Include="Query\XQueryException.cs" />
     <Compile Include="Query\XQueryParserContext.cs" />

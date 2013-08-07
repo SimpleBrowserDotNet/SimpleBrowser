@@ -57,5 +57,14 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			colorBox = b.Select("*[type=checkbox][checked]");
 			Assert.That(colorBox.Count() == 1, "There should be exactly 1 element with type checkbox and checked");
 		}
+		[Test]
+		public void UsePlusSelector()
+		{
+			Browser b = new Browser();
+			b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
+			var inputDirectlyUnderForm = b.Select("div + input");
+			Assert.That(inputDirectlyUnderForm.Count() == 1); // only one <input> comes directly after a div
+
+		}
 	}
 }
