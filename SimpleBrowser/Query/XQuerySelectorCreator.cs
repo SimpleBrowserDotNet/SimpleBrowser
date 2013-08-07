@@ -7,5 +7,6 @@ namespace SimpleBrowser.Query
 	{
 		public abstract Regex MatchNext { get; }
 		public abstract IXQuerySelector Create(XQueryParserContext context, Match match);
+		public virtual int Priority { get { return 0; } }
 	}
 }
