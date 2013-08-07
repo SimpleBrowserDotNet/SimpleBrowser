@@ -20,10 +20,10 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://www.google.com/");
-            Assert.That(b.Url == new Uri("http://www.google.com/"));
+            b.Navigate("http://www.facebook.com/");
+            Assert.That(b.Url.Host == "www.facebook.com");
             Assert.That(b.Select("Title") != null);
-            Assert.That(b.Select("Title").Value.IndexOf("Google", StringComparison.OrdinalIgnoreCase) > -1);
+            Assert.That(b.Select("Title").Value.IndexOf("Facebook", StringComparison.OrdinalIgnoreCase) > -1);
         }
 
     }
