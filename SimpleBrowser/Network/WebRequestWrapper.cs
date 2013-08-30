@@ -170,6 +170,17 @@ namespace SimpleBrowser.Network
 			}
 		}
 
-		#endregion
+		public string Host
+		{
+			get
+			{
+				return _wr.Host;
+			}
+			set
+			{
+				_wr.Host = value;
+			}
+		}
+	  #endregion
 	}
 }
