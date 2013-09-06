@@ -53,6 +53,7 @@
     <Compile Include="Issues.cs" />
     <Compile Include="OfflineTests\CommentElements.cs" />
     <Compile Include="OfflineTests\Forms.cs" />
+    <Compile Include="OfflineTests\HttpHeaderTests.cs" />
     <Compile Include="OfflineTests\WeirdUrls.cs" />
     <Compile Include="OfflineTests\WindowsAndFrames.cs" />
     <Compile Include="OfflineTests\DecodedValue.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="OfflineTests\QueryTests.cs" />
     <Compile Include="OfflineTests\Selectors.cs" />
     <Compile Include="OfflineTests\Uploading.cs" />
+    <Compile Include="OnlineTests\HttpHeaderTests.cs" />
     <Compile Include="OnlineTests\VerifyGZipEncoding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -567,8 +567,13 @@ namespace SimpleBrowser
 					return false;
 				}
 				foreach (var header in _extraHeaders)
-					req.Headers.Add(header);
-				if (encodingType != null)
+				{
+					if (header.StartsWith("host:", StringComparison.OrdinalIgnoreCase))
+						req.Host = header.Split(':')[1];
+					else
+						req.Headers.Add(header);
+				}
+			  if (encodingType != null)
 					req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
 				if (_includeFormValues != null)
 				{
@@ -609,7 +614,7 @@ namespace SimpleBrowser
 					stream.Write(data, 0, data.Length);
 					stream.Close();
 				}
-
+				
 				if (contentType != null)
 					req.ContentType = contentType;
 
