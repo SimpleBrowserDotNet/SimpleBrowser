@@ -141,7 +141,7 @@ namespace SimpleBrowser.Parser
 					context.Index = n + 1;
 				}
 			}
-			context.Tokens.Add(new HtmlParserToken { Type = TokenType.Comment, A = len == 0 ? null : context.Html.Substring(innerStart, len), Raw = context.Html.Substring(start, context.Index - start) });
+			context.Tokens.Add(new HtmlParserToken { Type = TokenType.Comment, A = len == 0 ? string.Empty : context.Html.Substring(innerStart, len), Raw = context.Html.Substring(start, context.Index - start) });
 		}
 
 		static Regex RxStartCdata = new Regex(@"\<\!\[CDATA\[", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
