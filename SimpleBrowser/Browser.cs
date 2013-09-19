@@ -555,8 +555,10 @@ namespace SimpleBrowser
 					Log("Too many 302 redirects", LogMessageType.Error);
 					return false;
 				}
+
 				handle301Or302Redirect = false;
 				IHttpWebRequest req = null;
+
 				try
 				{
 					req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
@@ -566,6 +568,7 @@ namespace SimpleBrowser
 					// Happens when the URL cannot be parsed (example: 'javascript:')
 					return false;
 				}
+
 				foreach (var header in _extraHeaders)
 				{
 					if (header.StartsWith("host:", StringComparison.OrdinalIgnoreCase))
@@ -573,8 +576,12 @@ namespace SimpleBrowser
 					else
 						req.Headers.Add(header);
 				}
-			  if (encodingType != null)
+
+				if (!string.IsNullOrEmpty(encodingType))
+				{
 					req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
+				}
+
 				if (_includeFormValues != null)
 				{
 					if (userVariables == null)

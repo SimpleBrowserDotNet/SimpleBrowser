@@ -70,8 +70,7 @@ namespace SimpleBrowser.Elements
 				navigation.UserVariables.Remove(entry.Name);
 				navigation.UserVariables.Add(entry.Name, entry.Value);
 			}
-			navigation.EncodingType = this.EncType;
-			if (this.EncType == FormEncoding.MultipartForm && this.Method.ToUpper() == "POST")
+			if (this.EncType == FormEncoding.MultipartForm && this.Method.ToUpper() == "POST" )
 			{
 				// create postdata according to multipart specs
 				Guid token = Guid.NewGuid();
