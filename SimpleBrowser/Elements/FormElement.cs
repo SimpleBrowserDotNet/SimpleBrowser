@@ -80,9 +80,9 @@ namespace SimpleBrowser.Elements
 				{
 					if (element is IHasRawPostData)
 					{
-						post.AppendFormat("--{0}\n", token);
+						post.AppendFormat("--{0}\r\n", token);
 						string filename = new FileInfo(element.Value).Name;
-						post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\n{2}\n", element.Name, filename, ((IHasRawPostData)element).GetPostData());
+						post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\n{2}\r\n", element.Name, filename, ((IHasRawPostData)element).GetPostData());
 					}
 					else
 					{
@@ -94,12 +94,12 @@ namespace SimpleBrowser.Elements
 						var values = element.ValuesToSubmit(isClickedElement);
 						foreach (var value in values)
 						{
-							post.AppendFormat("--{0}\n", token);
-							post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\n\n{1}\n", value.Name, value.Value);
+							post.AppendFormat("--{0}\r\n", token);
+							post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}\r\n", value.Name, value.Value);
 						}
 					}
 				}
-				post.AppendFormat("--{0}\n", token);
+				post.AppendFormat("--{0}\r\n", token);
 				navigation.PostData = post.ToString();
 				navigation.ContentType = FormEncoding.MultipartForm + "; boundary=" + token;
 
