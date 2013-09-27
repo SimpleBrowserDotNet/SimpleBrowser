@@ -107,9 +107,14 @@ namespace SimpleBrowser
 			return ClickResult.SucceededNoOp;
 		}
 
+		public virtual ClickResult Click(uint x, uint y)
+		{
+			return Click();
+		}
+
 		internal static HtmlElement CreateFor(XElement element)
 		{
-			HtmlElement result;
+			HtmlElement result  = null;
 			switch (element.Name.LocalName.ToLower())
 			{
 				case "form":
@@ -125,10 +130,12 @@ namespace SimpleBrowser
 						case "checkbox":
 							result = new CheckboxInputElement(element);
 							break;
-						case "submit":
 						case "image":
+							result = new ImageInputElement(element);
+							break;
+						case "submit":
 						case "button":
-							string buttonType = element.GetAttribute("type");
+						case "reset":
 							result = new ButtonInputElement(element);
 							break;
 						case "file":
@@ -150,7 +157,15 @@ namespace SimpleBrowser
 					break;
 				case "iframe":
 				case "frame":
-					result = new FrameElement(element);
+                    var src = element.GetAttributeCI("src");
+                    if (!string.IsNullOrWhiteSpace(src)) 
+                    {
+                        result = new FrameElement(element);
+                    }
+                    else 
+                    {
+                        result = default(HtmlElement);
+                    }
 					break;
 				case "a":
 					result = new AnchorElement(element);
@@ -182,16 +197,16 @@ namespace SimpleBrowser
 			if (formElem != null)
 			{
 				FormElement form = this.OwningBrowser.CreateHtmlElement<FormElement>(formElem);
-				form.SubmitForm(url, clickedElement);
+				return form.SubmitForm(url, clickedElement);
 			}
 			return false;
 		}
 
-		public void DoAspNetLinkPostBack()
+		public ClickResult DoAspNetLinkPostBack()
 		{
 			if (this is AnchorElement)
 			{
-				this.Click();
+				return this.Click();
 			}
 			throw new InvalidOperationException("This method must only be called on <a> elements having a __doPostBack javascript call in the href attribute");
 		}

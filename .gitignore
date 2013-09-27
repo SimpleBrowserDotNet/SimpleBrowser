@@ -1,3 +1,5 @@
+/SimpleBrowser/Properties/Resources.resources
+/SimpleBrowser.Mono.userprefs
 axefrogcore/*
 debug/*
 release/*
@@ -20,3 +22,4 @@ obj
 packages/Moq.*
 packages/NUnit.*
 *.ncrunchsolution
+*/StyleCop.Cache

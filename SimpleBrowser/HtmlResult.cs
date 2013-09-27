@@ -186,6 +186,8 @@ namespace SimpleBrowser
 		/// element is a checkbox, the CHECKED value will be toggled on or off. If the element is a radio button, other
 		/// radio buttons in the group will have their CHECKED attribute removed and the current element will have its
 		/// CHECKED element set.
+		/// NOTE: If the element IS an INPUT TYPE=IMAGE element, this method will "click" the image input as though the
+		/// element had focus and the space bar or enter key was pressed to activate the element, performing the click.
 		/// </summary>
 		public ClickResult Click()
 		{
@@ -196,29 +198,44 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
+		/// Simulates a click on an element at the specified coorinates, which has differing effects depending on the
+		/// element type. If the element IS an INPUT TYPE=IMAGE element, this method will "click" the image input as
+		/// though the element had been clicked with a pointing device (i.e., a mouse) at the specified coordinates.
+		/// If the element does not support being clicked at specified coordinates (i.e., the element IS NOT an INPUT
+		/// TYPE=IMAGE element), the element will be clicked as though the Click() method (without parameters) been called.
+		/// </summary>
+		public ClickResult Click(uint x, uint y)
+		{
+			AssertElementExists();
+			AssertElementIsNotDisabled();
+			_browser.Log("Clicking element: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
+			return _current.Click(x, y);
+		}
+
+		/// <summary>
 		/// This method can be used on any element contained within a form, or the form element itself. The form will be 
 		/// serialized and submitted as close as possible to the way it would be in a normal browser request. In
 		/// addition, any values currently in the ExtraFormValues property of the Browser object will be submitted as
 		/// well.
 		/// </summary>
 		/// <param name="url">Optional. If specified, the form will be submitted to this URL instead.</param>
-		public void SubmitForm(string url = null)
+		public bool SubmitForm(string url = null)
 		{
 			AssertElementExists();
 			AssertElementIsNotDisabled();
 			_browser.Log("Submitting parent/ancestor form of: " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
-			_current.SubmitForm(url);
+			return _current.SubmitForm(url);
 		}
 
 		/// <summary>
 		/// This method is designed for use on Asp.Net WebForms sites where the anchor link being clicked only has a postback
 		/// javascript function as its method of navigating to the next page.
 		/// </summary>
-		public void DoAspNetLinkPostBack()
+		public ClickResult DoAspNetLinkPostBack()
 		{
 			AssertElementExists();
 			_browser.Log("Performing ASP.Net postback click for : " + HttpUtility.HtmlEncode(XElement.ToString()), LogMessageType.Internal);
-			_current.DoAspNetLinkPostBack();
+			return _current.DoAspNetLinkPostBack();
 		}
 
 		/// <summary>

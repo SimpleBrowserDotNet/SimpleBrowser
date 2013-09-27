@@ -25,5 +25,6 @@ namespace SimpleBrowser.Query.Selectors
 		{
 			return new DescendentSelector();
 		}
+		public override int Priority{get{return -1000;}}
 	}
 }
