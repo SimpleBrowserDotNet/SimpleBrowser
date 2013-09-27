@@ -666,7 +666,6 @@ namespace SimpleBrowser
 							using (StreamReader reader = new StreamReader(rs, responseEncoding))
 							{
 								html = reader.ReadToEnd();
-								responseContentType = response.ContentType;
 							}
 						}
 						_doc = null;
