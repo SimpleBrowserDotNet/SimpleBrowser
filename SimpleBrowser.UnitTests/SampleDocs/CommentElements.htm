@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- Valid comment -->
+<! -- Malformed comment -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" id="html1" class="cookieBar" xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemalocation="http://namespaces.ordnancesurvey.co.uk/cmd/local/v1.1 http://www.ordnancesurvey.co.uk/oswebsite/xml/cmdschema/local/V1.1/CMDFeatures.xsd" xsl:badattribute="http://www.w3.org">
+<head>
+<title>Comment Elements Unit Test Sample HTML Document</title>
+</head>
+<body>
+<script type="text/javascript">
+<!--
+    var theForm = document.forms['form1'];
+    if (!theForm) {
+        theForm = document.form1;
+    }
+    function __doPostBack(eventTarget, eventArgument) {
+        if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+            theForm.__EVENTTARGET.value = eventTarget;
+            theForm.__EVENTARGUMENT.value = eventArgument;
+            theForm.submit();
+        }
+    }
+// -->
+</script>
+<![if gt IE 9]>
+<a id="link1" href="http://www.microsoft.com">Downlevel-revealed conditional comment test</a>
+<![endif]>
+<!--[if gt IE 10]>
+<a id="link2" href="http://www.microsoft.com">Downlevel-hidden conditional comment test</a>
+<![endif]-->
+<![CDATA[Some content]]>
+<p>
+This is a test of the various types of elements with tags that open with &lt;!<br />
+As of this writing, those include:<br />
+&lt;!DOCTYPE&gt;<br />
+&lt;!-- comments &gt; (well-formed and malformed comment opening tag)<br />
+&lt;![CDATA[data]]&gt;<br />
+&lt;![conditional comments]&gt; (for example, the Microsoft specific &lt;![if gt IE 7]&gt;)<br />
+</p>
+</body>
+</html>

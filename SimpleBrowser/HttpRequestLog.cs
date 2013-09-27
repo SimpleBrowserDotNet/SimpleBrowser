@@ -26,7 +26,6 @@ namespace SimpleBrowser
 		public WebHeaderCollection ResponseHeaders { get; set; }
 		public int StatusCode { get; set; }
 		public Uri Url { get; set; }
-		public string ParsedHtml { get; set; }
 
 		public XDocument ToXml()
 		{

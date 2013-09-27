@@ -42,7 +42,30 @@ namespace SimpleBrowser.Elements
 			{
 				var name = match.Groups[1].Value;
 				var eventTarget = this.OwningBrowser.Select("input[name=__EVENTTARGET]");
+
+				// IIS does browser sniffing. If using the default SimpleBrowser user agent string,
+				// IIS will not render the hidden __EVENTTARGET input. If, for whatever reason,
+				// the __EVENTTARGET input is not present, create it.
+				if (!eventTarget.Exists)
+				{
+					var elt = new XElement("input");
+					elt.SetAttributeCI("type", "hidden");
+					elt.SetAttributeCI("name", "__EVENTTARGET");
+					elt.SetAttributeCI("id", "__EVENTTARGET");
+					elt.SetAttributeCI("value", name);
+
+					this.XElement.AddBeforeSelf(elt);
+					eventTarget = this.OwningBrowser.Select("input[name=__EVENTTARGET]");
+				}
+
+				if (!eventTarget.Exists)
+				{
+					// If the element is still not found abort.
+					return ClickResult.Failed;
+				}
+
 				eventTarget.Value = name;
+
 				if (this.SubmitForm())
 				{
 					return ClickResult.SucceededNavigationComplete;

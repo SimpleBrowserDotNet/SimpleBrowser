@@ -42,20 +42,27 @@ namespace SimpleBrowser.Parser
 			return context.Tokens;
 		}
 
-		static Regex RxNextToken = new Regex(@"\<((\!((?<doctype>DOCTYPE)|(?<comment>(--)?)))|(?<xmldecl>\?\s?xml)|(?<element>[a-z])|(?<close>/[a-z]))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-		static Regex RxNextScriptCloseToken = new Regex(@"\<(?<close>/s(?=cript))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		static Regex RxNextToken = new Regex(@"\<((\!((?<doctype>DOCTYPE)|(?<cdata>\[CDATA\[)|(?<comment>(\s)?--)|(?<conditional>\[)))|(?<xmldecl>\?\s?xml)|(?<element>[a-z])|(?<close>/[a-z])|())", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		static Regex RxNextScriptToken = new Regex(@"\<((?<comment>!(\s)?--)|(?<close>/script\>))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		static void ReadNext(ParserContext context)
 		{
 			while(!context.EndOfString)
 			{
 				Match match;
-				if(context.InScriptTag)
+				if (context.InScriptTag)
 				{
-					match = RxNextScriptCloseToken.Match(context.Html, context.Index);
-					context.InScriptTag = false;
+					match = RxNextScriptToken.Match(context.Html, context.Index);
+
+					if (match.Groups["close"].Success)
+					{
+						context.InScriptTag = false;
+					}
 				}
 				else
+				{
 					match = RxNextToken.Match(context.Html, context.Index);
+				}
+
 				if(match.Success)
 				{
 					var len = match.Index - context.Index;
@@ -73,6 +80,10 @@ namespace SimpleBrowser.Parser
 						ReadComment(context);
 					else if(match.Groups["close"].Success)
 						ReadCloseElement(context);
+					else if(match.Groups["cdata"].Success)
+						ReadCdata(context);
+					else if (match.Groups["conditional"].Success)
+						ReadConditional(context);
 					else
 						ReadElement(context);
 				}
@@ -103,7 +114,7 @@ namespace SimpleBrowser.Parser
 			context.Tokens.Add(new HtmlParserToken { Type = TokenType.DocTypeDeclaration, Raw = context.Html.Substring(start, context.Index - start) });
 		}
 
-		static Regex RxStartComment = new Regex(@"\<\!(--)?", RegexOptions.ExplicitCapture);
+		static Regex RxStartComment = new Regex(@"\<\!(\s)?--", RegexOptions.ExplicitCapture);
 		private static void ReadComment(ParserContext context)
 		{
 			int len;
@@ -114,7 +125,7 @@ namespace SimpleBrowser.Parser
 			if(n > -1)
 			{
 				len = Math.Max(0, n - innerStart);
-				context.Index = n + 3;
+				context.Index = n + match.Length - 1;
 			}
 			else
 			{
@@ -127,6 +138,66 @@ namespace SimpleBrowser.Parser
 				else
 				{
 					len = Math.Max(0, n - innerStart);
+					context.Index = n + 1;
+				}
+			}
+			context.Tokens.Add(new HtmlParserToken { Type = TokenType.Comment, A = len == 0 ? string.Empty : context.Html.Substring(innerStart, len), Raw = context.Html.Substring(start, context.Index - start) });
+		}
+
+		static Regex RxStartCdata = new Regex(@"\<\!\[CDATA\[", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		private static void ReadCdata(ParserContext context)
+		{
+			int len;
+			var n = context.Html.IndexOf("]]>", context.Index);
+			var match = RxStartCdata.Match(context.Html, context.Index);
+			var start = match.Index;
+			var innerStart = match.Index + match.Length;
+			if (n > -1)
+			{
+				len = Math.Max(0, n - innerStart);
+				context.Index = n + 3;
+			}
+			else
+			{
+				n = context.Html.IndexOf('>', context.Index);
+				if (n == -1)
+				{
+					len = Math.Max(0, context.Html.Length - innerStart);
+					context.Index = context.Html.Length;
+				}
+				else
+				{
+					len = Math.Max(0, n - innerStart);
+					context.Index = n + 1;
+				}
+			}
+			context.Tokens.Add(new HtmlParserToken { Type = TokenType.Cdata, A = len == 0 ? null : context.Html.Substring(innerStart, len), Raw = context.Html.Substring(start, context.Index - start) });
+		}
+
+		static Regex RxStartConditional = new Regex(@"\<\!\[", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		private static void ReadConditional(ParserContext context)
+		{
+			int len;
+			var n = context.Html.IndexOf("]>", context.Index);
+			var match = RxStartConditional.Match(context.Html, context.Index);
+			var start = match.Index;
+			var innerStart = match.Index + match.Length - 1;
+			if (n > -1)
+			{
+				len = Math.Max(0, n - innerStart) + 1;
+				context.Index = n + 2;
+			}
+			else
+			{
+				n = context.Html.IndexOf('>', context.Index);
+				if (n == -1)
+				{
+					len = Math.Max(0, context.Html.Length - innerStart) + 1;
+					context.Index = context.Html.Length;
+				}
+				else
+				{
+					len = Math.Max(0, n - innerStart) + 1;
 					context.Index = n + 1;
 				}
 			}
@@ -189,7 +260,7 @@ namespace SimpleBrowser.Parser
 		 */
 
 		static Regex RxReadTagName = new Regex(@"[A-Za-z][A-Za-z0-9]*");
-		static Regex RxReadAttribute = new Regex(@"(?<name>([^\='""\<\>\s/]|/(?=\>))[^\=\<\>\s]*)(?<eq>\s*=\s*(?<quote>'|"")?(?(quote)(?<value>(?(\k<quote>)|.)*)|(?<value>([^\s\<\>/]|/(?=\>))*))\k<quote>?)?", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		static Regex RxReadAttribute = new Regex(@"(?<name>([^\='""\<\>\s/]|/(?=\>))[^\=\<\>\s]*)(?<eq>\s*=\s*(?<quote>'|"")?(?(quote)(?<value>(?(\k<quote>)|.)*)|(?<value>([^\s\<\>]|/(?=\>))*))\k<quote>?)?", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		private static void ReadElement(ParserContext context)
 		{
 			var start = context.Index;
@@ -234,7 +305,7 @@ namespace SimpleBrowser.Parser
 			elementToken.Raw = context.Html.Substring(start, context.Index - start);
 		}
 
-		static Regex RxReadCloseAttribute = new Regex(@"\</(?<name>[^\s=\>]+)[^\>]*\>");
+		static Regex RxReadCloseAttribute = new Regex(@"\</(?<name>[^\s=\>/]+)[^\>]*\>");
 		private static void ReadCloseElement(ParserContext context)
 		{
 			var match = RxReadCloseAttribute.Match(context.Html, context.Index);
@@ -258,7 +329,7 @@ namespace SimpleBrowser.Parser
 				}
 				else
 				{
-					context.Index += match.Length;				
+					context.Index += match.Length;
 				}
 			}
 		}
@@ -272,7 +343,8 @@ namespace SimpleBrowser.Parser
 		DocTypeDeclaration,
 		Element,
 		Attribute,
-		CloseElement
+		CloseElement,
+		Cdata
 	}
 
 	public class HtmlParserToken
