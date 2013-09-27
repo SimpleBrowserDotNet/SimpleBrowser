@@ -10,7 +10,15 @@ namespace SimpleBrowser.Parser
 {
 	public class DocumentBuilder
 	{
-		static readonly string[] SelfClosing = new[] { "area", "base", "basefont", "br", "hr", "iframe", "input", "img", "link", "meta", "param" };
+		/// <summary>
+		/// Defines all of the tags that are self-closing (i.e., "empty" in HTML 4 or "void" in HTML 5.)
+		/// </summary>
+		/// <remarks>
+		/// All tags exist in both HTML 4 and 5, except the following:
+		/// HTML 4 only: basefont, frame, isindex
+		/// HTML 5 only: embed, keygen, source, track, wbr
+		/// </remarks>
+		static readonly string[] SelfClosing = new[] { "area", "base", "basefont", "br", "col", "command", "embed", "frame", "hr", "img", "input", "isindex", "keygen", "link", "meta", "param", "source", "track", "wbr" };
 
 		private readonly List<HtmlParserToken> _tokens;
 		private XDocument _doc;
