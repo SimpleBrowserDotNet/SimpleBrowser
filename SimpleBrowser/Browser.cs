@@ -5,14 +5,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
+using SimpleBrowser.Network;
 using SimpleBrowser.Parser;
 using SimpleBrowser.Query;
-using SimpleBrowser.Elements;
-using SimpleBrowser.Network;
 
 namespace SimpleBrowser
 {
@@ -48,6 +48,7 @@ namespace SimpleBrowser
 		{
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
+			UseGZip = true;
 			Cookies = new CookieContainer();
 			if (requestFactory == null)
 				requestFactory = new DefaultRequestFactory();
@@ -64,6 +65,8 @@ namespace SimpleBrowser
 		public string Accept { get; set; }
 
 		public string ContentType { get { return CurrentState.ContentType; } }
+
+		public string DocumentType { get { return CurrentState.XDocument.DocumentType.ToString(); } }
 
 		public CookieContainer Cookies { get; set; }
 
@@ -86,7 +89,6 @@ namespace SimpleBrowser
 		{
 			get
 			{
-				var dummy = this.XDocument; // Parsing the HTML into XDocument will trigger the loading of frames
 				return Browser.Windows.Where(b => b.ParentWindow == this);
 			}
 		}
@@ -238,10 +240,10 @@ namespace SimpleBrowser
 				_timeoutMilliseconds = _timeoutMilliseconds,
 				Accept = Accept,
 				LastWebException = LastWebException,
-				MessageLogged = MessageLogged,
 				RetainLogs = RetainLogs,
 				UserAgent = UserAgent
 			};
+			b.MessageLogged = MessageLogged;
 			b.AddNavigationState(this.CurrentState);
 			return b;
 		}
@@ -282,7 +284,7 @@ namespace SimpleBrowser
 				object o = p.GetValue(elementAttributes, null);
 				if (o == null)
 					continue;
-				list = FilterElementsByAttribute(list, p.Name, o.ToString(), false);
+				list = FilterElementsByAttributeName(list, p, o.ToString(), false);
 			}
 			return GetHtmlResult(list);
 		}
@@ -552,7 +554,6 @@ namespace SimpleBrowser
 			bool handle301Or302Redirect;
 			int maxRedirects = 10;
 			string html;
-			string responseContentType;
 			string postBody = "";
 			do
 			{
@@ -562,8 +563,10 @@ namespace SimpleBrowser
 					Log("Too many 302 redirects", LogMessageType.Error);
 					return false;
 				}
+
 				handle301Or302Redirect = false;
 				IHttpWebRequest req = null;
+
 				try
 				{
 					req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
@@ -573,9 +576,20 @@ namespace SimpleBrowser
 					// Happens when the URL cannot be parsed (example: 'javascript:')
 					return false;
 				}
+
 				foreach (var header in _extraHeaders)
-					req.Headers.Add(header);
-				req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
+				{
+					if (header.StartsWith("host:", StringComparison.OrdinalIgnoreCase))
+						req.Host = header.Split(':')[1];
+					else
+						req.Headers.Add(header);
+				}
+
+				if (!string.IsNullOrEmpty(encodingType))
+				{
+					req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
+				}
+
 				if (_includeFormValues != null)
 				{
 					if (userVariables == null)
@@ -829,6 +843,22 @@ namespace SimpleBrowser
 														&& k.Value.ToLower() == value.ToLower()).Count() > 0)
 					.ToList();
 			}
+		}
+
+		private List<XElement> FilterElementsByAttributeName(List<XElement> list, PropertyInfo p, string value, bool allowPartialMatch)
+		{
+			var matchesByAttribute = FilterElementsByAttribute(list, p.Name, value, allowPartialMatch);
+			if (!matchesByAttribute.Any())
+			{
+				if (p.Name.Contains('_'))
+				{
+					var attributeName = p.Name.Replace('_', '-');
+					matchesByAttribute = FilterElementsByAttribute(list, attributeName, value, allowPartialMatch);
+				}
+			}
+
+			list = matchesByAttribute;
+			return list;
 		}
 
 		private List<XElement> FilterElementsByAttributeNameToken(List<XElement> elements, string attributeName, string value, bool allowPartialMatch)

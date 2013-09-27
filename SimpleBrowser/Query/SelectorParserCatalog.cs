@@ -16,6 +16,7 @@ namespace SimpleBrowser.Query
 				.GetTypes()
 				.Where(t => t.IsSubclassOf(typeof(XQuerySelectorCreator)))
 				.Select(xqstype => (XQuerySelectorCreator)Activator.CreateInstance(xqstype))
+				.OrderBy(xqsc => xqsc.Priority) // we want high priority at the end of the line
 				.ToArray();
 		}
 

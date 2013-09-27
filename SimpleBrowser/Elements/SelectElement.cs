@@ -96,13 +96,17 @@ namespace SimpleBrowser.Elements
 		}
 		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
 		{
-			foreach (var item in this.Options)
+			if (!String.IsNullOrEmpty(this.Name))
 			{
-				if (item.Selected)
+				foreach (var item in this.Options)
 				{
-					yield return new UserVariableEntry(){Name = this.Name, Value = item.OptionValue};
+					if (item.Selected)
+					{
+						yield return new UserVariableEntry() { Name = this.Name, Value = item.OptionValue };
+					}
 				}
 			}
+			yield break;
 		}
 	}
 	internal class OptionElement : HtmlElement

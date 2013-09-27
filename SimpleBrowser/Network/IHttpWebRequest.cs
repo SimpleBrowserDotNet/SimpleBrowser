@@ -36,5 +36,7 @@ namespace SimpleBrowser.Network
 		IWebProxy Proxy { get; set; }
 
 		string Referer { get; set; }
+
+		string Host { get; set; }
 	}
 }
