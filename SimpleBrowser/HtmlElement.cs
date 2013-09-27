@@ -150,7 +150,15 @@ namespace SimpleBrowser
 					break;
 				case "iframe":
 				case "frame":
-					result = new FrameElement(element);
+                    var src = element.GetAttributeCI("src");
+                    if (!string.IsNullOrWhiteSpace(src)) 
+                    {
+                        result = new FrameElement(element);
+                    }
+                    else 
+                    {
+                        result = default(HtmlElement);
+                    }
 					break;
 				case "a":
 					result = new AnchorElement(element);

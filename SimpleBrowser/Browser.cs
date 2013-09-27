@@ -502,9 +502,12 @@ namespace SimpleBrowser
 		internal HtmlElement CreateHtmlElement(XElement element)
 		{
 			var htmlElement = HtmlElement.CreateFor(element);
-			_allActiveElements.Add(htmlElement);
-			htmlElement.OwningBrowser = this;
-			htmlElement.NavigationRequested += htmlElement_NavigationRequested;
+            if (htmlElement != null) 
+            {
+                _allActiveElements.Add(htmlElement);
+                htmlElement.OwningBrowser = this;
+                htmlElement.NavigationRequested += htmlElement_NavigationRequested;
+            }
 			return htmlElement;
 		}
 
@@ -917,8 +920,12 @@ namespace SimpleBrowser
 		private HtmlResult GetHtmlResult(List<XElement> list)
 		{
 			List<HtmlElement> xlist = new List<HtmlElement>();
-			foreach (var e in list)
-				xlist.Add(CreateHtmlElement(e));
+            foreach (var e in list) {
+                var element = CreateHtmlElement(e);
+                if (element != null) {
+                    xlist.Add(element);
+                }
+            }
 			return new HtmlResult(xlist, this);
 		}
 
