@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<package>
   <metadata>
-    <version>0.5.13</version>
+    <version>$version$</version>
     <authors>Nathan Ridley, Teun Duynstee, Kevin Yochum, Joe Feser</authors>
     <owners>Nathan Ridley</owners>
     <projectUrl>https://github.com/axefrog/SimpleBrowser</projectUrl>
@@ -15,7 +15,7 @@
     <tags>headless browser http cookies browserautomation automation</tags>
   </metadata>
   <files>
-    <file src="..\SimpleBrowser\bin\Debug\SimpleBrowser.dll" target="lib\net40\SimpleBrowser.dll" />
-    <file src="..\SimpleBrowser\bin\Debug\RazorHosting.dll" target="lib\net40\RazorHosting.dll" />
+    <file src="SimpleBrowser\bin\Release\SimpleBrowser.dll" target="lib\net40\SimpleBrowser.dll" />
+    <file src="SimpleBrowser\bin\Release\RazorHosting.dll" target="lib\net40\RazorHosting.dll" />
   </files>
 </package>
