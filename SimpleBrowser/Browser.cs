@@ -89,6 +89,7 @@ namespace SimpleBrowser
 		{
 			get
 			{
+        var doc = this.XDocument; // this will force the document to be parsed. It could result in more windows
 				return Browser.Windows.Where(b => b.ParentWindow == this);
 			}
 		}
