@@ -59,7 +59,6 @@
     <Compile Include="OfflineTests\WindowsAndFrames.cs" />
     <Compile Include="OfflineTests\DecodedValue.cs" />
     <Compile Include="OfflineTests\History.cs" />
-    <Compile Include="OfflineTests\QueryTests.cs" />
     <Compile Include="OfflineTests\Selectors.cs" />
     <Compile Include="OfflineTests\Uploading.cs" />
     <Compile Include="OnlineTests\HttpHeaderTests.cs" />
