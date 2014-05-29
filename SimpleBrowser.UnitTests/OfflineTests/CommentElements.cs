@@ -57,14 +57,16 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			comment = comments.Skip(1).First();
 			Assert.That(comment.ToString(), Is.EqualTo("<!-- Malformed comment -->"));
 
-			comment = comments.Skip(2).First();
-			Assert.That(comment.ToString(), Is.EqualTo("<!--[if gt IE 9]-->"));
+      // Nr 3 is a comment inside a script block
 
 			comment = comments.Skip(3).First();
-			Assert.That(comment.ToString(), Is.EqualTo("<!--[endif]-->"));
+			Assert.That(comment.ToString(), Is.EqualTo("<!--[if gt IE 9]-->"));
 
 			comment = comments.Skip(4).First();
-			Assert.That(comment.ToString(), Is.EqualTo("<!--[if gt IE 10]>\r\n<a id=\"link2\" href=\"http://www.microsoft.com\">Downlown-level hidden conditional comment test</a>\r\n<![endif]-->"));
+			Assert.That(comment.ToString(), Is.EqualTo("<!--[endif]-->"));
+
+			comment = comments.Skip(5).First();
+			Assert.That(comment.ToString(), Is.EqualTo("<!--[if gt IE 10]>\r\n<a id=\"link2\" href=\"http://www.microsoft.com\">Downlevel-hidden conditional comment test</a>\r\n<![endif]-->"));
 		}
 
 		/// <summary>

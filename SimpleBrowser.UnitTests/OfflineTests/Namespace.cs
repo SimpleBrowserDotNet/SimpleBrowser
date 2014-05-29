@@ -20,7 +20,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         /// <summary>
         /// The number of valid (not ignored/dropped) namespaces in the html tag of $CommentElements.htm$.
         /// </summary>
-        private static int namespaceCount = 8;
+        private static int namespaceCount = 9;
 
         /// <summary>
         /// Tests that the html element may have attributes and that namespace attributes are parsed correctly.
@@ -33,7 +33,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             HtmlResult result = b.Find("html1");
 
             Assert.IsTrue(result.Exists);
-            Assert.AreEqual(result.XElement.Attributes().Count(), namespaceCount);
+            Assert.AreEqual(namespaceCount, result.XElement.Attributes().Count());
 
             List<XAttribute> attributes = new List<XAttribute>();
             attributes.AddRange(result.XElement.Attributes());
@@ -113,6 +113,14 @@ namespace SimpleBrowser.UnitTests.OfflineTests
                             Assert.AreEqual(parent_attribute.Value, attribute.Name.Namespace.NamespaceName);
 
                             break;
+                        }
+                    case 8:
+                        {
+                          Assert.IsFalse(attribute.IsNamespaceDeclaration);
+                          Assert.AreEqual(attribute.Name.LocalName, "badattribute");
+                          Assert.AreEqual(attribute.Value, "http://www.w3.org");
+                          Assert.That(attribute.Name.Namespace == "");
+                          break;
                         }
                 }
             }
