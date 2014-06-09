@@ -19,7 +19,7 @@ namespace SimpleBrowser
 	public class Browser
 	{
 		const string TARGET_SELF = "_self";
-		const string TARGET_BLANK = "_blank";
+		internal const string TARGET_BLANK = "_blank";
 		const string TARGET_TOP = "_top";
 
 		private static List<Browser> _allWindows = new List<Browser>();

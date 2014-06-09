@@ -82,7 +82,7 @@ namespace SimpleBrowser.Elements
 
 			if ((OwningBrowser.KeyState & (KeyStateOption.Ctrl | KeyStateOption.Shift)) != KeyStateOption.None)
 			{
-				target = "_blank";
+				target = Browser.TARGET_BLANK;
 			}
 
 			if (url != null)
