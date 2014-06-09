@@ -72,6 +72,8 @@ namespace SimpleBrowser
 
 		public string CurrentHtml { get { return CurrentState.Html; } }
 
+    public KeyStateOption KeyState{get;set;}
+
 		/// <summary>
 		/// This collection allows you to specify additional key/value pairs that will be sent in the next request. Some
 		/// websites use JavaScript or other dynamic methods to dictate what is submitted to the next page and these
