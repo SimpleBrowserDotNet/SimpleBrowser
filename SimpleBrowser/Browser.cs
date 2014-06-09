@@ -59,6 +59,7 @@ namespace SimpleBrowser
 
 		public event Action<Browser, string> MessageLogged;
 		public event Action<Browser, HttpRequestLog> RequestLogged;
+		public event Action<Browser, Browser> NewWindowOpened;
 
 		#region public properties start
 
@@ -72,7 +73,7 @@ namespace SimpleBrowser
 
 		public string CurrentHtml { get { return CurrentState.Html; } }
 
-    public KeyStateOption KeyState{get;set;}
+		public KeyStateOption KeyState{get;set;}
 
 		/// <summary>
 		/// This collection allows you to specify additional key/value pairs that will be sent in the next request. Some
@@ -91,7 +92,7 @@ namespace SimpleBrowser
 		{
 			get
 			{
-        var doc = this.XDocument; // this will force the document to be parsed. It could result in more windows
+				var doc = this.XDocument; // this will force the document to be parsed. It could result in more windows
 				return Browser.Windows.Where(b => b.ParentWindow == this);
 			}
 		}
@@ -359,6 +360,14 @@ namespace SimpleBrowser
 		}
 		#endregion
 
+		internal void RaiseNewWindowOpened(Browser newWindow)
+		{
+			if (this.NewWindowOpened != null)
+			{
+				this.NewWindowOpened(this, newWindow);
+			}
+		}
+
 		public bool Navigate(string url)
 		{
 			return Navigate(new Uri(url));
@@ -501,18 +510,20 @@ namespace SimpleBrowser
 		{
 			Browser child = new Browser(this._reqFactory, name);
 			child.ParentWindow = this;
+			// no RaiseNewWindowOpened here, because it is not really a new window. It can be navigated to using 
+			// the frames collection of the parent
 			return child;
 		}
 
 		internal HtmlElement CreateHtmlElement(XElement element)
 		{
 			var htmlElement = HtmlElement.CreateFor(element);
-            if (htmlElement != null) 
-            {
-                _allActiveElements.Add(htmlElement);
-                htmlElement.OwningBrowser = this;
-                htmlElement.NavigationRequested += htmlElement_NavigationRequested;
-            }
+					if (htmlElement != null) 
+					{
+							_allActiveElements.Add(htmlElement);
+							htmlElement.OwningBrowser = this;
+							htmlElement.NavigationRequested += htmlElement_NavigationRequested;
+					}
 			return htmlElement;
 		}
 
@@ -951,12 +962,12 @@ namespace SimpleBrowser
 		private HtmlResult GetHtmlResult(List<XElement> list)
 		{
 			List<HtmlElement> xlist = new List<HtmlElement>();
-            foreach (var e in list) {
-                var element = CreateHtmlElement(e);
-                if (element != null) {
-                    xlist.Add(element);
-                }
-            }
+						foreach (var e in list) {
+								var element = CreateHtmlElement(e);
+								if (element != null) {
+										xlist.Add(element);
+								}
+						}
 			return new HtmlResult(xlist, this);
 		}
 
@@ -979,6 +990,7 @@ namespace SimpleBrowser
 			else if (args.Target == TARGET_BLANK)
 			{
 				browserToNav = new Browser(this._reqFactory);
+				RaiseNewWindowOpened(browserToNav);
 			}
 			else
 			{
@@ -986,6 +998,7 @@ namespace SimpleBrowser
 				if (browserToNav == null)
 				{
 					browserToNav = new Browser(this._reqFactory, args.Target);
+					RaiseNewWindowOpened(browserToNav);
 				}
 			}
 
