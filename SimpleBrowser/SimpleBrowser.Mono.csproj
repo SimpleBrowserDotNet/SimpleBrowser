@@ -71,6 +71,7 @@
     <Compile Include="Internal\StringUtil.cs" />
     <Compile Include="Internal\XmlExtensions.cs" />
     <Compile Include="HtmlLogFormatter.cs" />
+    <Compile Include="KeyStateOption.cs" />
     <Compile Include="NavigationState.cs" />
     <Compile Include="Network\IHttpWebRequest.cs" />
     <Compile Include="Network\IHttpWebResponse.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Query\Selectors\DescendentSelector.cs" />
     <Compile Include="Query\Selectors\ElementSelector.cs" />
     <Compile Include="Query\Selectors\IdSelector.cs" />
+    <Compile Include="Query\Selectors\NeighbourSelector.cs" />
     <Compile Include="Query\XQuery.cs" />
     <Compile Include="Query\XQueryException.cs" />
     <Compile Include="Query\XQueryParserContext.cs" />
