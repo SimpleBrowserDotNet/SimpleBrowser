@@ -80,6 +80,11 @@ namespace SimpleBrowser.Elements
 			string target = this.Target;
 			string queryStringValues = null;
 
+			if ((OwningBrowser.KeyState & (KeyStateOption.Ctrl | KeyStateOption.Shift)) != KeyStateOption.None)
+			{
+				target = Browser.TARGET_BLANK;
+			}
+
 			if (url != null)
 			{
 				string[] querystring = url.Split(new[] { '?' });

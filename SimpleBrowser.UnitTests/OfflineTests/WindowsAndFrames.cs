@@ -33,9 +33,58 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			Assert.That(Browser.Windows.Count() == 3);
 			var newBrowserWindow = Browser.Windows.First(br => br.WindowHandle != b.WindowHandle);
 			Assert.That(newBrowserWindow.Url == new Uri("http://localhost/movies/About"));
-
-
 		}
+
+		[Test]
+		public void Holding_Ctrl_Shft_Opens_New_Window()
+		{
+			Browser b = new Browser(Helper.GetMoviesRequestMocker());
+			HttpRequestLog lastRequest = null;
+			b.RequestLogged += (br, l) =>
+			{
+				lastRequest = l;
+			};
+			b.Navigate("http://localhost/movies/");
+			Assert.That(b.Url == new Uri("http://localhost/movies/"));
+			var link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
+			link.Click();
+			Assert.That(Browser.Windows.Count() == 1);
+			link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
+			b.KeyState = KeyStateOption.Ctrl;
+			link.Click();
+			Assert.That(Browser.Windows.Count() == 2);
+			link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
+			b.KeyState = KeyStateOption.Shift;
+			link.Click();
+			Assert.That(Browser.Windows.Count() == 3);
+			link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
+			b.KeyState = KeyStateOption.Alt;
+			link.Click();
+			Assert.That(Browser.Windows.Count() == 3); // alt does not open new browser
+		}
+
+
+		[Test]
+		public void Accessing_New_Windows_Using_Event()
+		{
+			Browser b = new Browser(Helper.GetMoviesRequestMocker());
+			Browser newlyOpened = null;
+			b.NewWindowOpened += (b1, b2) =>
+			{
+				newlyOpened = b2;
+			};
+			b.Navigate("http://localhost/movies/");
+			Assert.That(b.Url == new Uri("http://localhost/movies/"));
+			var link = b.Find(ElementType.Anchor, FindBy.Text, "Details");
+			b.KeyState = KeyStateOption.Ctrl;
+			link.Click();
+			Assert.That(Browser.Windows.Count() == 2);
+			Assert.NotNull(newlyOpened);
+			Assert.That(b.Url.ToString() == "http://localhost/movies/");
+			Assert.That(newlyOpened.Url.ToString() == "http://localhost/movies/Movies/Details/1");
+		}
+
+
 		[Test]
 		public void ClosingBrowsers()
 		{
