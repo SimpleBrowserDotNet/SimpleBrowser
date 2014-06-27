@@ -36,11 +36,15 @@ namespace SimpleBrowser
 		private HttpRequestLog _lastRequestLog;
 		private List<LogItem> _logs = new List<LogItem>();
 		private IWebRequestFactory _reqFactory;
+		private static Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens = new Dictionary<string,BasicAuthenticationToken>();
 
 		static Browser()
 		{
 			if (ServicePointManager.Expect100Continue)
+			{
 				ServicePointManager.Expect100Continue = false;
+			}
+
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
 
@@ -486,6 +490,36 @@ namespace SimpleBrowser
 			_proxy.Credentials = new NetworkCredential(username, password);
 		}
 
+		public void BasicAuthenticationLogin(string domain, string username, string password)
+		{
+			if (string.IsNullOrWhiteSpace(domain))
+			{
+				throw new ArgumentNullException("domain");
+			}
+
+			if (string.IsNullOrWhiteSpace(username))
+			{
+				throw new ArgumentNullException("username");
+			}
+
+			if (string.IsNullOrWhiteSpace(password))
+			{
+				throw new ArgumentNullException("password");
+			}
+
+			_basicAuthenticationTokens[domain] = new BasicAuthenticationToken(domain, username, password);
+		}
+
+		public void BasicAuthenticationLogout(string domain)
+		{
+			if (string.IsNullOrWhiteSpace(domain))
+			{
+				throw new ArgumentNullException("domain");
+			}
+
+			_basicAuthenticationTokens.Remove(domain);
+		}
+
 		#endregion public methods end
 
 		#region internal methods start
@@ -602,6 +636,28 @@ namespace SimpleBrowser
 				if (!string.IsNullOrEmpty(encodingType))
 				{
 					req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
+				}
+
+				// Remove all expired basic authentication tokens
+				List<BasicAuthenticationToken> expired = _basicAuthenticationTokens.Values.Where(t => DateTime.Now > t.Expiration).ToList();
+				foreach (var expiredToken in expired)
+				{
+					_basicAuthenticationTokens.Remove(expiredToken.Domain);
+				}
+
+				// If an authentication token exists for the domain, add the authorization header.
+				foreach (var token in _basicAuthenticationTokens.Values)
+				{
+					if (req.Host.Contains(token.Domain))
+					{
+						// Extend the expiration.
+						token.UpdateExpiration();
+
+						// Add the authentication header.
+						req.Headers.Add(string.Format(
+							"Authorization: Basic {0}",
+							token.Token));
+					}
 				}
 
 				if (_includeFormValues != null)
