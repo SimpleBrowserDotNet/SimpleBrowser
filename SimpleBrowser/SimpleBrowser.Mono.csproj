@@ -50,6 +50,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicAuthenticationToken.cs" />
     <Compile Include="Elements\AnchorElement.cs" />
     <Compile Include="Elements\ButtonInputElement.cs" />
     <Compile Include="Elements\FileUploadElement.cs" />
