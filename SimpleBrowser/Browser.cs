@@ -75,7 +75,8 @@ namespace SimpleBrowser
 
 		public CookieContainer Cookies { get; set; }
 
-		public string CurrentHtml { get { return CurrentState.Html; } }
+		public string CurrentHtml { get { return CurrentState.Html; } set { SetContent(value); }
+		}
 
 		public KeyStateOption KeyState{get;set;}
 

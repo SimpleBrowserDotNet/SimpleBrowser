@@ -12,6 +12,8 @@ obj
 *.csuser
 *.suo
 *.ReSharper
+_ReSharper.SimpleBrowser/
+TestResults/
 *.user
 *.tmp
 *.db
