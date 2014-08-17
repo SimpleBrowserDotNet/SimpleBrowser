@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Helper.cs" />
     <Compile Include="Issues.cs" />
+    <Compile Include="OfflineTests\CurrentHtml.cs" />
     <Compile Include="OfflineTests\Namespace.cs" />
     <Compile Include="OfflineTests\CommentElements.cs" />
     <Compile Include="OfflineTests\Forms.cs" />
