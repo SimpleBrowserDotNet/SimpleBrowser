@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
+using SimpleBrowser.Internal;
 using SimpleBrowser.Network;
 using SimpleBrowser.Parser;
 using SimpleBrowser.Query;
@@ -36,7 +37,7 @@ namespace SimpleBrowser
 		private HttpRequestLog _lastRequestLog;
 		private List<LogItem> _logs = new List<LogItem>();
 		private IWebRequestFactory _reqFactory;
-		private static Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens = new Dictionary<string,BasicAuthenticationToken>();
+		private static Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens = new Dictionary<string, BasicAuthenticationToken>();
 
 		static Browser()
 		{
@@ -77,7 +78,7 @@ namespace SimpleBrowser
 
 		public string CurrentHtml { get { return CurrentState.Html; } }
 
-		public KeyStateOption KeyState{get;set;}
+		public KeyStateOption KeyState { get; set; }
 
 		/// <summary>
 		/// This collection allows you to specify additional key/value pairs that will be sent in the next request. Some
@@ -552,12 +553,12 @@ namespace SimpleBrowser
 		internal HtmlElement CreateHtmlElement(XElement element)
 		{
 			var htmlElement = HtmlElement.CreateFor(element);
-					if (htmlElement != null) 
-					{
-							_allActiveElements.Add(htmlElement);
-							htmlElement.OwningBrowser = this;
-							htmlElement.NavigationRequested += htmlElement_NavigationRequested;
-					}
+			if (htmlElement != null)
+			{
+				_allActiveElements.Add(htmlElement);
+				htmlElement.OwningBrowser = this;
+				htmlElement.NavigationRequested += htmlElement_NavigationRequested;
+			}
 			return htmlElement;
 		}
 
@@ -573,32 +574,6 @@ namespace SimpleBrowser
 
 		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
 		{
-			/* IMPORTANT INFORMATION:
-			 * HttpWebRequest has a bug where if a 302 redirect is encountered (such as from a Response.Redirect), any cookies
-			 * generated during the request are ignored and discarded during the internal redirect process. The headers are in
-			 * fact returned, but the normal process where the cookie headers are turned into Cookie objects in the cookie
-			 * container is skipped, thus breaking the login processes of half the sites on the internet.
-			 * 
-			 * The workaround is as follows:
-			 * 1. Turn off AllowAutoRedirect so we can intercept the redirect and do things manually
-			 * 2. Read the Set-Cookie headers from the response and manually insert them into the cookie container
-			 * 3. Get the Location header and redirect to the location specified in the "Location" response header
-			 * 
-			 * Worth noting that even if this bug has been solved in .Net 4 (I haven't checked) we should still use manual
-			 * redirection so that we can properly log responses.
-			 * 
-			 * OBSOLETE ISSUE: (Bug has been resolved in the .Net 4 framework, which this library is now targeted at)
-			 * //CookieContainer also has a horrible bug relating to the specified cookie domain. Basically, if it contains
-			 * //a cookie where the "domain" token is specified as ".domain.xxx" and you attempt to request http://domain.ext,
-			 * //the cookies are not retrievable via that Uri, as you would expect them to be. CookieContainer is incorrectly
-			 * //assuming that the leading dot is a prerequisite specifying that a subdomain is required as opposed to the
-			 * //correct behaviour which would be to take it to mean that the domain and all subdomains are valid for the cookie.
-			 * //http://channel9.msdn.com/forums/TechOff/260235-Bug-in-CookieContainer-where-do-I-report/?CommentID=397315
-			 * //The workaround is as follows:
-			 * //When retrieving the response, iterate through the Set-Cookie header and any cookie that explicitly sets
-			 * //the domain token with a leading dot should also set the cookie without the leading dot.
-			 */
-
 			bool handle301Or302Redirect;
 			int maxRedirects = 10;
 			string html;
@@ -755,6 +730,16 @@ namespace SimpleBrowser
 							method = "GET";
 							postData = null;
 							userVariables = null;
+
+							foreach (string item in response.Headers)
+							{
+								if (item.ToLower() == "set-cookie")
+								{
+									var cookies = SetCookieHeaderParser.GetAllCookiesFromHeader(uri.Host, response.Headers[item]);
+									Cookies.Add(cookies);
+									break;
+								}
+							}
 						}
 					}
 				}
@@ -1018,12 +1003,14 @@ namespace SimpleBrowser
 		private HtmlResult GetHtmlResult(List<XElement> list)
 		{
 			List<HtmlElement> xlist = new List<HtmlElement>();
-						foreach (var e in list) {
-								var element = CreateHtmlElement(e);
-								if (element != null) {
-										xlist.Add(element);
-								}
-						}
+			foreach (var e in list)
+			{
+				var element = CreateHtmlElement(e);
+				if (element != null)
+				{
+					xlist.Add(element);
+				}
+			}
 			return new HtmlResult(xlist, this);
 		}
 
