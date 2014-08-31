@@ -119,9 +119,17 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
-		/// Set the Initial Http Referer
+		/// Get the Http Referer
 		/// </summary>
-		public string Referer { get; set; }
+		public Uri Referer
+		{
+			get
+			{
+				if (CurrentState == null)
+					return null;
+				return CurrentState.Url;
+			}
+		}
 
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 
@@ -603,6 +611,8 @@ namespace SimpleBrowser
 
 			if (uri.IsFile)
 			{
+				if (Referer != null && !Referer.IsFile)
+					throw new InvalidOperationException("Cannot refer to file url from non file url document");
 				StreamReader reader = new StreamReader(uri.AbsolutePath);
 				html = reader.ReadToEnd();
 				reader.Close();
@@ -1099,10 +1109,8 @@ namespace SimpleBrowser
 			req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
-			if (CurrentState != null)
-				req.Referer = this.Url.AbsoluteUri;
-			else if (!string.IsNullOrWhiteSpace(Referer))
-				req.Referer = Referer;
+			if (Referer != null)
+				req.Referer = Referer.ToString();
 			return req;
 		}
 
