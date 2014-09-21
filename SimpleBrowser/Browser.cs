@@ -244,7 +244,7 @@ namespace SimpleBrowser
 
 		public Browser CreateReferenceView()
 		{
-			Browser b = new Browser
+			Browser b = new Browser(_reqFactory)
 			{
 				Cookies = Cookies,
 				_doc = _doc,
