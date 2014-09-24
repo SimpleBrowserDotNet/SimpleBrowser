@@ -577,6 +577,7 @@ namespace SimpleBrowser
 			{
 				return (T)result;
 			}
+
 			throw new InvalidOperationException("The element was not of the corresponding type");
 		}
 
@@ -587,26 +588,29 @@ namespace SimpleBrowser
 			if (uri.IsFile)
 			{
 				if (Referer != null && !Referer.IsFile)
+				{
 					throw new InvalidOperationException("Cannot refer to file url from non file url document");
+				}
+
 				StreamReader reader = new StreamReader(uri.AbsolutePath);
 				html = reader.ReadToEnd();
 				reader.Close();
 			}
 			else
 			{
-				bool handle301Or302Redirect;
-				int maxRedirects = 10;
-				string postBody = "";
+				bool handle3xxRedirect = false;
+				int maxRedirects = 5; // Per RFC2068, Section 10.3
+				string postBody = string.Empty;
 				do
 				{
 					Debug.WriteLine(uri.ToString());
 					if (maxRedirects-- == 0)
 					{
-						Log("Too many 302 redirects", LogMessageType.Error);
+						Log("Too many 3xx redirects", LogMessageType.Error);
 						return false;
 					}
 
-					handle301Or302Redirect = false;
+					handle3xxRedirect = false;
 					IHttpWebRequest req = null;
 
 					try
@@ -726,6 +730,7 @@ namespace SimpleBrowser
 									responseEncoding = Encoding.UTF8; // try using utf8
 								}
 							}
+
 							//ensure the stream is disposed
 							using (Stream rs = response.GetResponseStream())
 							{
@@ -734,6 +739,7 @@ namespace SimpleBrowser
 									html = reader.ReadToEnd();
 								}
 							}
+
 							_doc = null;
 							_includeFormValues = null;
 
@@ -742,25 +748,34 @@ namespace SimpleBrowser
 							_lastRequestLog.StatusCode = (int) response.StatusCode;
 
 							if (method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
+							{
 								_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
-							if ((int) response.StatusCode == 302 || (int) response.StatusCode == 301)
+							}
+
+							if (((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
+								(int)response.StatusCode == 301 ||
+								(int)response.StatusCode == 302 ||
+								(int)response.StatusCode == 303 ||
+								// 304 - Unsupported, conditional Get requests are not supported (mostly because SimpleBrowser does not cache content)
+								// 305 - Unsupported, possible security threat
+								// 306 - No longer used, per RFC2616, Section 10.3.7
+								(int)response.StatusCode == 307 ||
+								(int)response.StatusCode == 308) && 
+								response.Headers.AllKeys.Contains("Location"))
 							{
 								uri = new Uri(uri, response.Headers["Location"]);
-								handle301Or302Redirect = true;
+								handle3xxRedirect = true;
 								Debug.WriteLine("Redirecting to: " + uri);
 								method = "GET";
 								postData = null;
 								userVariables = null;
-
-							foreach (string item in response.Headers)
-							{
-								if (item.ToLower() == "set-cookie")
-								{
-									var cookies = SetCookieHeaderParser.GetAllCookiesFromHeader(uri.Host, response.Headers[item]);
-									Cookies.Add(cookies);
-									break;
-								}
 							}
+
+							if (response.Headers.AllKeys.Contains("Set-Cookie"))
+							{
+								var cookies = SetCookieHeaderParser.GetAllCookiesFromHeader(uri.Host, response.Headers["Set-Cookie"]);
+								Cookies.Add(cookies);
+								break;
 							}
 						}
 					}
@@ -804,7 +819,7 @@ namespace SimpleBrowser
 						LogRequestData();
 					}
 				}
-				while (handle301Or302Redirect) ;
+				while (handle3xxRedirect) ;
 			} 
 
 			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
