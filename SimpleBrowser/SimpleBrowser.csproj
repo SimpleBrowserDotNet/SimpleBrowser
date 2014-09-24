@@ -68,6 +68,7 @@
     <Compile Include="Internal\ApacheMimeTypes.cs" />
     <Compile Include="Internal\CollectionExtensions.cs" />
     <Compile Include="Internal\ObjectExtensions.cs" />
+    <Compile Include="Internal\SetCookieHeaderParser.cs" />
     <Compile Include="Internal\StringExtensions.cs" />
     <Compile Include="Internal\StringUtil.cs" />
     <Compile Include="Internal\XmlExtensions.cs" />
