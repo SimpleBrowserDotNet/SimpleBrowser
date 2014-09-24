@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Helper.cs" />
     <Compile Include="Issues.cs" />
+    <Compile Include="OfflineTests\FileUri.cs" />
     <Compile Include="OfflineTests\Namespace.cs" />
     <Compile Include="OfflineTests\CommentElements.cs" />
     <Compile Include="OfflineTests\Forms.cs" />
@@ -84,7 +85,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="SampleDocs\movies1.htm" />
+    <EmbeddedResource Include="SampleDocs\movies1.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="SampleDocs\movies2.htm" />
   </ItemGroup>
   <ItemGroup>

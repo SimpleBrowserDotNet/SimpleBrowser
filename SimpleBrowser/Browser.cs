@@ -120,9 +120,17 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
-		/// Set the Initial Http Referer
+		/// Get the Http Referer
 		/// </summary>
-		public string Referer { get; set; }
+		public Uri Referer
+		{
+			get
+			{
+				if (CurrentState == null)
+					return null;
+				return CurrentState.Url;
+			}
+		}
 
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 
@@ -574,162 +582,175 @@ namespace SimpleBrowser
 
 		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
 		{
-			bool handle301Or302Redirect;
-			int maxRedirects = 10;
 			string html;
-			string postBody = "";
-			do
+
+			if (uri.IsFile)
 			{
-				Debug.WriteLine(uri.ToString());
-				if (maxRedirects-- == 0)
+				if (Referer != null && !Referer.IsFile)
+					throw new InvalidOperationException("Cannot refer to file url from non file url document");
+				StreamReader reader = new StreamReader(uri.AbsolutePath);
+				html = reader.ReadToEnd();
+				reader.Close();
+			}
+			else
+			{
+				bool handle301Or302Redirect;
+				int maxRedirects = 10;
+				string postBody = "";
+				do
 				{
-					Log("Too many 302 redirects", LogMessageType.Error);
-					return false;
-				}
-
-				handle301Or302Redirect = false;
-				IHttpWebRequest req = null;
-
-				try
-				{
-					req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
-				}
-				catch (NotSupportedException)
-				{
-					// Happens when the URL cannot be parsed (example: 'javascript:')
-					return false;
-				}
-
-				foreach (var header in _extraHeaders)
-				{
-					if (header.StartsWith("host:", StringComparison.OrdinalIgnoreCase))
-						req.Host = header.Split(':')[1];
-					else
-						req.Headers.Add(header);
-				}
-
-				if (!string.IsNullOrEmpty(encodingType))
-				{
-					req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
-				}
-
-				// Remove all expired basic authentication tokens
-				List<BasicAuthenticationToken> expired = _basicAuthenticationTokens.Values.Where(t => DateTime.Now > t.Expiration).ToList();
-				foreach (var expiredToken in expired)
-				{
-					_basicAuthenticationTokens.Remove(expiredToken.Domain);
-				}
-
-				// If an authentication token exists for the domain, add the authorization header.
-				foreach (var token in _basicAuthenticationTokens.Values)
-				{
-					if (req.Host.Contains(token.Domain))
+					Debug.WriteLine(uri.ToString());
+					if (maxRedirects-- == 0)
 					{
-						// Extend the expiration.
-						token.UpdateExpiration();
-
-						// Add the authentication header.
-						req.Headers.Add(string.Format(
-							"Authorization: Basic {0}",
-							token.Token));
+						Log("Too many 302 redirects", LogMessageType.Error);
+						return false;
 					}
-				}
 
-				if (_includeFormValues != null)
-				{
-					if (userVariables == null)
-						userVariables = _includeFormValues;
-					else
-						userVariables.Add(_includeFormValues);
-				}
+					handle301Or302Redirect = false;
+					IHttpWebRequest req = null;
 
-				if (userVariables != null)
-				{
-					if (method == "POST")
+					try
 					{
-						postBody = StringUtil.MakeQueryString(userVariables);
-						byte[] data = Encoding.GetEncoding(28591).GetBytes(postBody);
+
+						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
+					}
+					catch (NotSupportedException)
+					{
+						// Happens when the URL cannot be parsed (example: 'javascript:')
+						return false;
+					}
+
+					foreach (var header in _extraHeaders)
+					{
+						if (header.StartsWith("host:", StringComparison.OrdinalIgnoreCase))
+							req.Host = header.Split(':')[1];
+						else
+							req.Headers.Add(header);
+					}
+
+					if (!string.IsNullOrEmpty(encodingType))
+					{
+						req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
+					}
+
+					// Remove all expired basic authentication tokens
+					List<BasicAuthenticationToken> expired =
+						_basicAuthenticationTokens.Values.Where(t => DateTime.Now > t.Expiration).ToList();
+					foreach (var expiredToken in expired)
+					{
+						_basicAuthenticationTokens.Remove(expiredToken.Domain);
+					}
+
+					// If an authentication token exists for the domain, add the authorization header.
+					foreach (var token in _basicAuthenticationTokens.Values)
+					{
+						if (req.Host.Contains(token.Domain))
+						{
+							// Extend the expiration.
+							token.UpdateExpiration();
+
+							// Add the authentication header.
+							req.Headers.Add(string.Format(
+								"Authorization: Basic {0}",
+								token.Token));
+						}
+					}
+
+					if (_includeFormValues != null)
+					{
+						if (userVariables == null)
+							userVariables = _includeFormValues;
+						else
+							userVariables.Add(_includeFormValues);
+					}
+
+					if (userVariables != null)
+					{
+						if (method == "POST")
+						{
+							postBody = StringUtil.MakeQueryString(userVariables);
+							byte[] data = Encoding.GetEncoding(28591).GetBytes(postBody);
+							req.ContentLength = data.Length;
+							using (Stream stream = req.GetRequestStream())
+							{
+								stream.Write(data, 0, data.Length);
+							}
+						}
+						else
+						{
+							uri = new Uri(
+								uri.Scheme + "://" + uri.Host + ":" + uri.Port + uri.AbsolutePath
+								+ ((userVariables.Count > 0) ? "?" + StringUtil.MakeQueryString(userVariables) : "")
+								);
+							req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
+						}
+					}
+					else if (postData != null)
+					{
+						if (method == "GET")
+							throw new InvalidOperationException("Cannot call DoRequest with method GET and non-null postData");
+						postBody = postData;
+						byte[] data = Encoding.GetEncoding(28591).GetBytes(postData);
 						req.ContentLength = data.Length;
 						using (Stream stream = req.GetRequestStream())
 						{
 							stream.Write(data, 0, data.Length);
 						}
 					}
-					else
-					{
-						uri = new Uri(
-							uri.Scheme + "://" + uri.Host + ":" + uri.Port + uri.AbsolutePath
-							+ ((userVariables.Count > 0) ? "?" + StringUtil.MakeQueryString(userVariables) : "")
-							);
-						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
-					}
-				}
-				else if (postData != null)
-				{
-					if (method == "GET")
-						throw new InvalidOperationException("Cannot call DoRequest with method GET and non-null postData");
-					postBody = postData;
-					byte[] data = Encoding.GetEncoding(28591).GetBytes(postData);
-					req.ContentLength = data.Length;
-					using (Stream stream = req.GetRequestStream())
-					{
-						stream.Write(data, 0, data.Length);
-					}
-				}
 
-				if (contentType != null)
-					req.ContentType = contentType;
+					if (contentType != null)
+						req.ContentType = contentType;
 
-				_lastRequestLog = new HttpRequestLog
-				{
-					Method = method,
-					PostData = userVariables,
-					PostBody = postBody,
-					RequestHeaders = req.Headers,
-					Url = uri
-				};
-				try
-				{
-					using (IHttpWebResponse response = req.GetResponse())
-					{
-						Encoding responseEncoding = Encoding.UTF8; //default
-						string charSet = response.CharacterSet;
-						if (!String.IsNullOrEmpty(charSet))
+					_lastRequestLog = new HttpRequestLog
 						{
-							try
-							{
-								responseEncoding = Encoding.GetEncoding(charSet);
-							}
-							catch (ArgumentException)
-							{
-								responseEncoding = Encoding.UTF8; // try using utf8
-							}
-						}
-						//ensure the stream is disposed
-						using (Stream rs = response.GetResponseStream())
+							Method = method,
+							PostData = userVariables,
+							PostBody = postBody,
+							RequestHeaders = req.Headers,
+							Url = uri
+						};
+					try
+					{
+						using (IHttpWebResponse response = req.GetResponse())
 						{
-							using (StreamReader reader = new StreamReader(rs, responseEncoding))
+							Encoding responseEncoding = Encoding.UTF8; //default
+							string charSet = response.CharacterSet;
+							if (!String.IsNullOrEmpty(charSet))
 							{
-								html = reader.ReadToEnd();
+								try
+								{
+									responseEncoding = Encoding.GetEncoding(charSet);
+								}
+								catch (ArgumentException)
+								{
+									responseEncoding = Encoding.UTF8; // try using utf8
+								}
 							}
-						}
-						_doc = null;
-						_includeFormValues = null;
+							//ensure the stream is disposed
+							using (Stream rs = response.GetResponseStream())
+							{
+								using (StreamReader reader = new StreamReader(rs, responseEncoding))
+								{
+									html = reader.ReadToEnd();
+								}
+							}
+							_doc = null;
+							_includeFormValues = null;
 
-						_lastRequestLog.Text = html;
-						_lastRequestLog.ResponseHeaders = response.Headers;
-						_lastRequestLog.StatusCode = (int)response.StatusCode;
+							_lastRequestLog.Text = html;
+							_lastRequestLog.ResponseHeaders = response.Headers;
+							_lastRequestLog.StatusCode = (int) response.StatusCode;
 
-						if (method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
-							_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
-						if ((int)response.StatusCode == 302 || (int)response.StatusCode == 301)
-						{
-							uri = new Uri(uri, response.Headers["Location"]);
-							handle301Or302Redirect = true;
-							Debug.WriteLine("Redirecting to: " + uri);
-							method = "GET";
-							postData = null;
-							userVariables = null;
+							if (method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
+								_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
+							if ((int) response.StatusCode == 302 || (int) response.StatusCode == 301)
+							{
+								uri = new Uri(uri, response.Headers["Location"]);
+								handle301Or302Redirect = true;
+								Debug.WriteLine("Redirecting to: " + uri);
+								method = "GET";
+								postData = null;
+								userVariables = null;
 
 							foreach (string item in response.Headers)
 							{
@@ -740,49 +761,52 @@ namespace SimpleBrowser
 									break;
 								}
 							}
-						}
-					}
-				}
-				catch (WebException ex)
-				{
-					_lastRequestLog.StatusCode = (int)ex.Status.GetTypeCode();
-					if (ex.Response != null)
-					{
-						_lastRequestLog.ResponseHeaders = ex.Response.Headers;
-						//ensure the stream is disposed
-						using (Stream rs = ex.Response.GetResponseStream())
-						{
-							using (StreamReader reader = new StreamReader(rs))
-							{
-								html = reader.ReadToEnd();
 							}
 						}
-						_lastRequestLog.Text = html;
 					}
-
-					LastWebException = ex;
-
-					switch (ex.Status)
+					catch (WebException ex)
 					{
-						case WebExceptionStatus.Timeout:
-							Log("A timeout occurred while trying to load the web page", LogMessageType.Error);
-							break;
+						_lastRequestLog.StatusCode = (int) ex.Status.GetTypeCode();
+						if (ex.Response != null)
+						{
+							_lastRequestLog.ResponseHeaders = ex.Response.Headers;
+							//ensure the stream is disposed
+							using (Stream rs = ex.Response.GetResponseStream())
+							{
+								using (StreamReader reader = new StreamReader(rs))
+								{
+									html = reader.ReadToEnd();
+								}
+							}
+							_lastRequestLog.Text = html;
+						}
 
-						case WebExceptionStatus.ReceiveFailure:
-							Log("The response was cut short prematurely", LogMessageType.Error);
-							break;
+						LastWebException = ex;
 
-						default:
-							Log("An exception was thrown while trying to load the page: " + ex.Message, LogMessageType.Error);
-							break;
+						switch (ex.Status)
+						{
+							case WebExceptionStatus.Timeout:
+								Log("A timeout occurred while trying to load the web page", LogMessageType.Error);
+								break;
+
+							case WebExceptionStatus.ReceiveFailure:
+								Log("The response was cut short prematurely", LogMessageType.Error);
+								break;
+
+							default:
+								Log("An exception was thrown while trying to load the page: " + ex.Message, LogMessageType.Error);
+								break;
+						}
+						return false;
 					}
-					return false;
+					finally
+					{
+						LogRequestData();
+					}
 				}
-				finally
-				{
-					LogRequestData();
-				}
-			} while (handle301Or302Redirect);
+				while (handle301Or302Redirect) ;
+			} 
+
 			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
 			this.AddNavigationState(new NavigationState() { Html = html, Url = uri, ContentType = contentType });
 			return true;
@@ -1072,10 +1096,8 @@ namespace SimpleBrowser
 			req.CookieContainer = Cookies;
 			if (_proxy != null)
 				req.Proxy = _proxy;
-			if (CurrentState != null)
-				req.Referer = this.Url.AbsoluteUri;
-			else if (!string.IsNullOrWhiteSpace(Referer))
-				req.Referer = Referer;
+			if (Referer != null)
+				req.Referer = Referer.ToString();
 			return req;
 		}
 
