@@ -92,7 +92,13 @@ namespace SimpleBrowser
 			public string ContentType = "";
 			public string EncodingType = "";
 			public int TimeoutMilliseconds;
+
+			/// <summary>
+			/// Used to pass name value pairs that should NOT be passed as submitted request data (like the UserVariables member)
+			/// </summary>
+			public NameValueCollection NavigationAttributes = new NameValueCollection();
 		}
+
 		public class UserVariableEntry
 		{
 			public string Name;

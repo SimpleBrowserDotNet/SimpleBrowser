@@ -9,11 +9,11 @@ namespace SimpleBrowser.Elements
 {
 	internal class AnchorElement : HtmlElement
 	{
-
 		public AnchorElement(XElement element)
 			: base(element)
 		{
 		}
+
 		public string Href
 		{
 			get
@@ -21,12 +21,20 @@ namespace SimpleBrowser.Elements
 				return this.Element.GetAttributeCI("href");
 			}
 		}
+
 		public string Target
 		{
 			get
 			{
-				string value = this.Element.GetAttributeCI("target");
-				return value;
+				return this.Element.GetAttributeCI("target");
+			}
+		}
+
+		public string Rel
+		{
+			get
+			{
+				return this.Element.GetAttributeCI("rel");
 			}
 		}
 
@@ -35,7 +43,10 @@ namespace SimpleBrowser.Elements
 		{
 			base.Click();
 
-			if (Disabled) return ClickResult.SucceededNoOp;
+			if (Disabled)
+			{
+				return ClickResult.SucceededNoOp;
+			}
 
 			var match = _postbackRecognizer.Match(this.Href);
 			if(match.Success)
@@ -89,15 +100,24 @@ namespace SimpleBrowser.Elements
 			{
 				string[] querystring = url.Split(new[] { '?' });
 				if (querystring.Length > 1)
+				{
 					queryStringValues = querystring[1];
+				}
 			}
 
-			if (RequestNavigation(new NavigationArgs()
+			NavigationArgs navArgs = new NavigationArgs()
 			{
 				Uri = url,
 				Target = target,
 				UserVariables = StringUtil.MakeCollectionFromQueryString(queryStringValues)
-			}))
+			};
+
+			if (this.Rel == "noreferrer")
+			{
+				navArgs.NavigationAttributes.Add("rel", "noreferrer");
+			}
+
+			if (RequestNavigation(navArgs))
 			{
 				return ClickResult.SucceededNavigationComplete;
 			}

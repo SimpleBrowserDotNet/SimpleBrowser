@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,6 +39,7 @@ namespace SimpleBrowser
 		private List<LogItem> _logs = new List<LogItem>();
 		private IWebRequestFactory _reqFactory;
 		private static Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens = new Dictionary<string, BasicAuthenticationToken>();
+		private NameValueCollection _navigationAttributes = null;
 
 		static Browser()
 		{
@@ -70,13 +72,31 @@ namespace SimpleBrowser
 
 		public string Accept { get; set; }
 
-		public string ContentType { get { return CurrentState.ContentType; } }
+		public string ContentType
+		{
+			get
+			{
+				return CurrentState == null ? string.Empty : CurrentState.ContentType;
+			}
+		}
 
-		public string DocumentType { get { return CurrentState.XDocument.DocumentType.ToString(); } }
+		public string DocumentType
+		{
+			get
+			{
+				return CurrentState == null ? string.Empty : CurrentState.XDocument.DocumentType.ToString();
+			}
+		}
 
 		public CookieContainer Cookies { get; set; }
 
-		public string CurrentHtml { get { return CurrentState.Html; } }
+		public string CurrentHtml
+		{
+			get
+			{
+				return CurrentState == null ? string.Empty : CurrentState.Html;
+			}
+		}
 
 		public KeyStateOption KeyState { get; set; }
 
@@ -120,25 +140,68 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
+		/// This setting is modelled after the referrer meta tag and is set on a per-browser basis.
+		/// </summary>
+		/// <remarks>
+		/// Source: https://wiki.whatwg.org/wiki/Meta_referrer
+		/// </remarks>
+		public enum RefererModes
+		{
+			/// <summary>
+			/// Replace the referrer-header-value with the empty string if the referrer is secure (https) and the target Uri is not.
+			/// Otherwise, this mode is identical to Always.
+			/// </summary>
+			Default,
+
+			/// <summary>
+			/// Replace the referrer-header-value with the empty string, regardless of its value.
+			/// </summary>
+			Never,
+
+			/// <summary>
+			/// Replace the referrer-header-value with the origin of the referring document.
+			/// That is, https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8
+			/// becomes https://www.google.com/. Transition from secure to nonsecure transport has no effect on this setting.
+			/// </summary>
+			Origin,
+
+			/// <summary>
+			/// Do not alter the referrer-header-value.
+			/// </summary>
+			Always
+		}
+
+		/// <summary>
+		/// Gets or sets the Referer header handling mode. (See <see cref="RefererModes"/>).
+		/// This setting is overridden by the referrer meta tag, if received from the client.
+		/// </summary>
+		public RefererModes RefererMode { get; set; }
+
+		/// <summary>
 		/// Get the Http Referer
 		/// </summary>
 		public Uri Referer
 		{
 			get
 			{
-				if (CurrentState == null)
-					return null;
-				return CurrentState.Url;
+				return CurrentState == null ? null : CurrentState.Referer;
 			}
 		}
 
+		[Obsolete("Use the CurrentHtml property instead.", true)]
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
 
 		public bool RetainLogs { get; set; }
 
 		public string Text { get { return XDocument.Root.Value; } }
 
-		public Uri Url { get { return CurrentState.Url; } }
+		public Uri Url
+		{
+			get
+			{
+				return CurrentState == null ? null : CurrentState.Url;
+			}
+		}
 
 		public string UserAgent { get; set; }
 
@@ -176,13 +239,14 @@ namespace SimpleBrowser
 						Log("<b>Exception Stack Trace:</b><br />" + ex.StackTrace.Replace(Environment.NewLine, "<br />"), LogMessageType.StackTrace);
 						CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
 					}
+
 					// check if we need to create sob-browsers for frames
 					foreach (var frame in this.FindAll("iframe"))
 					{
 						Log("found iframe +" + frame.CurrentElement.Value);
 					}
-
 				}
+
 				return CurrentState.XDocument;
 			}
 		}
@@ -197,7 +261,10 @@ namespace SimpleBrowser
 			{
 				CheckDisposed();
 				if (_historyPosition == -1)
+				{
 					return null;
+				}
+
 				return _history[_historyPosition];
 			}
 		}
@@ -584,14 +651,10 @@ namespace SimpleBrowser
 		internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
 		{
 			string html;
+			string referer = null;
 
 			if (uri.IsFile)
 			{
-				if (Referer != null && !Referer.IsFile)
-				{
-					throw new InvalidOperationException("Cannot refer to file url from non file url document");
-				}
-
 				StreamReader reader = new StreamReader(uri.AbsolutePath);
 				html = reader.ReadToEnd();
 				reader.Close();
@@ -701,6 +764,8 @@ namespace SimpleBrowser
 							stream.Write(data, 0, data.Length);
 						}
 					}
+
+					referer = req.Referer;
 
 					if (contentType != null)
 						req.ContentType = contentType;
@@ -820,10 +885,19 @@ namespace SimpleBrowser
 					}
 				}
 				while (handle3xxRedirect) ;
-			} 
+			}
 
+			this._navigationAttributes = null;
 			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
-			this.AddNavigationState(new NavigationState() { Html = html, Url = uri, ContentType = contentType });
+			this.AddNavigationState(
+				new NavigationState()
+				{
+					Html = html,
+					Url = uri,
+					ContentType = contentType,
+					Referer = string.IsNullOrEmpty(referer) ? null : new Uri(referer)
+				});
+
 			return true;
 		}
 
@@ -1084,6 +1158,8 @@ namespace SimpleBrowser
 				}
 			}
 
+			this._navigationAttributes = args.NavigationAttributes;
+
 			return browserToNav.DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
 		}
 
@@ -1099,20 +1175,96 @@ namespace SimpleBrowser
 		{
 			IHttpWebRequest req = _reqFactory.GetWebRequest(url);
 			req.Method = method;
-			req.ContentType = contentType; // "application/x-www-form-urlencoded";
+			req.ContentType = contentType;
 			req.UserAgent = UserAgent;
 			req.Accept = Accept ?? "*/*";
 			req.Timeout = timeoutMilliseconds;
 			req.AllowAutoRedirect = false;
+			req.CookieContainer = Cookies;
+
 			if (UseGZip)
 			{
 				req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
 			}
-			req.CookieContainer = Cookies;
+
 			if (_proxy != null)
+			{
 				req.Proxy = _proxy;
-			if (Referer != null)
-				req.Referer = Referer.ToString();
+			}
+
+			// Start by using the browser setting for the referrer mode.
+			RefererModes refererMode = this.RefererMode;
+
+			// Allow the referrer meta tag to override the global browser mode.
+			if (this.CurrentState != null)
+			{
+				var metatag = this.Find("meta", new { name = "referrer" });
+				if (metatag.Exists)
+				{
+					string content = metatag.GetAttribute("content").ToLower();
+					if(!string.IsNullOrEmpty(content))
+					{
+						TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+						content = textInfo.ToTitleCase(content);
+
+						if (Enum.TryParse<RefererModes>(content, out refererMode) == false)
+						{
+							refererMode = this.RefererMode;
+						}
+					}
+				}
+			}
+
+			// Allow the anchor rel attribute to override both the browser setting and meta tag.
+			if (this._navigationAttributes != null && this._navigationAttributes.AllKeys.Contains("rel") && this._navigationAttributes["rel"] == "noreferrer")
+			{
+				refererMode = RefererModes.Never;
+			}
+
+			switch (refererMode)
+			{
+				case RefererModes.Always:
+					{
+						if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+						{
+							req.Referer = this.CurrentState.Url.ToString();
+						}
+
+						break;
+					}
+				case RefererModes.Never:
+					{
+						req.Referer = string.Empty;
+						break;
+					}
+				case RefererModes.Origin:
+					{
+						if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+						{
+							req.Referer = string.Format("{0}://{1}", this.CurrentState.Url.Scheme, this.CurrentState.Url.Host);
+						}
+
+						break;
+					}
+				default: // Including case Referemodes.Default:
+					{
+						if (this.CurrentState != null &&
+							!string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+						{
+							if (this.CurrentState.Url.Scheme == "https" && url.Scheme == "http")
+							{
+								req.Referer = string.Empty;
+							}
+							else
+							{
+								req.Referer = this.CurrentState.Url.ToString();
+							}
+						}
+
+						break;
+					}
+			}
+
 			return req;
 		}
 
