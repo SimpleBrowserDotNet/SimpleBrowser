@@ -63,6 +63,7 @@
     <Compile Include="OfflineTests\Selectors.cs" />
     <Compile Include="OfflineTests\Uploading.cs" />
     <Compile Include="OnlineTests\HttpHeaderTests.cs" />
+    <Compile Include="OnlineTests\RefererHeader.cs" />
     <Compile Include="OnlineTests\VerifyGZipEncoding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
