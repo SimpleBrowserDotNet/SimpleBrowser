@@ -31,7 +31,7 @@ namespace SimpleBrowser
 		private List<NavigationState> _history = new List<NavigationState>();
 		private int _historyPosition = -1;
 
-        private IWebProxy _proxy;
+        	private IWebProxy _proxy;
 		private int _timeoutMilliseconds = 30000;
 		private NameValueCollection _includeFormValues;
 		private XDocument _doc;
