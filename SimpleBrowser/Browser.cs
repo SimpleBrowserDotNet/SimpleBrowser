@@ -555,10 +555,10 @@ namespace SimpleBrowser
 			_extraHeaders.Add(header);
 		}
 
-        public void SetProxy(IWebProxy webProxy)
-        {
-            _proxy = webProxy;
-        }
+        	public void SetProxy(IWebProxy webProxy)
+        	{
+            		_proxy = webProxy;
+		}
 
 		public void SetProxy(string host, int port)
 		{
