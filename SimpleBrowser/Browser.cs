@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -31,7 +31,7 @@ namespace SimpleBrowser
 		private List<NavigationState> _history = new List<NavigationState>();
 		private int _historyPosition = -1;
 
-		private WebProxy _proxy;
+        	private IWebProxy _proxy;
 		private int _timeoutMilliseconds = 30000;
 		private NameValueCollection _includeFormValues;
 		private XDocument _doc;
@@ -553,6 +553,11 @@ namespace SimpleBrowser
 		public void SetHeader(string header)
 		{
 			_extraHeaders.Add(header);
+		}
+
+        	public void SetProxy(IWebProxy webProxy)
+        	{
+            		_proxy = webProxy;
 		}
 
 		public void SetProxy(string host, int port)
@@ -1278,8 +1283,7 @@ namespace SimpleBrowser
 		}
 
 		#endregion private methods end
-
-	}
+    }
 }
 
 
