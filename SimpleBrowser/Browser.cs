@@ -850,7 +850,6 @@ namespace SimpleBrowser
 							{
 								var cookies = SetCookieHeaderParser.GetAllCookiesFromHeader(uri.Host, response.Headers["Set-Cookie"]);
 								Cookies.Add(cookies);
-								break;
 							}
 						}
 					}
