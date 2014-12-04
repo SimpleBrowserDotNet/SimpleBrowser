@@ -903,7 +903,7 @@ namespace SimpleBrowser
 					Html = html,
 					Url = uri,
 					ContentType = contentType,
-					Referer = string.IsNullOrEmpty(referer) ? null : new Uri(WebUtility.UrlDecode(referer))
+					Referer = string.IsNullOrEmpty(referer) ? null : new Uri(Uri.UnescapeDataString(referer))
 				});
 
 			return true;
