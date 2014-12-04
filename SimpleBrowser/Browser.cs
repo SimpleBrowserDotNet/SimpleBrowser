@@ -53,6 +53,7 @@ namespace SimpleBrowser
 
 		public Browser(IWebRequestFactory requestFactory = null, string name = null)
 		{
+			AutoRedirect = true;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
 			UseGZip = true;
@@ -190,6 +191,8 @@ namespace SimpleBrowser
 
 		[Obsolete("Use the CurrentHtml property instead.", true)]
 		public string ResponseText { get { return CurrentState.Html /*TODO What is the difference here?*/; } }
+		
+		public bool AutoRedirect { get; set; }
 
 		public bool RetainLogs { get; set; }
 
@@ -325,7 +328,8 @@ namespace SimpleBrowser
 				Accept = Accept,
 				LastWebException = LastWebException,
 				RetainLogs = RetainLogs,
-				UserAgent = UserAgent
+				UserAgent = UserAgent,
+				AutoRedirect = AutoRedirect,
 			};
 			b.MessageLogged = MessageLogged;
 			b.AddNavigationState(this.CurrentState);
@@ -821,8 +825,9 @@ namespace SimpleBrowser
 							{
 								_lastRequestLog.QueryStringData = HttpUtility.ParseQueryString(uri.Query);
 							}
-
-							if (((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
+							
+							if (AutoRedirect == true &&
+							        (((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
 								(int)response.StatusCode == 301 ||
 								(int)response.StatusCode == 302 ||
 								(int)response.StatusCode == 303 ||
@@ -831,7 +836,7 @@ namespace SimpleBrowser
 								// 306 - No longer used, per RFC2616, Section 10.3.7
 								(int)response.StatusCode == 307 ||
 								(int)response.StatusCode == 308) && 
-								response.Headers.AllKeys.Contains("Location"))
+								response.Headers.AllKeys.Contains("Location")))
 							{
 								uri = new Uri(uri, response.Headers["Location"]);
 								handle3xxRedirect = true;
@@ -845,7 +850,6 @@ namespace SimpleBrowser
 							{
 								var cookies = SetCookieHeaderParser.GetAllCookiesFromHeader(uri.Host, response.Headers["Set-Cookie"]);
 								Cookies.Add(cookies);
-								break;
 							}
 						}
 					}
@@ -900,7 +904,7 @@ namespace SimpleBrowser
 					Html = html,
 					Url = uri,
 					ContentType = contentType,
-					Referer = string.IsNullOrEmpty(referer) ? null : new Uri(referer)
+					Referer = string.IsNullOrEmpty(referer) ? null : new Uri(WebUtility.UrlDecode(referer))
 				});
 
 			return true;
