@@ -80,7 +80,6 @@ namespace SimpleBrowser.Internal
 				int intEachCookPartsCount = strEachCookParts.Length;
 				string strCNameAndCValue = string.Empty;
 				string strPNameAndPValue = string.Empty;
-				string strDNameAndDValue = string.Empty;
 				string[] NameValuePairTemp;
 				Cookie cookTemp = new Cookie();
 
