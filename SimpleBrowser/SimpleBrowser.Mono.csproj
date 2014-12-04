@@ -110,6 +110,7 @@
     <Compile Include="Query\XQueryResultsContext.cs" />
     <Compile Include="Query\XQuerySelector.cs" />
     <Compile Include="Query\XQuerySelectorCreator.cs" />
+    <Compile Include="Internal\SetCookieHeaderParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Web.config" />

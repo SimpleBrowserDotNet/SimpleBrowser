@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Moq">
-      <HintPath>..\packages\Moq.4.0.10827\NET40\Moq.dll</HintPath>
+      <HintPath>..\Dependencies\Moq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,7 +54,6 @@
     <Compile Include="OfflineTests\WindowsAndFrames.cs" />
     <Compile Include="OfflineTests\DecodedValue.cs" />
     <Compile Include="OfflineTests\History.cs" />
-    <Compile Include="OfflineTests\QueryTests.cs" />
     <Compile Include="OfflineTests\Selectors.cs" />
     <Compile Include="OfflineTests\Uploading.cs" />
     <Compile Include="OnlineTests\VerifyGZipEncoding.cs" />
