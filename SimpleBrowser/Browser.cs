@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -31,7 +31,7 @@ namespace SimpleBrowser
 		private List<NavigationState> _history = new List<NavigationState>();
 		private int _historyPosition = -1;
 
-        	private IWebProxy _proxy;
+		private IWebProxy _proxy;
 		private int _timeoutMilliseconds = 30000;
 		private NameValueCollection _includeFormValues;
 		private XDocument _doc;
@@ -559,9 +559,9 @@ namespace SimpleBrowser
 			_extraHeaders.Add(header);
 		}
 
-        	public void SetProxy(IWebProxy webProxy)
-        	{
-            		_proxy = webProxy;
+		public void SetProxy(IWebProxy webProxy)
+		{
+			_proxy = webProxy;
 		}
 
 		public void SetProxy(string host, int port)
@@ -687,7 +687,6 @@ namespace SimpleBrowser
 
 					try
 					{
-
 						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 					}
 					catch (NotSupportedException)
@@ -819,7 +818,7 @@ namespace SimpleBrowser
 
 							_lastRequestLog.Text = html;
 							_lastRequestLog.ResponseHeaders = response.Headers;
-							_lastRequestLog.StatusCode = (int) response.StatusCode;
+							_lastRequestLog.ResponseCode = (int) response.StatusCode;
 
 							if (method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
 							{
@@ -855,7 +854,6 @@ namespace SimpleBrowser
 					}
 					catch (WebException ex)
 					{
-						_lastRequestLog.StatusCode = (int) ex.Status.GetTypeCode();
 						if (ex.Response != null)
 						{
 							_lastRequestLog.ResponseHeaders = ex.Response.Headers;
@@ -904,7 +902,7 @@ namespace SimpleBrowser
 					Html = html,
 					Url = uri,
 					ContentType = contentType,
-					Referer = string.IsNullOrEmpty(referer) ? null : new Uri(WebUtility.UrlDecode(referer))
+					Referer = string.IsNullOrEmpty(referer) ? null : new Uri(Uri.UnescapeDataString(referer))
 				});
 
 			return true;

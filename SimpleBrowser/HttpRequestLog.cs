@@ -24,7 +24,7 @@ namespace SimpleBrowser
 		public NameValueCollection QueryStringData { get; set; }
 		public WebHeaderCollection RequestHeaders { get; set; }
 		public WebHeaderCollection ResponseHeaders { get; set; }
-		public int StatusCode { get; set; }
+		public int ResponseCode { get; set; }
 		public Uri Url { get; set; }
 
 		public XDocument ToXml()
@@ -34,10 +34,10 @@ namespace SimpleBrowser
 					new XAttribute("Date", DateTime.UtcNow.ToString("u")),
 					new XElement("Url", Url),
 					new XElement("Method", Method),
-					new XElement("StatusCode", StatusCode),
+					new XElement("ResponseCode", ResponseCode),
 					new XElement("ResponseText", new XCData(Text))
- 				)
- 			);
+				)
+			);
 			if(PostData != null) doc.Root.Add(PostData.ToXElement("PostData"));
 			if(RequestHeaders != null) doc.Root.Add(RequestHeaders.ToXElement("RequestHeaders"));
 			if(ResponseHeaders != null) doc.Root.Add(ResponseHeaders.ToXElement("ResponseHeaders"));
