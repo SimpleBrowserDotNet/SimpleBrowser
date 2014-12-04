@@ -93,7 +93,7 @@ namespace Sample
 		static void OnBrowserRequestLogged(Browser req, HttpRequestLog log)
 		{
 			Console.WriteLine(" -> " + log.Method + " request to " + log.Url);
-			Console.WriteLine(" <- Response status code: " + log.StatusCode);
+			Console.WriteLine(" <- Response status code: " + log.ResponseCode);
 		}
 
 		static string WriteFile(string filename, string text)

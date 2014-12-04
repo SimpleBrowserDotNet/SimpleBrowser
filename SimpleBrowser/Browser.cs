@@ -818,7 +818,7 @@ namespace SimpleBrowser
 
 							_lastRequestLog.Text = html;
 							_lastRequestLog.ResponseHeaders = response.Headers;
-							_lastRequestLog.StatusCode = (int) response.StatusCode;
+							_lastRequestLog.ResponseCode = (int) response.StatusCode;
 
 							if (method == "GET" && uri.Query.Length > 0 && uri.Query != "?")
 							{
@@ -854,7 +854,6 @@ namespace SimpleBrowser
 					}
 					catch (WebException ex)
 					{
-						_lastRequestLog.StatusCode = (int) ex.Status.GetTypeCode();
 						if (ex.Response != null)
 						{
 							_lastRequestLog.ResponseHeaders = ex.Response.Headers;
