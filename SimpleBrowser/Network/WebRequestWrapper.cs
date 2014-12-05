@@ -166,7 +166,7 @@ namespace SimpleBrowser.Network
 			}
 			set
 			{
-				_wr.Referer = Uri.EscapeDataString(value);
+				_wr.Referer = value;
 			}
 		}
 
