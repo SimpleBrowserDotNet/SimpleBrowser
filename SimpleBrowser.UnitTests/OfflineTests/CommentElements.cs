@@ -94,7 +94,6 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			Browser b = new Browser();
 			b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.CommentElements.htm"));
 
-			string text = b.Text;
 			HtmlResult scriptElement = b.Find("script", new { type = "text/javascript" });
 			if (scriptElement.Exists)
 			{
