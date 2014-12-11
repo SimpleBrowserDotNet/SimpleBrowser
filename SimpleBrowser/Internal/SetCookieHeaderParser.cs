@@ -7,6 +7,7 @@ namespace SimpleBrowser.Internal
 	using System;
 	using System.Collections;
 	using System.Net;
+	using System.Text;
 
 	/// <summary>
 	/// A class to parse the set-cookies HTTP header and return a CookieCollection.
@@ -93,7 +94,7 @@ namespace SimpleBrowser.Internal
 							int firstEqual = strCNameAndCValue.IndexOf("=");
 							string firstName = strCNameAndCValue.Substring(0, firstEqual);
 							string allValue = strCNameAndCValue.Substring(firstEqual + 1, strCNameAndCValue.Length - (firstEqual + 1));
-							cookTemp.Name = firstName;
+							cookTemp.Name = EncodeCookieName(firstName);
 							cookTemp.Value = allValue;
 						}
 
@@ -154,6 +155,42 @@ namespace SimpleBrowser.Internal
 			}
 
 			return cc;
+		}
+
+		/// <summary>
+		/// Encodes the cookie name (key) so that it contains only valid characters.
+		/// </summary>
+		/// <param name="name">The name to encode</param>
+		/// <remarks>
+		/// This method is essentially URL encoding, but only encodes the characters that are invalid
+		/// for a cookie name, as defined by the .NET Framework 4 documentation of the System.Net.Cookie.Name
+		/// property, specifically:
+		/// 
+		/// "The following characters must not be used inside the Name property: equal sign, semicolon,
+		/// comma, newline (\n), return (\r), tab (\t), and space character. The dollar sign character
+		/// ("$") cannot be the first character."
+		///
+		/// Note: In true Microsoft fashion, this this differs from what is defined in RFC 2616, section 2.2.
+		/// RFC 2616 specifies 51 characters that are technically not allowed to be in a cookie name.
+		/// </remarks>
+		/// <returns>The encoded cookie name.</returns>
+		private static string EncodeCookieName(string name)
+		{
+			StringBuilder validName = new StringBuilder(name);
+			validName.Replace("=", "%3D");
+			validName.Replace(";", "%3B");
+			validName.Replace(",", "%2C");
+			validName.Replace("\n", "%10");
+			validName.Replace("\r", "%13");
+			validName.Replace("\t", "%09");
+			validName.Replace(" ", "%20");
+
+			if (name.StartsWith("$"))
+			{
+				validName.Replace("$", "%24", 0, 1);
+			}
+
+			return validName.ToString();
 		}
 	}
 }
