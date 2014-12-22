@@ -24,10 +24,10 @@ namespace SimpleBrowser
 		internal const string TARGET_BLANK = "_blank";
 		const string TARGET_TOP = "_top";
 
-		private static List<Browser> _allWindows = new List<Browser>();
+	    private readonly List<Browser> _allWindows;
 
 		private HashSet<string> _extraHeaders = new HashSet<string>();
-		private List<HtmlElement> _allActiveElements = new List<HtmlElement>();
+		private readonly List<HtmlElement> _allActiveElements = new List<HtmlElement>();
 		private List<NavigationState> _history = new List<NavigationState>();
 		private int _historyPosition = -1;
 
@@ -37,8 +37,8 @@ namespace SimpleBrowser
 		private XDocument _doc;
 		private HttpRequestLog _lastRequestLog;
 		private List<LogItem> _logs = new List<LogItem>();
-		private IWebRequestFactory _reqFactory;
-		private static Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens = new Dictionary<string, BasicAuthenticationToken>();
+		private readonly IWebRequestFactory _reqFactory;
+	    private readonly Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens;
 		private NameValueCollection _navigationAttributes = null;
 
 		static Browser()
@@ -51,8 +51,9 @@ namespace SimpleBrowser
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
 
-		public Browser(IWebRequestFactory requestFactory = null, string name = null)
+		public Browser(IWebRequestFactory requestFactory = null, string name = null, List<Browser> context = null)
 		{
+            _allWindows = context ?? new List<Browser>();
 			AutoRedirect = true;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
@@ -61,8 +62,9 @@ namespace SimpleBrowser
 			if (requestFactory == null)
 				requestFactory = new DefaultRequestFactory();
 			_reqFactory = requestFactory;
+            _basicAuthenticationTokens = new Dictionary<string, BasicAuthenticationToken>();
 			WindowHandle = name;
-			Browser.Register(this);
+			this.Register(this);
 		}
 
 		public event Action<Browser, string> MessageLogged;
@@ -119,7 +121,7 @@ namespace SimpleBrowser
 			get
 			{
 				var doc = this.XDocument; // this will force the document to be parsed. It could result in more windows
-				return Browser.Windows.Where(b => b.ParentWindow == this);
+				return this.Windows.Where(b => b.ParentWindow == this);
 			}
 		}
 
@@ -212,7 +214,7 @@ namespace SimpleBrowser
 
 		public string WindowHandle { get; private set; }
 
-		public static IEnumerable<Browser> Windows
+		public IEnumerable<Browser> Windows
 		{
 			get
 			{
@@ -287,7 +289,7 @@ namespace SimpleBrowser
 			LastWebException = null;
 		}
 
-		public static void ClearWindows()
+		public void ClearWindows()
 		{
 			_allWindows.Clear();
 		}
@@ -315,7 +317,7 @@ namespace SimpleBrowser
 
 		public Browser CreateReferenceView()
 		{
-			Browser b = new Browser(_reqFactory)
+			Browser b = new Browser(_reqFactory, context: _allWindows)
 			{
 				Cookies = Cookies,
 				_doc = _doc,
@@ -336,7 +338,7 @@ namespace SimpleBrowser
 			return b;
 		}
 
-		public static Browser GetWindowByName(string name)
+		public Browser GetWindowByName(string name)
 		{
 			return Windows.FirstOrDefault(b => b.WindowHandle == name);
 		}
@@ -627,7 +629,7 @@ namespace SimpleBrowser
 
 		internal Browser CreateChildBrowser(string name = null)
 		{
-			Browser child = new Browser(this._reqFactory, name);
+            Browser child = new Browser(_reqFactory, name, _allWindows);
 			child.ParentWindow = this;
 			// no RaiseNewWindowOpened here, because it is not really a new window. It can be navigated to using 
 			// the frames collection of the parent
@@ -1152,15 +1154,15 @@ namespace SimpleBrowser
 			}
 			else if (args.Target == TARGET_BLANK)
 			{
-				browserToNav = new Browser(this._reqFactory);
+				browserToNav = new Browser(_reqFactory, context: _allWindows);
 				RaiseNewWindowOpened(browserToNav);
 			}
 			else
 			{
-				browserToNav = Browser.Windows.FirstOrDefault(b => b.WindowHandle == args.Target);
+				browserToNav = this.Windows.FirstOrDefault(b => b.WindowHandle == args.Target);
 				if (browserToNav == null)
 				{
-					browserToNav = new Browser(this._reqFactory, args.Target);
+					browserToNav = new Browser(this._reqFactory, args.Target, _allWindows);
 					RaiseNewWindowOpened(browserToNav);
 				}
 			}
@@ -1275,7 +1277,7 @@ namespace SimpleBrowser
 			return req;
 		}
 
-		private static void Register(Browser browser)
+		private void Register(Browser browser)
 		{
 			_allWindows.Add(browser);
 			if (browser.WindowHandle == null)

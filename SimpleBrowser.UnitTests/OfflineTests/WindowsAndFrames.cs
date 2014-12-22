@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
 
 namespace SimpleBrowser.UnitTests.OfflineTests
@@ -9,11 +8,6 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 	[TestFixture]
 	public class WindowsAndFrames
 	{
-		[SetUp]
-		public void ClearAllWindows()
-		{
-			Browser.ClearWindows();
-		}
 		[Test]
 		public void Clicking_Target_Blank()
 		{
@@ -28,10 +22,10 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			var link = b.Find(ElementType.Anchor, FindBy.Text, "About us");
 			link.Click();
 			Assert.That(b.Url == new Uri("http://localhost/movies/"));
-			Assert.That(Browser.Windows.Count() == 2);
+			Assert.That(b.Windows.Count() == 2);
 			link.Click();
-			Assert.That(Browser.Windows.Count() == 3);
-			var newBrowserWindow = Browser.Windows.First(br => br.WindowHandle != b.WindowHandle);
+			Assert.That(b.Windows.Count() == 3);
+			var newBrowserWindow = b.Windows.First(br => br.WindowHandle != b.WindowHandle);
 			Assert.That(newBrowserWindow.Url == new Uri("http://localhost/movies/About"));
 		}
 
@@ -48,26 +42,26 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			Assert.That(b.Url == new Uri("http://localhost/movies/"));
 			var link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
 			link.Click();
-			Assert.That(Browser.Windows.Count() == 1);
+			Assert.That(b.Windows.Count() == 1);
 			link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
 			b.KeyState = KeyStateOption.Ctrl;
 			link.Click();
-			Assert.That(Browser.Windows.Count() == 2);
+			Assert.That(b.Windows.Count() == 2);
 			link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
 			b.KeyState = KeyStateOption.Shift;
 			link.Click();
-			Assert.That(Browser.Windows.Count() == 3);
+			Assert.That(b.Windows.Count() == 3);
 			link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
 			b.KeyState = KeyStateOption.Alt;
 			link.Click();
-			Assert.That(Browser.Windows.Count() == 3); // alt does not open new browser
+			Assert.That(b.Windows.Count() == 3); // alt does not open new browser
 		}
 
 
 		[Test]
 		public void Accessing_New_Windows_Using_Event()
 		{
-			Browser b = new Browser(Helper.GetMoviesRequestMocker());
+            Browser b = new Browser(Helper.GetMoviesRequestMocker());
 			Browser newlyOpened = null;
 			b.NewWindowOpened += (b1, b2) =>
 			{
@@ -78,7 +72,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			var link = b.Find(ElementType.Anchor, FindBy.Text, "Details");
 			b.KeyState = KeyStateOption.Ctrl;
 			link.Click();
-			Assert.That(Browser.Windows.Count() == 2);
+			Assert.That(b.Windows.Count() == 2);
 			Assert.NotNull(newlyOpened);
 			Assert.That(b.Url.ToString() == "http://localhost/movies/");
 			Assert.That(newlyOpened.Url.ToString() == "http://localhost/movies/Movies/Details/1");
@@ -99,11 +93,11 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			var link = b.Find(ElementType.Anchor, FindBy.Text, "About us");
 			link.Click();
 			Assert.That(b.Url == new Uri("http://localhost/movies/"));
-			Assert.That(Browser.Windows.Count() == 2);
+			Assert.That(b.Windows.Count() == 2);
 			b.Close();
-			Assert.That(Browser.Windows.Count() == 1);
-			Browser.Windows.First().Close();
-			Assert.That(Browser.Windows.Count() == 0);
+			Assert.That(b.Windows.Count() == 1);
+			b.Windows.First().Close();
+			Assert.That(b.Windows.Count() == 0);
 			Assert.Throws(typeof(ObjectDisposedException), () => { Uri s = b.Url; });
 		}
 		[Test]
@@ -121,7 +115,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			// now navigate away to a page without frames
 			b.Navigate("http://localhost/bla");
 			Assert.That(b.Frames.Count() == 0);
-			Assert.That(Browser.Windows.Count() == 1);
+			Assert.That(b.Windows.Count() == 1);
 		}
 		[Test]
 		public void GetAttribute_Backdoor_FrameHandle()
