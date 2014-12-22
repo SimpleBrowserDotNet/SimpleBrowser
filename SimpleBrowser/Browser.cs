@@ -291,6 +291,7 @@ namespace SimpleBrowser
 
 		public void ClearWindows()
 		{
+            foreach (var window in _allWindows.ToArray()) window.Close();
 			_allWindows.Clear();
 		}
 
