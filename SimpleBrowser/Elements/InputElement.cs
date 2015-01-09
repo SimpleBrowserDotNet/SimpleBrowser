@@ -81,7 +81,14 @@ namespace SimpleBrowser.Elements
 		{
 			if (!String.IsNullOrEmpty(this.Name))
 			{
-				yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+				if (this.Name.Equals("_charset_") && string.IsNullOrEmpty(this.Value) && this.InputType.Equals("hidden", StringComparison.OrdinalIgnoreCase))
+				{
+					yield return new UserVariableEntry() { Name = this.Name, Value = "iso-8859-1" };
+				}
+				else
+				{
+					yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+				}
 			}
 			yield break;
 		}
