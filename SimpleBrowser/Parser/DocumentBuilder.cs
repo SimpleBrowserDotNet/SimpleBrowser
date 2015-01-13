@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Web;
-using System.Xml;
-using System.Xml.Linq;
-
-namespace SimpleBrowser.Parser
+﻿namespace SimpleBrowser.Parser
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Text.RegularExpressions;
+	using System.Web;
+	using System.Xml;
+	using System.Xml.Linq;
+
 	public class DocumentBuilder
 	{
 		/// <summary>
@@ -19,6 +19,31 @@ namespace SimpleBrowser.Parser
 		/// HTML 5 only: embed, keygen, source, track, wbr
 		/// </remarks>
 		static readonly string[] SelfClosing = new[] { "area", "base", "basefont", "br", "col", "command", "embed", "frame", "hr", "img", "input", "isindex", "keygen", "link", "meta", "param", "source", "track", "wbr" };
+
+		/// <summary>
+		/// Defines tags that are not allowed to be children of themself.
+		/// </summary>
+		/// <remarks>
+		/// When attempting to render malformed HTML, these tags are not allowed to be nested within themselves. In
+		/// cases where they are found, the previous opening tag is closed before the new tag is opened. Therefore,
+		/// this:
+		/// <select>
+		///     <option>1
+		///     <option>2
+		/// </select>
+		/// Is rendered as this:
+		/// <select>
+		///     <option>1</option>
+		///     <option>2</option>
+		/// </select>
+		/// Rather than this:
+		/// <select>
+		///     <option>1
+		///         <option>2</option>
+		///     </option>
+		/// </select>
+		/// </remarks>
+		static readonly string[] SiblingOnly = new[] { "select", "option", "optgroup" };
 
 		private readonly List<HtmlParserToken> _tokens;
 		private XDocument _doc;
@@ -77,6 +102,11 @@ namespace SimpleBrowser.Parser
 					case TokenType.Element:
 						{
 							var name = SanitizeElementName(token.A);
+							if (SiblingOnly.Contains(name))
+							{
+								CloseElement(stack, name);
+							}
+
 							XElement current = null;
 							if (name == "html")
 							{
@@ -99,18 +129,7 @@ namespace SimpleBrowser.Parser
 
 					case TokenType.CloseElement:
 						{
-							var name = SanitizeElementName(token.A);
-							if (stack.Any(x => x.Name == name))
-							{
-								do
-								{
-									var x = stack.Pop();
-									if (x.Name == name)
-									{
-										break;
-									}
-								} while (stack.Count > 0);
-							}
+							CloseElement(stack, SanitizeElementName(token.A));
 
 							break;
 						}
@@ -162,6 +181,21 @@ namespace SimpleBrowser.Parser
 				{
 					current.SetAttributeValue(name, HttpUtility.HtmlDecode(token.B ?? token.A ?? string.Empty));
 				}
+			}
+		}
+
+		private void CloseElement(Stack<XElement> stack, string name)
+		{
+			if (stack.Any(x => x.Name == name))
+			{
+				do
+				{
+					var x = stack.Pop();
+					if (x.Name == name)
+					{
+						break;
+					}
+				} while (stack.Count > 0);
 			}
 		}
 	}
