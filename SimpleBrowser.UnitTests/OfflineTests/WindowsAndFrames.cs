@@ -150,5 +150,23 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			Assert.That(b.Frames.First().Url == new Uri("http://localhost/bla.htm"));
 
 		}
-	}
+        [Test]
+        public void Static_scoped_clear_works()
+        {
+            Browser b1 = new Browser(Helper.GetFramesMock());
+            Browser b2 = new Browser(Helper.GetFramesMock());
+            Browser.ClearWindows();
+            Assert.Throws(typeof(ObjectDisposedException), () => b1.Navigate("http://localhost/"));
+        }
+        [Test]
+        public void Instance_scoped_clear_works()   
+        {
+            Browser b1 = new Browser(Helper.GetFramesMock());
+            Browser b2 = new Browser(Helper.GetFramesMock());
+            b2.ClearWindowsInContext();
+            b1.Navigate("http://localhost/");
+            Assert.That(b1.Url.ToString() == "http://localhost/");
+            Assert.Throws(typeof(ObjectDisposedException), () => b2.Navigate("http://localhost/"));
+        }
+    }
 }
