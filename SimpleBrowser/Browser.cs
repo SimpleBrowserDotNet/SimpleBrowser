@@ -289,11 +289,19 @@ namespace SimpleBrowser
 			LastWebException = null;
 		}
 
-		public void ClearWindows()
+		public void ClearWindowsInContext()
 		{
 			foreach (var window in _allWindows.ToArray()) window.Close();
 			_allWindows.Clear();
 		}
+        public static void ClearWindows()
+        {
+            foreach (var list in _allContexts.ToArray())
+            {
+                foreach (var window in list.ToArray()) window.Close();
+            }
+            _allContexts.Clear();
+        }
 
 		public void Close()
 		{
@@ -1286,11 +1294,15 @@ namespace SimpleBrowser
 		private void Register(Browser browser)
 		{
 			_allWindows.Add(browser);
+            if(!_allContexts.Contains(_allWindows)){
+                _allContexts.Add(_allWindows);
+            }
 			if (browser.WindowHandle == null)
 			{
 				browser.WindowHandle = Guid.NewGuid().ToString().Substring(0, 8);
 			}
 		}
+        private static List<List<Browser>> _allContexts = new List<List<Browser>>();
 
 		#endregion private methods end
 	}
