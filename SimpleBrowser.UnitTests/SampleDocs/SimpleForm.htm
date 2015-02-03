@@ -1,19 +1,43 @@
 <!DOCTYPE html>
 <html>
-
-
   <body >
   <form action="http://localhost/test" method=get>
+    <input type="hidden" name="_charset_" />
+
+    <select id="malformedOption1">
+    <optgroup>
+    <option>0
+    <option>1
+    <option>2
+    <option>3
+    <optgroup>
+    <option>A
+    <option>B
+    <option>C
+    <select id="malformedOption2">
+    <optgroup>
+    <option>4
+    <option>5
+    </optgroup>
+    <optgroup>
+    <option>V
+    <option>W
+    <option>X
+    <option>Y
+    <option>Z
+    </optgroup>
+    </select>
+
     <div class="cb-container">
-    <input name="cb" id="first-checkbox" type=checkbox checked=checked /> <label for="first-checkbox">first</label> 
-    <input name="cb" id="second-checkbox" type=checkbox /> <label for="second-checkbox">second</label> 
-
+    <input name="cb" id="first-checkbox" type=checkbox checked=checked /> <label for="first-checkbox">first</label>
+    <input name="cb" id="second-checkbox" type=checkbox /> <label for="second-checkbox">second</label>
     </div>
+
     <div class="rb-container">
-    <input name="radios" id="first-radio" type=radio checked=checked value="first"/> <label for="first-radio">first</label> 
-    <input name="radios" id="second-radio" type=radio  value="second"/> <label for="second-radio">second</label> 
-
+    <input name="radios" id="first-radio" type=radio checked=checked value="first"/> <label for="first-radio">first</label>
+    <input name="radios" id="second-radio" type=radio  value="second"/> <label for="second-radio">second</label>
     </div>
+
     <input type="text" name="textbox" value="textbox content" />
     <textarea name="textarea_a" readonly=readonly>This is a full text part
 with several line

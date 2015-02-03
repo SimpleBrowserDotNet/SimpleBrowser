@@ -24,7 +24,7 @@ namespace SimpleBrowser
 		internal const string TARGET_BLANK = "_blank";
 		const string TARGET_TOP = "_top";
 
-	    private readonly List<Browser> _allWindows;
+		private readonly List<Browser> _allWindows;
 
 		private HashSet<string> _extraHeaders = new HashSet<string>();
 		private readonly List<HtmlElement> _allActiveElements = new List<HtmlElement>();
@@ -38,7 +38,7 @@ namespace SimpleBrowser
 		private HttpRequestLog _lastRequestLog;
 		private List<LogItem> _logs = new List<LogItem>();
 		private readonly IWebRequestFactory _reqFactory;
-	    private readonly Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens;
+		private readonly Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens;
 		private NameValueCollection _navigationAttributes = null;
 
 		static Browser()
@@ -53,7 +53,7 @@ namespace SimpleBrowser
 
 		public Browser(IWebRequestFactory requestFactory = null, string name = null, List<Browser> context = null)
 		{
-            _allWindows = context ?? new List<Browser>();
+			_allWindows = context ?? new List<Browser>();
 			AutoRedirect = true;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
 			RetainLogs = true;
@@ -62,7 +62,7 @@ namespace SimpleBrowser
 			if (requestFactory == null)
 				requestFactory = new DefaultRequestFactory();
 			_reqFactory = requestFactory;
-            _basicAuthenticationTokens = new Dictionary<string, BasicAuthenticationToken>();
+			_basicAuthenticationTokens = new Dictionary<string, BasicAuthenticationToken>();
 			WindowHandle = name;
 			this.Register(this);
 		}
@@ -291,7 +291,7 @@ namespace SimpleBrowser
 
 		public void ClearWindowsInContext()
 		{
-            foreach (var window in _allWindows.ToArray()) window.Close();
+			foreach (var window in _allWindows.ToArray()) window.Close();
 			_allWindows.Clear();
 		}
         public static void ClearWindows()
@@ -638,7 +638,7 @@ namespace SimpleBrowser
 
 		internal Browser CreateChildBrowser(string name = null)
 		{
-            Browser child = new Browser(_reqFactory, name, _allWindows);
+			Browser child = new Browser(_reqFactory, name, _allWindows);
 			child.ParentWindow = this;
 			// no RaiseNewWindowOpened here, because it is not really a new window. It can be navigated to using 
 			// the frames collection of the parent
@@ -776,6 +776,11 @@ namespace SimpleBrowser
 						if (method == "GET")
 							throw new InvalidOperationException("Cannot call DoRequest with method GET and non-null postData");
 						postBody = postData;
+						// 28591 corresponds to ISO-8859-1, the default encoding of an HTTP POST.
+						// http://msdn.microsoft.com/en-us/library/system.text.encodinginfo.getencoding%28v=vs.110%29.aspx
+						// In the event that this value ever changes, including no longer being hard coded,
+						// update the encoding being sent with a form submission with a hidden input named _charset_
+						// in InputElement.cs.
 						byte[] data = Encoding.GetEncoding(28591).GetBytes(postData);
 						req.ContentLength = data.Length;
 						using (Stream stream = req.GetRequestStream())
@@ -837,7 +842,7 @@ namespace SimpleBrowser
 							}
 							
 							if (AutoRedirect == true &&
-							        (((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
+									(((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
 								(int)response.StatusCode == 301 ||
 								(int)response.StatusCode == 302 ||
 								(int)response.StatusCode == 303 ||
@@ -1300,7 +1305,7 @@ namespace SimpleBrowser
         private static List<List<Browser>> _allContexts = new List<List<Browser>>();
 
 		#endregion private methods end
-    }
+	}
 }
 
 

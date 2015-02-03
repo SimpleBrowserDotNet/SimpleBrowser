@@ -6,12 +6,9 @@
 
 namespace SimpleBrowser.UnitTests.OfflineTests
 {
-	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Xml;
 	using System.Xml.Linq;
-	using System.Text;
 	using NUnit.Framework;
 
 	/// <summary>
@@ -20,6 +17,52 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 	[TestFixture]
 	public class Forms
 	{
+		[Test]
+		public void Forms_Malformed_Select()
+		{
+			Browser b = new Browser();
+			b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
+
+			// Test the malformed option.
+			HtmlResult options = b.Find("malformedOption1");
+			Assert.IsNotNull(options);
+			Assert.IsTrue(options.Exists);
+
+			options.Value = "3";
+			Assert.That(options.Value == "3");
+
+			// Test the malformed option group
+			IEnumerable<XElement> groups = options.XElement.Elements("optgroup");
+			Assert.That(groups.Count() == 2);
+
+			XElement group = groups.First();
+			Assert.That(group.Elements("option").Count() == 4);
+
+			group = groups.ElementAt(1);
+			Assert.That(group.Elements("option").Count() == 3);
+
+			options = b.Find("malformedOption2");
+			Assert.IsNotNull(options);
+			Assert.IsTrue(options.Exists);
+
+			options.Value = "3";
+			Assert.That(options.Value != "3");
+			Assert.That(options.Value == "4");
+
+			options.Value = "V";
+			Assert.That(options.Value == "V");
+
+			// Test the malformed option group
+			groups = options.XElement.Elements("optgroup");
+			Assert.That(groups.Count() == 2);
+
+			group = groups.First();
+			Assert.That(group.Elements("option").Count() == 2);
+
+			group = groups.ElementAt(1);
+			Assert.That(group.Elements("option").Count() == 5);
+		}
+
 		/// <summary>
 		/// Tests that input elements that handle the maxlength attribute correctly set the value of the attribute.
 		/// </summary>

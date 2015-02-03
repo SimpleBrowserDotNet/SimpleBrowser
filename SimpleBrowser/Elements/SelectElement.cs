@@ -1,25 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-
-namespace SimpleBrowser.Elements
+﻿namespace SimpleBrowser.Elements
 {
-	internal class SelectElement : FormElementElement
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Xml.Linq;
+
+    internal class SelectElement : FormElementElement
 	{
+		private IEnumerable<OptionElement> _options = null;
+
 		public SelectElement(XElement element)
 			: base(element)
 		{
 		}
+
 		public override string Value
 		{
 			get
 			{
 				var options = this.Options;
-				var optionEl = options.Where(d => d.Selected).FirstOrDefault() ?? options.FirstOrDefault();
-				if (optionEl == null) return null;
-				var valueAttr = optionEl.OptionValue;
+				var optionElement = options.Where(d => d.Selected).FirstOrDefault() ?? options.FirstOrDefault();
+				if (optionElement == null)
+				{
+					return null;
+				}
+
+				var valueAttr = optionElement.OptionValue;
 				return valueAttr;
 			}
 			set
@@ -28,11 +34,12 @@ namespace SimpleBrowser.Elements
 				foreach (XElement x in Element.Descendants("option"))
 				{
 					var attr = GetAttribute(x, "value");
-					string val = attr == null ? x.Value : attr.Value;
-					x.SetAttributeValue("selected", val == value ? "selected" : null);
+					string val = attr == null ? x.Value.Trim() : attr.Value.Trim();
+					x.SetAttributeValue("selected", val == value.Trim() ? "selected" : null);
 				}
 			}
 		}
+
 		public bool MultiValued
 		{
 			get
@@ -40,7 +47,7 @@ namespace SimpleBrowser.Elements
 				return (Element.GetAttribute("multiple") != null);
 			}
 		}
-		private IEnumerable<OptionElement> _options = null;
+
 		public IEnumerable<OptionElement> Options
 		{
 			get
@@ -109,35 +116,43 @@ namespace SimpleBrowser.Elements
 			yield break;
 		}
 	}
+
 	internal class OptionElement : HtmlElement
 	{
+		private SelectElement _owner = null;
+
 		public OptionElement(XElement element)
 			: base(element)
 		{
 		}
+
 		public string OptionValue
 		{
 			get
 			{
 				var attr = GetAttribute("value");
 				if (attr == null)
-					return this.Element.Value;
-				return attr.Value;
+				{
+					return this.Element.Value.Trim();
+				}
+
+				return attr.Value.Trim();
 			}
 		}
+
 		public override string Value
 		{
 			get
 			{
-				return this.Element.Value;
+				return this.Element.Value.Trim();
 			}
+
 			set
 			{
 				throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
 			}
 		}
 
-		SelectElement _owner = null;
 		public SelectElement Owner
 		{
 			get
@@ -147,29 +162,32 @@ namespace SimpleBrowser.Elements
 					var selectElement = Element.Ancestors().First(e => e.Name.LocalName.ToLower() == "select");
 					_owner = this.OwningBrowser.CreateHtmlElement<SelectElement>(selectElement);
 				}
+
 				return _owner;
 			}
 		}
+
 		public override bool Selected
 		{
 			get
 			{
-				// being selected is more complicated than it seems: if a selectbox is single-valued,
+				// Being selected is more complicated than it seems. If a selectbox is single-valued,
 				// the first option is selected when none of the options has a selected-attribute. The
 				// selected state is therefor managed at the selectbox level
 				return this.Owner.IsSelected(this);
 			}
+
 			set
 			{
 				this.Owner.MakeSelected(this, value);
 			}
 		}
+
 		public override ClickResult Click()
 		{
 			base.Click();
 			this.Selected = !this.Selected;
 			return ClickResult.SucceededNoNavigation;
 		}
-
 	}
 }
