@@ -687,7 +687,7 @@ namespace SimpleBrowser
 				do
 				{
 					Debug.WriteLine(uri.ToString());
-					if (maxRedirects-- == 0)
+					if (maxRedirects-- < 0)
 					{
 						Log("Too many 3xx redirects", LogMessageType.Error);
 						return false;
@@ -842,7 +842,7 @@ namespace SimpleBrowser
 							}
 							
 							if (AutoRedirect == true &&
-									(((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
+								(((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
 								(int)response.StatusCode == 301 ||
 								(int)response.StatusCode == 302 ||
 								(int)response.StatusCode == 303 ||
@@ -850,7 +850,7 @@ namespace SimpleBrowser
 								// 305 - Unsupported, possible security threat
 								// 306 - No longer used, per RFC2616, Section 10.3.7
 								(int)response.StatusCode == 307 ||
-								(int)response.StatusCode == 308) && 
+								(int)response.StatusCode == 308) &&
 								response.Headers.AllKeys.Contains("Location")))
 							{
 								uri = new Uri(uri, response.Headers["Location"]);
