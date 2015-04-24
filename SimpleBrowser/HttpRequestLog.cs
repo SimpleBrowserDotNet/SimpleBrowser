@@ -18,6 +18,7 @@ namespace SimpleBrowser
 	public class HttpRequestLog : LogItem
 	{
 		public string Text { get; set; }
+		public string ParsedHtml { get; set; }
 		public string Method { get; set; }
 		public NameValueCollection PostData { get; set; }
 		public string PostBody { get; set; }
