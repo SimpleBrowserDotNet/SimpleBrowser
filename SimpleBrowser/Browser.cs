@@ -236,6 +236,7 @@ namespace SimpleBrowser
 					try
 					{
 						CurrentState.XDocument = CurrentHtml.ParseHtml();
+						_lastRequestLog.ParsedHtml = CurrentState.XDocument.ToString();
 					}
 					catch (Exception ex)
 					{
