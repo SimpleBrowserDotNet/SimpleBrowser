@@ -295,14 +295,15 @@ namespace SimpleBrowser
 			foreach (var window in _allWindows.ToArray()) window.Close();
 			_allWindows.Clear();
 		}
-        public static void ClearWindows()
-        {
-            foreach (var list in _allContexts.ToArray())
-            {
-                foreach (var window in list.ToArray()) window.Close();
-            }
-            _allContexts.Clear();
-        }
+
+		public static void ClearWindows()
+		{
+			foreach (var list in _allContexts.ToArray())
+			{
+				foreach (var window in list.ToArray()) window.Close();
+			}
+			_allContexts.Clear();
+		}
 
 		public void Close()
 		{
@@ -562,7 +563,7 @@ namespace SimpleBrowser
 				AddNavigationState(new NavigationState());
 			CurrentState.Html = content;
 			CurrentState.ContentType = "image/html";
-			CurrentState.XDocument = null;
+			CurrentState.XDocument = CurrentHtml.ParseHtml();
 			CurrentState.Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
 		}
 
@@ -679,6 +680,13 @@ namespace SimpleBrowser
 				StreamReader reader = new StreamReader(uri.AbsolutePath);
 				html = reader.ReadToEnd();
 				reader.Close();
+
+				_lastRequestLog = new HttpRequestLog
+				{
+					Method = "GET",
+					Url = uri,
+					Text = html
+				};
 			}
 			else
 			{
@@ -1295,15 +1303,15 @@ namespace SimpleBrowser
 		private void Register(Browser browser)
 		{
 			_allWindows.Add(browser);
-            if(!_allContexts.Contains(_allWindows)){
-                _allContexts.Add(_allWindows);
-            }
+			if(!_allContexts.Contains(_allWindows)){
+				_allContexts.Add(_allWindows);
+			}
 			if (browser.WindowHandle == null)
 			{
 				browser.WindowHandle = Guid.NewGuid().ToString().Substring(0, 8);
 			}
 		}
-        private static List<List<Browser>> _allContexts = new List<List<Browser>>();
+		private static List<List<Browser>> _allContexts = new List<List<Browser>>();
 
 		#endregion private methods end
 	}
