@@ -1,193 +1,168 @@
-﻿namespace SimpleBrowser.Elements
+﻿// -----------------------------------------------------------------------
+// <copyright file="SelectElement.cs" company="SimpleBrowser">
+// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace SimpleBrowser.Elements
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
 
+    /// <summary>
+    /// Implements an HTML select element
+    /// </summary>
     internal class SelectElement : FormElementElement
-	{
-		private IEnumerable<OptionElement> _options = null;
+    {
+        /// <summary>
+        /// A collection of <see cref="OptionElement"/> objects representing the selectable options of this select.
+        /// </summary>
+        private IEnumerable<OptionElement> options = null;
 
-		public SelectElement(XElement element)
-			: base(element)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectElement"/> class.
+        /// </summary>
+        /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
+        public SelectElement(XElement element)
+            : base(element)
+        {
+        }
 
-		public override string Value
-		{
-			get
-			{
-				var options = this.Options;
-				var optionElement = options.Where(d => d.Selected).FirstOrDefault() ?? options.FirstOrDefault();
-				if (optionElement == null)
-				{
-					return null;
-				}
+        /// <summary>
+        /// Gets or sets the value of the select element value attribute.
+        /// </summary>
+        public override string Value
+        {
+            get
+            {
+                var optionElement = this.Options.Where(d => d.Selected).FirstOrDefault() ?? this.Options.FirstOrDefault();
+                if (optionElement == null)
+                {
+                    return null;
+                }
 
-				var valueAttr = optionElement.OptionValue;
-				return valueAttr;
-			}
-			set
-			{
-				//todo: use Options and OptionValue
-				foreach (XElement x in Element.Descendants("option"))
-				{
-					var attr = GetAttribute(x, "value");
-					string val = attr == null ? x.Value.Trim() : attr.Value.Trim();
-					x.SetAttributeValue("selected", val == value.Trim() ? "selected" : null);
-				}
-			}
-		}
+                return optionElement.OptionValue;
+            }
 
-		public bool MultiValued
-		{
-			get
-			{
-				return (Element.GetAttribute("multiple") != null);
-			}
-		}
+            set
+            {
+                // Don't set the value of a disabled select
+                if (this.Disabled)
+                {
+                    return;
+                }
 
-		public IEnumerable<OptionElement> Options
-		{
-			get
-			{
-				if (_options == null)
-				{
-					var optionElements = Element.Descendants()
-						.Where(e => e.Name.LocalName.ToLower() == "option")
-						.Select(e => this.OwningBrowser.CreateHtmlElement<OptionElement>(e));
-					_options = optionElements;
-				}
-				return _options;
-			}
-		}
+                // todo: use Options and OptionValue
+                foreach (XElement x in Element.Descendants("option"))
+                {
+                    var attr = GetAttribute(x, "value");
+                    string val = attr == null ? x.Value.Trim() : attr.Value.Trim();
+                    x.SetAttributeValue("selected", val == value.Trim() ? "selected" : null);
+                }
+            }
+        }
 
-		/// <summary>
-		/// IsSelected implements the logic of the Selected property of the underlying option elements. As the other 
-		/// options are relevant in the, this has to be evaluated on the Select elements level
-		/// </summary>
-		/// <param name="optionElement"></param>
-		/// <returns></returns>
-		internal bool IsSelected(OptionElement optionElement)
-		{
-			if (this.MultiValued || Options.Any(o => o.GetAttributeValue("selected") != null))
-			{
-				return optionElement.GetAttributeValue("selected") != null;
-			}
-			else
-			{
-				return optionElement.Element == this.Options.First().Element;
-			}
-		}
-		internal void MakeSelected(OptionElement optionElement, bool selected)
-		{
-			if (!selected)
-			{
-				optionElement.Element.RemoveAttributeCI("selected");
-			}
-			else
-			{
-				optionElement.Element.SetAttributeValue(XName.Get("selected"), "selected");
-				if (!this.MultiValued)
-				{
-					foreach (var option in Options)
-					{
-						if (option.Element != optionElement.Element)
-						{
-							option.Element.RemoveAttributeCI("selected");
-						}
-					}
-				}
-			}
-		}
-		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
-		{
-			if (!String.IsNullOrEmpty(this.Name))
-			{
-				foreach (var item in this.Options)
-				{
-					if (item.Selected)
-					{
-						yield return new UserVariableEntry() { Name = this.Name, Value = item.OptionValue };
-					}
-				}
-			}
-			yield break;
-		}
-	}
+        /// <summary>
+        /// Gets a value indicating whether the select allows multiple selections.
+        /// </summary>
+        public bool MultiValued
+        {
+            get
+            {
+                var attribute = GetAttribute("multiple");
+                if (attribute == null || string.IsNullOrWhiteSpace(attribute.Value))
+                {
+                    return false;
+                }
 
-	internal class OptionElement : HtmlElement
-	{
-		private SelectElement _owner = null;
+                return true;
+            }
+        }
 
-		public OptionElement(XElement element)
-			: base(element)
-		{
-		}
+        /// <summary>
+        /// Gets a collection of <see cref="OptionElement"/> objects, the options in the select.
+        /// </summary>
+        public IEnumerable<OptionElement> Options
+        {
+            get
+            {
+                if (this.options == null)
+                {
+                    var optionElements = Element.Descendants()
+                        .Where(e => e.Name.LocalName.ToLower() == "option")
+                        .Select(e => this.OwningBrowser.CreateHtmlElement<OptionElement>(e));
+                    this.options = optionElements;
+                }
 
-		public string OptionValue
-		{
-			get
-			{
-				var attr = GetAttribute("value");
-				if (attr == null)
-				{
-					return this.Element.Value.Trim();
-				}
+                return this.options;
+            }
+        }
 
-				return attr.Value.Trim();
-			}
-		}
+        /// <summary>
+        /// Returns the values to send with a form submission for this form element
+        /// </summary>
+        /// <param name="isClickedElement">A value indicating whether the clicking of this element caused the form submission.</param>
+        /// <returns>A collection of <see cref="UserVariableEntry"/></returns>
+        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+        {
+            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
+            {
+                foreach (var item in this.Options)
+                {
+                    if (item.Selected)
+                    {
+                        yield return new UserVariableEntry() { Name = this.Name, Value = item.OptionValue };
+                    }
+                }
+            }
 
-		public override string Value
-		{
-			get
-			{
-				return this.Element.Value.Trim();
-			}
+            yield break;
+        }
 
-			set
-			{
-				throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
-			}
-		}
+        /// <summary>
+        /// Determines if the option element is selected.
+        /// </summary>
+        /// <param name="optionElement">The <see cref="OptionElement"/> to test.</param>
+        /// <returns>True if the option is selected, otherwise false.</returns>
+        internal bool IsSelected(OptionElement optionElement)
+        {
+            if (this.MultiValued || this.Options.Any(o => o.GetAttributeValue("selected") != null))
+            {
+                return optionElement.GetAttributeValue("selected") != null;
+            }
+            else
+            {
+                return optionElement.Element == this.Options.First().Element;
+            }
+        }
 
-		public SelectElement Owner
-		{
-			get
-			{
-				if (_owner == null)
-				{
-					var selectElement = Element.Ancestors().First(e => e.Name.LocalName.ToLower() == "select");
-					_owner = this.OwningBrowser.CreateHtmlElement<SelectElement>(selectElement);
-				}
-
-				return _owner;
-			}
-		}
-
-		public override bool Selected
-		{
-			get
-			{
-				// Being selected is more complicated than it seems. If a selectbox is single-valued,
-				// the first option is selected when none of the options has a selected-attribute. The
-				// selected state is therefor managed at the selectbox level
-				return this.Owner.IsSelected(this);
-			}
-
-			set
-			{
-				this.Owner.MakeSelected(this, value);
-			}
-		}
-
-		public override ClickResult Click()
-		{
-			base.Click();
-			this.Selected = !this.Selected;
-			return ClickResult.SucceededNoNavigation;
-		}
-	}
+        /// <summary>
+        /// Selects or unselects the option in the select
+        /// </summary>
+        /// <param name="optionElement">The <see cref="OptionElement"/> to select.</param>
+        /// <param name="selected">The selected state of the option. True to select, false to unselect.</param>
+        internal void MakeSelected(OptionElement optionElement, bool selected)
+        {
+            if (!selected)
+            {
+                optionElement.Element.RemoveAttributeCI("selected");
+            }
+            else
+            {
+                optionElement.Element.SetAttributeValue(XName.Get("selected"), "selected");
+                if (!this.MultiValued)
+                {
+                    foreach (var option in this.Options)
+                    {
+                        if (option.Element != optionElement.Element)
+                        {
+                            option.Element.RemoveAttributeCI("selected");
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

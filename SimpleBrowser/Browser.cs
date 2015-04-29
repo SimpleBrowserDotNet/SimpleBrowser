@@ -246,10 +246,10 @@ namespace SimpleBrowser
 						CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
 					}
 
-					// check if we need to create sob-browsers for frames
+					// check if we need to create sub-browsers for frames
 					foreach (var frame in this.FindAll("iframe"))
 					{
-						Log("found iframe +" + frame.CurrentElement.Value);
+						Log("found iframe +" + frame.CurrentElement.GetAttributeValue("name"));
 					}
 				}
 
@@ -960,6 +960,7 @@ namespace SimpleBrowser
 				.ToList();
 		}
 
+		private static string[] knownInputTypes = new string[] { "submit", "image", "checkbox", "radio", "button" };
 		private List<XElement> FindElements(ElementType elementType)
 		{
 			List<XElement> list;
@@ -985,8 +986,7 @@ namespace SimpleBrowser
 					list = XDocument.Descendants()
 						.Where(h => h.Name.LocalName.ToLower() == "textarea" ||
 									(h.Name.LocalName.ToLower() == "input" && h.Attributes()
-																				.Where(k => k.Name.LocalName.ToLower() == "type"
-																							&& (k.Value.ToLower() == "text" || k.Value.ToLower() == "password" || k.Value.ToLower() == "hidden")).Count() > 0))
+																				.Where(k => k.Name.LocalName.ToLower() == "type" && !knownInputTypes.Contains(k.Value.ToLower())).Count() > 0))
 						.ToList();
 					list.AddRange(XDocument.Descendants() // also add input elements with no "type" attribute (they default to type="text")
 									.Where(h => h.Name.LocalName.ToLower() == "input" && h.Attributes()

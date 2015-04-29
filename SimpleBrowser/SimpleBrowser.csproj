@@ -20,9 +20,10 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -53,13 +54,18 @@
     <Compile Include="BasicAuthenticationToken.cs" />
     <Compile Include="Elements\AnchorElement.cs" />
     <Compile Include="Elements\ButtonInputElement.cs" />
+    <Compile Include="Elements\CheckboxInputElement.cs" />
     <Compile Include="Elements\FileUploadElement.cs" />
     <Compile Include="Elements\FormElement.cs" />
     <Compile Include="Elements\FormElementElement.cs" />
     <Compile Include="Elements\FrameElement.cs" />
+    <Compile Include="Elements\IHasRawPostData.cs" />
     <Compile Include="Elements\ImageInputElement.cs" />
     <Compile Include="Elements\InputElement.cs" />
     <Compile Include="Elements\LabelElement.cs" />
+    <Compile Include="Elements\OptionElement.cs" />
+    <Compile Include="Elements\RadioInputElement.cs" />
+    <Compile Include="Elements\SelectableInputElement.cs" />
     <Compile Include="Elements\SelectElement.cs" />
     <Compile Include="Elements\TextAreaElement.cs" />
     <Compile Include="HtmlResult.cs" />

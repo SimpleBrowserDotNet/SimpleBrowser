@@ -104,6 +104,9 @@
   <ItemGroup>
     <EmbeddedResource Include="SampleDocs\CommentElements.htm" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleDocs\HTML5Elements.htm" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

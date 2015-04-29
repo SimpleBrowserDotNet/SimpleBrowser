@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+    </head>
+    <body>
+    <form action="http://symlink.dk/code/php/submit/" method="post">
+        <fieldset>
+            <legend>Typical</legend>
+            <label for="textinput">Text Input</label><input name="textinput" id="textinput" type="text" value="initial" /><br />
+            <label for="textareainput">Text Area Input</label><textarea cols="10" rows="2" name="textareainput" id="textareainput" type="text">Text Area Input</textarea><br />
+            <label for="checkinput">Checkbox Input</label><input name="checkboxinput" id="checkboxinput" type="checkbox" /><br />
+        </fieldset>
+        <fieldset>
+            <legend>Disabled & Read Only</legend>
+            <label for="readonlytext">Read only text</label><input name="readonlytext" id="readonlytext" type="text" readonly="readonly" value="readme" /><br />
+            <label for="disabledtext">Disabled text</label><input name="disabledtext" id="disabledtext" type="text" disabled="disabled" value="disableme" /><br />
+            <label for="readonlytextarea">Read only text area</label><textarea cols="10" rows="2" name="readonlytextarea" id="readonlytextarea" type="text" readonly="readonly">readme textarea</textarea><br />
+            <label for="disabledtextarea">Disabled text area</label><textarea cols="10" rows="2" name="disabledtextarea" id="disabledtextarea" type="text" disabled="disabled">disableme textarea</textarea><br />
+            <label for="disabledcheck">Disabled check box</label><input name="disabledcheck" id="disabledcheck" type="checkbox" disabled="disabled" checked="checked" /><br />
+            <label for="disabledradio">Disabled radio</label><input name="disabledradio" id="disabledradio" type="radio" disabled="disabled" checked="checked" /><br />
+            <label for="disabledselect">Disabled select</label>
+            <select name="disabledselect" id="disabledselect" disabled="disabled">
+                <option value="1">1</option>
+                <option value="2" selected="selected">2</option>
+            </select><br />
+        </fieldset>
+        <input type="submit" value="Disabled Submit" id="ds" disabled="disabled" />
+        <input type="submit" value="Submit" id="es" />
+    </form>
+    </body>
+</html>
