@@ -1,193 +1,132 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
+﻿// -----------------------------------------------------------------------
+// <copyright file="InputElement.cs" company="SimpleBrowser">
+// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Elements
 {
-	internal class InputElement : FormElementElement
-	{
-		public InputElement(XElement element) : base(element)
-		{
-		}
+    using System;
+    using System.Collections.Generic;
+    using System.Xml.Linq;
 
-		public override string Value
-		{
-			get
-			{
-				var attr = GetAttribute("value");
-				if (attr == null)
-				{
-					return string.Empty; // no value attribute means empty string
-				}
+    /// <summary>
+    /// Implements an input of types text, hidden, password, of null (unspecified) type, or an unknown or unimplemented type.
+    /// </summary>
+    /// <remarks>Per the HTML specification, any input of unknown or unspecified type is a considered a text input.</remarks>
+    internal class InputElement : FormElementElement
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InputElement"/> class.
+        /// </summary>
+        /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
+        public InputElement(XElement element)
+            : base(element)
+        {
+        }
 
-				return attr.Value;
-			}
-			set
-			{
-				// Verifies that the input element type allowed to have a maxlength attribute
-				string inputType = Element.GetAttributeCI("type");
-				bool maxLengthAble = false;
-				if (inputType == null || // According to the HTML5 specification, if the type attribute does not exist, by default, the input element is a text input.
-					inputType.ToLower() == "text" ||
-					inputType.ToLower() == "password" ||
-					inputType.ToLower() == "search" ||
-					inputType.ToLower() == "tel" ||
-					inputType.ToLower() == "url" ||
-					inputType.ToLower() == "email")
-				{
-					maxLengthAble = true;
-				}
+        /// <summary>
+        /// Gets a value indicating whether the element is readonly.
+        /// </summary>
+        /// <remarks>
+        /// The element is readonly if the element has a readonly attribute set to any value other than empty string.
+        /// </remarks>
+        public bool ReadOnly
+        {
+            get
+            {
+                return this.GetAttribute("readonly") != null;
+            }
+        }
 
-				int maxLength = int.MaxValue;
-				// If the input element type allowed to have a maxlength attribute, if the element
-				// has a maxlength attribute, verify that the attribute value is valid.
-				if (maxLengthAble == true && Element.HasAttributeCI("maxlength"))
-				{
-					string maxLengthStr = Element.GetAttributeCI("maxlength");
-					try
-					{
-						int length = Convert.ToInt32(maxLengthStr);
-						if (length >= 0)
-						{
-							maxLength = length;
-						}
-						// Do nothing (implicitly) if the value of maxlength is negative, per the HTML5 spec.
-					}
-					catch
-					{
-						// Do nothing if the value of the maxlength is not a valid integer value, per the HTML5 spec.
-					}
-				}
+        /// <summary>
+        /// Gets or sets the value of the input element value attribute.
+        /// </summary>
+        public override string Value
+        {
+            get
+            {
+                var attr = this.GetAttribute("value");
+                if (attr == null)
+                {
+                    return string.Empty; // no value attribute means empty string
+                }
 
-				// If the length of the value being assigned is too long, truncate it.
-				if (value.Length > maxLength)
-				{
-					Element.SetAttributeValue("value", value.Substring(0, maxLength));
-				}
-				else
-				{
-					Element.SetAttributeValue("value", value);
-				}
-			}
-		}
+                return attr.Value;
+            }
 
-		public override string InputType
-		{
-			get { return GetAttributeValue("type"); }
-		}
+            set
+            {
+                // Don't set the value of a read only or disabled input
+                if (this.ReadOnly || this.Disabled)
+                {
+                    return;
+                }
 
-		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
-		{
-			if (!String.IsNullOrEmpty(this.Name))
-			{
-				if (this.Name.Equals("_charset_") && string.IsNullOrEmpty(this.Value) && this.InputType.Equals("hidden", StringComparison.OrdinalIgnoreCase))
-				{
-					yield return new UserVariableEntry() { Name = this.Name, Value = "iso-8859-1" };
-				}
-				else
-				{
-					yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
-				}
-			}
-			yield break;
-		}
-	}
+                int maxLength = int.MaxValue;
 
-	internal class SelectableInputElement : InputElement
-	{
-		public SelectableInputElement(XElement element)
-			: base(element)
-		{
-		}
-		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
-		{
-			if (this.Selected && !String.IsNullOrEmpty(this.Name))
-			{
-				yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
-			}
-			yield break;
-		}
-	}
-	internal class RadioInputElement : SelectableInputElement
-	{
-		public RadioInputElement(XElement element)
-			: base(element)
-		{
-		}
-		public override ClickResult Click()
-		{
-			base.Click();
-			if (!this.Selected)
-			{
-				this.Selected = true;
-			}
-			return ClickResult.SucceededNoNavigation;
-		}
-		public override bool Selected
-		{
-			get { return GetAttribute("checked") != null; }
-			set
-			{
-				if (value)
-				{
-					this.Element.SetAttributeValue("checked", "true");
-					foreach (var other in this.Siblings)
-					{
-						if (other.Element != this.Element) other.Selected = false;
-					}
-				}
-				else
-				{
-					this.Element.RemoveAttributeCI("checked");
-				}
-			}
-		}
-		public IEnumerable<RadioInputElement> Siblings
-		{
-			get
-			{
-				var others = this.Element.Ancestors(XName.Get("form")).Descendants(XName.Get("input"))
-					.Where(e => e.GetAttributeCI("type") == "radio" && e.GetAttributeCI("name") == this.Name)
-					.Select(e => this.OwningBrowser.CreateHtmlElement<RadioInputElement>(e));
-				return others;
-			}
-		}
-	}
-	internal class CheckboxInputElement : SelectableInputElement
-	{
-		public CheckboxInputElement(XElement element)
-			: base(element)
-		{
-		}
-		public override ClickResult Click()
-		{
-			base.Click();
-			this.Selected = !this.Selected;
-			return ClickResult.SucceededNoNavigation;
-		}
-		public override bool Selected
-		{
-			get { return GetAttribute("checked") != null; }
-			set
-			{
-				if (value)
-				{
-					this.Element.SetAttributeValue("checked", "true");
-				}
-				else
-				{
-					this.Element.RemoveAttributeCI("checked");
-				}
-			}
-		}
-		public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
-		{
-			if (this.XElement.HasAttributeCI("checked") && !String.IsNullOrEmpty(this.Name))
-			{
-				yield return new UserVariableEntry() { Name = this.Name, Value = string.IsNullOrEmpty(this.Value) ? "on" : this.Value };
-			}
-			yield break;
-		}
-	}
+                // If the input element has a maxlength attribute, verify that the attribute value is valid.
+                if (Element.HasAttributeCI("maxlength"))
+                {
+                    string maxLengthStr = Element.GetAttributeCI("maxlength");
+                    try
+                    {
+                        int length = Convert.ToInt32(maxLengthStr);
+                        if (length >= 0)
+                        {
+                            maxLength = length;
+                        }
+                        //// Do nothing (implicitly) if the value of maxlength is negative, per the HTML5 spec.
+                    }
+                    catch
+                    {
+                        //// Do nothing if the value of the maxlength is not a valid integer value, per the HTML5 spec.
+                    }
+                }
+
+                // If the length of the value being assigned is too long, truncate it.
+                if (value.Length > maxLength)
+                {
+                    Element.SetAttributeValue("value", value.Substring(0, maxLength));
+                }
+                else
+                {
+                    Element.SetAttributeValue("value", value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the value of the input element type attribute.
+        /// </summary>
+        public string InputType
+        {
+            get
+            {
+                return this.GetAttributeValue("type");
+            }
+        }
+
+        /// <summary>
+        /// Gets the form values to submit for this input
+        /// </summary>
+        /// <param name="isClickedElement">True, if the action to submit the form was clicking this element. Otherwise, false.</param>
+        /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
+        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+        {
+            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
+            {
+                if (this.Name.Equals("_charset_") && string.IsNullOrEmpty(this.Value) && this.InputType.Equals("hidden", StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new UserVariableEntry() { Name = this.Name, Value = "iso-8859-1" };
+                }
+                else
+                {
+                    yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+                }
+            }
+
+            yield break;
+        }
+    }
 }
