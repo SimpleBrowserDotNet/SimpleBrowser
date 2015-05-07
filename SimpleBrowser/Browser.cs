@@ -816,12 +816,11 @@ namespace SimpleBrowser
 						using (IHttpWebResponse response = req.GetResponse())
 						{
 							Encoding responseEncoding = Encoding.UTF8; //default
-							string charSet = response.CharacterSet;
-							if (!String.IsNullOrEmpty(charSet))
+							if (response.Headers.AllKeys.Contains("Content-Type", StringComparer.OrdinalIgnoreCase) && response.Headers["Content-Type"].IndexOf("charset", 0, StringComparison.OrdinalIgnoreCase) > -1)
 							{
 								try
 								{
-									responseEncoding = Encoding.GetEncoding(charSet);
+									responseEncoding = Encoding.GetEncoding(response.CharacterSet);
 								}
 								catch (ArgumentException)
 								{
