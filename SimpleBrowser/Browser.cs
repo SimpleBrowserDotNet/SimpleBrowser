@@ -236,6 +236,7 @@ namespace SimpleBrowser
 					try
 					{
 						CurrentState.XDocument = CurrentHtml.ParseHtml();
+						_lastRequestLog.ParsedHtml = CurrentState.XDocument.ToString();
 					}
 					catch (Exception ex)
 					{
@@ -245,10 +246,10 @@ namespace SimpleBrowser
 						CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
 					}
 
-					// check if we need to create sob-browsers for frames
+					// check if we need to create sub-browsers for frames
 					foreach (var frame in this.FindAll("iframe"))
 					{
-						Log("found iframe +" + frame.CurrentElement.Value);
+						Log("found iframe +" + frame.CurrentElement.GetAttributeValue("name"));
 					}
 				}
 
@@ -294,14 +295,15 @@ namespace SimpleBrowser
 			foreach (var window in _allWindows.ToArray()) window.Close();
 			_allWindows.Clear();
 		}
-        public static void ClearWindows()
-        {
-            foreach (var list in _allContexts.ToArray())
-            {
-                foreach (var window in list.ToArray()) window.Close();
-            }
-            _allContexts.Clear();
-        }
+
+		public static void ClearWindows()
+		{
+			foreach (var list in _allContexts.ToArray())
+			{
+				foreach (var window in list.ToArray()) window.Close();
+			}
+			_allContexts.Clear();
+		}
 
 		public void Close()
 		{
@@ -561,7 +563,7 @@ namespace SimpleBrowser
 				AddNavigationState(new NavigationState());
 			CurrentState.Html = content;
 			CurrentState.ContentType = "image/html";
-			CurrentState.XDocument = null;
+			CurrentState.XDocument = CurrentHtml.ParseHtml();
 			CurrentState.Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
 		}
 
@@ -678,6 +680,13 @@ namespace SimpleBrowser
 				StreamReader reader = new StreamReader(uri.AbsolutePath);
 				html = reader.ReadToEnd();
 				reader.Close();
+
+				_lastRequestLog = new HttpRequestLog
+				{
+					Method = "GET",
+					Url = uri,
+					Text = html
+				};
 			}
 			else
 			{
@@ -687,7 +696,7 @@ namespace SimpleBrowser
 				do
 				{
 					Debug.WriteLine(uri.ToString());
-					if (maxRedirects-- == 0)
+					if (maxRedirects-- < 0)
 					{
 						Log("Too many 3xx redirects", LogMessageType.Error);
 						return false;
@@ -807,12 +816,11 @@ namespace SimpleBrowser
 						using (IHttpWebResponse response = req.GetResponse())
 						{
 							Encoding responseEncoding = Encoding.UTF8; //default
-							string charSet = response.CharacterSet;
-							if (!String.IsNullOrEmpty(charSet))
+							if (response.Headers.AllKeys.Contains("Content-Type", StringComparer.OrdinalIgnoreCase) && response.Headers["Content-Type"].IndexOf("charset", 0, StringComparison.OrdinalIgnoreCase) > -1)
 							{
 								try
 								{
-									responseEncoding = Encoding.GetEncoding(charSet);
+									responseEncoding = Encoding.GetEncoding(response.CharacterSet);
 								}
 								catch (ArgumentException)
 								{
@@ -842,7 +850,7 @@ namespace SimpleBrowser
 							}
 							
 							if (AutoRedirect == true &&
-									(((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
+								(((int)response.StatusCode == 300 || // Not entirely supported. If provided, the server's preference from the Location header is honored.
 								(int)response.StatusCode == 301 ||
 								(int)response.StatusCode == 302 ||
 								(int)response.StatusCode == 303 ||
@@ -850,7 +858,7 @@ namespace SimpleBrowser
 								// 305 - Unsupported, possible security threat
 								// 306 - No longer used, per RFC2616, Section 10.3.7
 								(int)response.StatusCode == 307 ||
-								(int)response.StatusCode == 308) && 
+								(int)response.StatusCode == 308) &&
 								response.Headers.AllKeys.Contains("Location")))
 							{
 								uri = new Uri(uri, response.Headers["Location"]);
@@ -951,6 +959,7 @@ namespace SimpleBrowser
 				.ToList();
 		}
 
+		private static string[] knownInputTypes = new string[] { "submit", "image", "checkbox", "radio", "button" };
 		private List<XElement> FindElements(ElementType elementType)
 		{
 			List<XElement> list;
@@ -976,8 +985,7 @@ namespace SimpleBrowser
 					list = XDocument.Descendants()
 						.Where(h => h.Name.LocalName.ToLower() == "textarea" ||
 									(h.Name.LocalName.ToLower() == "input" && h.Attributes()
-																				.Where(k => k.Name.LocalName.ToLower() == "type"
-																							&& (k.Value.ToLower() == "text" || k.Value.ToLower() == "password" || k.Value.ToLower() == "hidden")).Count() > 0))
+																				.Where(k => k.Name.LocalName.ToLower() == "type" && !knownInputTypes.Contains(k.Value.ToLower())).Count() > 0))
 						.ToList();
 					list.AddRange(XDocument.Descendants() // also add input elements with no "type" attribute (they default to type="text")
 									.Where(h => h.Name.LocalName.ToLower() == "input" && h.Attributes()
@@ -1294,15 +1302,15 @@ namespace SimpleBrowser
 		private void Register(Browser browser)
 		{
 			_allWindows.Add(browser);
-            if(!_allContexts.Contains(_allWindows)){
-                _allContexts.Add(_allWindows);
-            }
+			if(!_allContexts.Contains(_allWindows)){
+				_allContexts.Add(_allWindows);
+			}
 			if (browser.WindowHandle == null)
 			{
 				browser.WindowHandle = Guid.NewGuid().ToString().Substring(0, 8);
 			}
 		}
-        private static List<List<Browser>> _allContexts = new List<List<Browser>>();
+		private static List<List<Browser>> _allContexts = new List<List<Browser>>();
 
 		#endregion private methods end
 	}

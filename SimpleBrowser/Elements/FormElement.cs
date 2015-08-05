@@ -65,9 +65,6 @@ namespace SimpleBrowser.Elements
 					}
 					))
 			{
-				// This call to Remove() guarantees that for each element with a duplicate name
-				// only the last element on the form is submitted.
-				navigation.UserVariables.Remove(entry.Name);
 				navigation.UserVariables.Add(entry.Name, entry.Value);
 			}
 			if (this.EncType == FormEncoding.MultipartForm && this.Method.ToUpper() == "POST" )

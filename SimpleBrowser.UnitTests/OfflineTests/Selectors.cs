@@ -27,8 +27,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 			colorBox = b.Find("input", new { name = "colorBox", type = "Colors" }); // find by attributes
 			Assert.That(colorBox.Exists == false, "There should be no element with name colorBox and type Colors");
 
-			colorBox = b.Find(ElementType.TextField, new { name = "colorBox", type = "Color" }); // find by attributes
-			Assert.That(colorBox.Count() == 0, "Input elements with types other than text, password and hidden should not be found");
+			colorBox = b.Find(ElementType.Checkbox, new { name = "colorBox", type = "Color" }); // find by attributes
+			Assert.That(colorBox.Count() == 0, "Input elements with types other than the specified type should not be found");
 
 			colorBox = b.Find("input", FindBy.Name, "colorBox"); // find by FindBy
 			Assert.That(colorBox.Count() == 1, "There should be exactly 1 element with name colorBox");
