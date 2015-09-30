@@ -9,7 +9,7 @@ namespace SimpleBrowser.Network
 	{
 		IHttpWebRequest GetWebRequest(Uri url);
 	}
-	class DefaultRequestFactory : IWebRequestFactory
+	public class DefaultRequestFactory : IWebRequestFactory
 	{
 		#region IWebRequestFactory Members
 
