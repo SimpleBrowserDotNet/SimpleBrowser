@@ -32,7 +32,7 @@ namespace SimpleBrowser
 		private int _historyPosition = -1;
 
 		private IWebProxy _proxy;
-		private int _timeoutMilliseconds = 30000;
+		private int _timeoutMilliseconds;
 		private NameValueCollection _includeFormValues;
 		private XDocument _doc;
 		private HttpRequestLog _lastRequestLog;
@@ -51,8 +51,9 @@ namespace SimpleBrowser
 			ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 		}
 
-		public Browser(IWebRequestFactory requestFactory = null, string name = null, List<Browser> context = null)
+		public Browser(IWebRequestFactory requestFactory = null, string name = null, List<Browser> context = null, int defaultTimeoutMilliseconds = 30000)
 		{
+		    _timeoutMilliseconds = defaultTimeoutMilliseconds;
 			_allWindows = context ?? new List<Browser>();
 			AutoRedirect = true;
 			UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
@@ -328,7 +329,7 @@ namespace SimpleBrowser
 
 		public Browser CreateReferenceView()
 		{
-			Browser b = new Browser(_reqFactory, context: _allWindows)
+			Browser b = new Browser(_reqFactory, context: _allWindows, defaultTimeoutMilliseconds: _timeoutMilliseconds)
 			{
 				Cookies = Cookies,
 				_doc = _doc,
@@ -337,7 +338,6 @@ namespace SimpleBrowser
 				_lastRequestLog = _lastRequestLog,
 				_logs = _logs,
 				_proxy = _proxy,
-				_timeoutMilliseconds = _timeoutMilliseconds,
 				Accept = Accept,
 				LastWebException = LastWebException,
 				RetainLogs = RetainLogs,
