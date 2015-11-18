@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="Forms.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -203,7 +203,6 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Assert.IsTrue(testinput.Value == "text area input updated");
             Assert.IsTrue(testinput.TotalElementsFound == 1);
             Assert.IsFalse(testinput.Checked);
-            
 
             // Submit the form
             HtmlResult submit = b.Find("es");
@@ -303,6 +302,64 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             colorBox = b.Find(ElementType.TextField, FindBy.Name, "colorBox");
             Assert.IsNotNull(colorBox);
             Assert.IsTrue(colorBox.Exists);
+        }
+
+        /// <summary>
+        /// Tests that input elements with the form attribute submit with the correct form.
+        /// </summary>
+        [Test]
+        public void Forms_Form_Attribute()
+        {
+            Browser b = new Browser();
+            b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
+
+            // This test covers the following cases:
+            // 1. An input outside of the form with the form attribute is submitted.
+            // 2. An input in another form with the form attribute is submitted.
+            var field1 = b.Find("field1");
+            field1.Value = "Name1";
+
+            var field1a = b.Find("field1a");
+            field1a.Value = "Name1a";
+
+            var field2 = b.Find("field2");
+            field2.Value = "Name2";
+
+            var submit1 = b.Find("submit1");
+            ClickResult clickResult = submit1.Click();
+
+            // Check to make sure the form submitted.
+            Assert.IsTrue(clickResult == ClickResult.SucceededNavigationComplete);
+
+            var names = b.Select("td.desc");
+            var values = b.Select("td.val");
+            Assert.IsTrue(names.Count() == values.Count());
+            Assert.IsTrue(values.Where(e => e.Value == "Name1").FirstOrDefault() != null);
+            Assert.IsTrue(values.Where(e => e.Value == "Name2").FirstOrDefault() != null);
+            Assert.IsTrue(values.Where(e => e.Value == "Name1a").FirstOrDefault() != null);
+            Assert.IsTrue(values.Where(e => e.Value == "Submit1").FirstOrDefault() != null);
+
+            // This test covers the following cases:
+            // 1. An input in the form with a form element corresponding to another form is not submitted.
+            b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
+
+            field2 = b.Find("field2");
+            field2.Value = "Name2";
+
+            var field2a = b.Find("field2a");
+            field2a.Value = "Name2a";
+
+            var submit2 = b.Find("submit2");
+            clickResult = submit2.Click();
+
+            // Check to make sure the form submitted.
+            Assert.IsTrue(clickResult == ClickResult.SucceededNavigationComplete);
+
+            names = b.Select("td.desc");
+            values = b.Select("td.val");
+            Assert.IsTrue(values.Where(e => e.Value == "Submit2").FirstOrDefault() != null);
+            Assert.IsTrue(values.Where(e => e.Value == "Name2a").FirstOrDefault() != null);
+            Assert.IsFalse(values.Where(e => e.Value == "Name2").FirstOrDefault() != null);
         }
     }
 }

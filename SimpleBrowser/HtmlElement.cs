@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="HtmlElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -126,7 +126,6 @@ namespace SimpleBrowser
             public string Value;
         }
 
-
         public event Func<NavigationArgs, bool> NavigationRequested;
 
         public virtual ClickResult Click()
@@ -220,7 +219,16 @@ namespace SimpleBrowser
 
         public virtual bool SubmitForm(string url = null, HtmlElement clickedElement = null)
         {
-            XElement formElem = this.Element.GetAncestorCI("form");
+            XElement formElem = null;
+            if (this.Element.HasAttributeCI("form"))
+            {
+                formElem = this.Element.Document.Descendants().Where(e => e.HasAttributeCI("id") && e.GetAttributeCI("id").Equals(this.Element.GetAttributeCI("form"))).First();
+            }
+            else
+            {
+                formElem = this.Element.GetAncestorCI("form");
+            }
+
             if (formElem != null)
             {
                 FormElement form = this.OwningBrowser.CreateHtmlElement<FormElement>(formElem);
