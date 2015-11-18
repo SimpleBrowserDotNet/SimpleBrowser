@@ -75,6 +75,28 @@ namespace SimpleBrowser
 
 		public string Accept { get; set; }
 
+		/// <summary>
+		/// Gets or sets the default browser time out in milliseconds.
+		/// </summary>
+		/// <remarks>
+		/// The default browser time out must be greater than 0.
+		/// </remarks>
+		public int Timeout
+		{
+			get
+			{
+				return this._timeoutMilliseconds;
+			}
+
+			set
+			{
+				if (value > 0)
+				{
+					this._timeoutMilliseconds = value;
+				}
+			}
+		}
+
 		public string ContentType
 		{
 			get
