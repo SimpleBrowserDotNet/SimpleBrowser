@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="FormElementElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -8,6 +8,7 @@ namespace SimpleBrowser.Elements
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Xml.Linq;
 
     /// <summary>
@@ -22,6 +23,42 @@ namespace SimpleBrowser.Elements
         public FormElementElement(XElement element)
             : base(element)
         {
+        }
+
+        /// <summary>
+        /// Gets the form associated with this form element. Null, if no associated form could be found.
+        /// </summary>
+        public HtmlElement OwningForm
+        {
+            get
+            {
+                // Look for the form attribute first.
+                if (this.Element.HasAttributeCI("form"))
+                {
+                    XElement formAttribute = this.Element.Document.Descendants("form").Where(e => e.HasAttributeCI("id") && e.GetAttributeCI("id").Equals(this.Element.GetAttributeCI("form"))).FirstOrDefault();
+                    if (formAttribute != null)
+                    {
+                        return this.OwningBrowser.CreateHtmlElement(formAttribute);
+                    }
+                }
+
+                // Look for a parent form element.
+                XElement formElement = this.Element.Ancestors("form").FirstOrDefault();
+                if (formElement != null)
+                {
+                    return this.OwningBrowser.CreateHtmlElement(formElement);
+                }
+
+                // Look for a form preceeding this element.
+                XElement previousElement = this.Element.ElementsBeforeSelf("form").LastOrDefault();
+                if (previousElement != null)
+                {
+                    return this.OwningBrowser.CreateHtmlElement(previousElement);
+                }
+
+                /// Null, if not found. In which case, this input never submits values with the form.
+                return null;
+            }
         }
 
         /// <summary>

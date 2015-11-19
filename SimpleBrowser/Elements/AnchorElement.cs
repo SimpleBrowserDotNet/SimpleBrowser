@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="AnchorElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ namespace SimpleBrowser.Elements
         }
 
         /// <summary>
-        /// Perform a click action on the label element.
+        /// Perform a click action on the anchor element.
         /// </summary>
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click()
