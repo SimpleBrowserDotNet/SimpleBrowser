@@ -65,6 +65,7 @@ namespace SimpleBrowser
 			_basicAuthenticationTokens = new Dictionary<string, BasicAuthenticationToken>();
 			WindowHandle = name;
 			this.Register(this);
+			this.RefererMode = RefererModes.NoneWhenDowngrade;
 		}
 
 		public event Action<Browser, string> MessageLogged;
@@ -165,35 +166,61 @@ namespace SimpleBrowser
 		}
 
 		/// <summary>
-		/// This setting is modelled after the referrer meta tag and is set on a per-browser basis.
+		/// An enumeration of the defined Referrer Policy States.
 		/// </summary>
 		/// <remarks>
-		/// Source: https://wiki.whatwg.org/wiki/Meta_referrer
+		/// Source: http://www.w3.org/TR/referrer-policy/#referrer-policy-states
 		/// </remarks>
 		public enum RefererModes
 		{
 			/// <summary>
-			/// Replace the referrer-header-value with the empty string if the referrer is secure (https) and the target Uri is not.
-			/// Otherwise, this mode is identical to Always.
+			/// The simplest policy is None, which specifies that no referrer information is to be sent along with requests made
+			/// from a particular global environment to any origin. The header will be omitted entirely.
 			/// </summary>
-			Default,
+			/// <remarks>
+			/// See: http://www.w3.org/TR/referrer-policy/#referrer-policy-state-none
+			/// </remarks>
+			None,
 
 			/// <summary>
-			/// Replace the referrer-header-value with the empty string, regardless of its value.
+			/// Navigations from secure (https) URLs to insecure (http) URLs do not include the referer header. Other navigations
+			/// (secure to secure and insecure to insecure) to include the referer header.
+			/// 
+			/// Per the W3C policy:
+			/// "This is a user agent’s default behavior, if no policy is otherwise specified."
 			/// </summary>
-			Never,
+			/// <remarks>
+			/// See: http://www.w3.org/TR/referrer-policy/#referrer-policy-state-none-when-downgrade
+			/// </remarks>
+			NoneWhenDowngrade,
 
 			/// <summary>
 			/// Replace the referrer-header-value with the origin of the referring document.
 			/// That is, https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8
 			/// becomes https://www.google.com/. Transition from secure to nonsecure transport has no effect on this setting.
 			/// </summary>
+			/// <remarks>
+			/// See: http://www.w3.org/TR/referrer-policy/#referrer-policy-state-origin
+			/// </remarks>
 			Origin,
 
 			/// <summary>
-			/// Do not alter the referrer-header-value.
+			/// If the domain of the request is the same as the referrer, the referer header is the full URL of the referer.
+			/// If the domain is different, the referer header behaves as if it were the Origin referer policy.
 			/// </summary>
-			Always
+			/// <remarks>
+			/// See: http://www.w3.org/TR/referrer-policy/#referrer-policy-state-origin-when-cross-origin
+			/// </remarks>
+			OriginWhenCrossOrigin,
+
+			/// <summary>
+			/// The Unsafe URL policy specifies that a full URL, stripped for use as a referrer, is sent along with both
+			/// cross-origin requests and same-origin requests made from a particular global environment.
+			/// </summary>
+			/// <remarks>
+			/// See: http://www.w3.org/TR/referrer-policy/#referrer-policy-state-unsafe-url
+			/// </remarks>
+			UnsafeUrl,
 		}
 
 		/// <summary>
@@ -1254,15 +1281,32 @@ namespace SimpleBrowser
 				var metatag = this.Find("meta", new { name = "referrer" });
 				if (metatag.Exists)
 				{
-					string content = metatag.GetAttribute("content").ToLower();
+					string content = metatag.GetAttribute("content").Trim();
 					if(!string.IsNullOrEmpty(content))
 					{
-						TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
-						content = textInfo.ToTitleCase(content);
-
-						if (Enum.TryParse<RefererModes>(content, out refererMode) == false)
+						if (content.Equals("never", StringComparison.OrdinalIgnoreCase) || // Legacy value
+							content.Equals("none", StringComparison.OrdinalIgnoreCase)) // Modern value
 						{
-							refererMode = this.RefererMode;
+							refererMode = RefererModes.None;
+						}
+						else if (content.Equals("origin", StringComparison.OrdinalIgnoreCase))
+						{
+							refererMode = RefererModes.Origin;
+						}
+						else if (content.Equals("default", StringComparison.OrdinalIgnoreCase) || // Legacy value
+							content.Equals("none-when-downgrade", StringComparison.OrdinalIgnoreCase)) // Modern value
+						{
+							refererMode = RefererModes.NoneWhenDowngrade;
+						}
+						else if (content.Equals("origin-when-crossorigin", StringComparison.OrdinalIgnoreCase) || // Current value, with typo in early document versions
+							content.Equals("origin-when-cross-origin", StringComparison.OrdinalIgnoreCase)) // Modern value
+						{
+							refererMode = RefererModes.OriginWhenCrossOrigin;
+						}
+						else if (content.Equals("always", StringComparison.OrdinalIgnoreCase) || // Legacy value
+							content.Equals("unsafe-url", StringComparison.OrdinalIgnoreCase)) // Modern value
+						{
+							refererMode = RefererModes.UnsafeUrl;
 						}
 					}
 				}
@@ -1271,21 +1315,12 @@ namespace SimpleBrowser
 			// Allow the anchor rel attribute to override both the browser setting and meta tag.
 			if (this._navigationAttributes != null && this._navigationAttributes.AllKeys.Contains("rel") && this._navigationAttributes["rel"] == "noreferrer")
 			{
-				refererMode = RefererModes.Never;
+				refererMode = RefererModes.None;
 			}
 
 			switch (refererMode)
 			{
-				case RefererModes.Always:
-					{
-						if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
-						{
-							req.Referer = this.CurrentState.Url.ToString();
-						}
-
-						break;
-					}
-				case RefererModes.Never:
+				case RefererModes.None:
 					{
 						req.Referer = string.Empty;
 						break;
@@ -1299,7 +1334,32 @@ namespace SimpleBrowser
 
 						break;
 					}
-				default: // Including case Referemodes.Default:
+				case RefererModes.OriginWhenCrossOrigin:
+					{
+						if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+						{
+							if (this.CurrentState.Url.Host.Equals(url.Host, StringComparison.InvariantCultureIgnoreCase))
+							{
+								req.Referer = this.CurrentState.Url.ToString();
+							}
+							else
+							{
+								req.Referer = string.Format("{0}://{1}", this.CurrentState.Url.Scheme, this.CurrentState.Url.Host);
+							}
+						}
+
+						break;
+					}
+				case RefererModes.UnsafeUrl:
+					{
+						if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+						{
+							req.Referer = this.CurrentState.Url.ToString();
+						}
+
+						break;
+					}
+				case RefererModes.NoneWhenDowngrade:
 					{
 						if (this.CurrentState != null &&
 							!string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
