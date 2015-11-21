@@ -149,7 +149,8 @@
 					case TokenType.Text:
 						{
 							var parent = topOrRoot();
-							if (parent.Name.LocalName.ToLower() == "textarea")
+							if (parent.Name.LocalName.Equals("textarea", StringComparison.InvariantCultureIgnoreCase) ||
+								parent.Name.LocalName.Equals("pre", StringComparison.InvariantCultureIgnoreCase))
 							{
 								parent.Add(new XText(token.Raw));
 							}
