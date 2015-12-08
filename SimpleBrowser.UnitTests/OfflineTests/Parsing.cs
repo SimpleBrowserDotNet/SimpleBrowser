@@ -24,7 +24,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.Elements.htm"));
 
             var preContent = b.Find("preTestElement");
-            Assert.IsTrue(preContent.Value.Contains("space         \r\n            and"));
+            Assert.IsTrue(
+                preContent.Value.Contains("space         \r\n            and") ||
+                preContent.Value.Contains("space         \n            and"));
         }
     }
 }
