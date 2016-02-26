@@ -939,6 +939,7 @@ namespace SimpleBrowser
 								}
 							}
 							_lastRequestLog.Text = html;
+							_lastRequestLog.ResponseCode = (int)((HttpWebResponse)ex.Response).StatusCode;
 						}
 
 						LastWebException = ex;
