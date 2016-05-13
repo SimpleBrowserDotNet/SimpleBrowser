@@ -168,7 +168,7 @@ namespace SimpleBrowser.Elements
                     }
                 }
 
-                post.AppendFormat("--{0}\r\n", token);
+                post.AppendFormat("--{0}--\r\n", token);
                 navigation.PostData = post.ToString();
                 navigation.ContentType = FormEncoding.MultipartForm + "; boundary=" + token;
             }
