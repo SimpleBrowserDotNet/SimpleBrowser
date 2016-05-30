@@ -64,7 +64,7 @@ namespace SimpleBrowser.Elements
             get
             {
                 var actionAttr = GetAttribute(Element, "action");
-                return actionAttr == null ? "." : actionAttr.Value;
+                return actionAttr == null ? this.OwningBrowser.Url.ToString() : actionAttr.Value;
             }
         }
 
