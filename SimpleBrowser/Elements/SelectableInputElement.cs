@@ -36,7 +36,7 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (this.Selected && !string.IsNullOrEmpty(this.Name))
+            if (this.Selected && !string.IsNullOrEmpty(this.Name) && !this.Disabled)
             {
                 yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
             }
