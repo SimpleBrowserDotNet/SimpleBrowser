@@ -67,7 +67,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         [Test]
         public void When_Testing_Referer_NoneWhenDowngrade_Secure_Transition()
         {
-            string startingUrl = "https://www.example.com/";
+            string startingUrl = "https://www.codeproject.com";
 
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
@@ -76,7 +76,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find(ElementType.Anchor, FindBy.Text, "More information...");
+            var link = b.Find("ctl00_AdvertiseLink");
             Assert.IsNotNull(link);
 
             link.Click();
@@ -114,7 +114,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         [Test]
         public void When_Testing_Referer_Unsafe_Url_Secure_Transition()
         {
-            string startingUrl = "https://www.example.com/";
+            string startingUrl = "https://www.codeproject.com/";
 
             Browser b = new Browser();
             b.RefererMode = Browser.RefererModes.UnsafeUrl;
@@ -124,19 +124,21 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find(ElementType.Anchor, FindBy.Text, "More information...");
+            var link = b.Find("ctl00_AdvertiseLink");
             Assert.IsNotNull(link);
 
             string targetHref = link.GetAttribute("href");
-            Assert.AreEqual(targetHref, "http://www.iana.org/domains/example");
+            Assert.AreEqual(targetHref, "http://developermedia.com/");
 
             link.Click();
             Assert.IsNotNull(b.CurrentState);
             Assert.AreEqual(b.Referer.ToString(), startingUrl);
 
+            /* iana.org went HTTPS only. Good for them, but it broke this test for SimpleBrowser.
             // This explicitly tests that a 300 redirect preserves the original referrer.
             Assert.AreEqual(b.CurrentState.Url.ToString(), "http://www.iana.org/domains/reserved");
             Assert.AreNotEqual(b.Referer.ToString(), targetHref);
+            */
         }
 
         /// <summary>
