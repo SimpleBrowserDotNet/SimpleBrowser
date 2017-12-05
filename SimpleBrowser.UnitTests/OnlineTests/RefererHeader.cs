@@ -25,7 +25,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            b.Navigate(startingUrl);
+            var success = b.Navigate(startingUrl);
+            Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
@@ -49,7 +50,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             b.RefererMode = Browser.RefererModes.None;
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.None);
 
-            b.Navigate(startingUrl);
+            var success = b.Navigate(startingUrl);
+            Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
@@ -72,7 +74,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            b.Navigate(startingUrl);
+            var success = b.Navigate(startingUrl);
+            Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
@@ -96,7 +99,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             b.RefererMode = Browser.RefererModes.Origin;
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.Origin);
 
-            b.Navigate(startingUrl);
+            var success = b.Navigate(startingUrl);
+            Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
@@ -120,7 +124,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             b.RefererMode = Browser.RefererModes.UnsafeUrl;
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.UnsafeUrl);
 
-            b.Navigate(startingUrl);
+            var success = b.Navigate(startingUrl);
+            Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
@@ -152,7 +157,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            b.Navigate(startingUrl);
+            var success = b.Navigate(startingUrl);
+            Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
@@ -175,7 +181,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            b.Navigate(startingUrl);
+            var success = b.Navigate(startingUrl);
+            Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
