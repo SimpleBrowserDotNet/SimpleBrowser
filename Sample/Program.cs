@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using SimpleBrowser;
-using SimpleBrowser.Parser;
 
 namespace Sample
 {
@@ -29,7 +28,7 @@ namespace Sample
 
 				// click the login link and click it
 				browser.Log("First we need to log in, so browse to the login page, fill in the login details and submit the form.");
-				var loginLink = browser.Find("a", FindBy.Text, "Login");
+				var loginLink = browser.Find("a", FindBy.Text, "Sign in");
 				if(!loginLink.Exists)
 					browser.Log("Can't find the login link! Perhaps the site is down for maintenance?");
 				else
@@ -44,7 +43,7 @@ namespace Sample
 					if(LastRequestFailed(browser)) return;
 
 					// see if the login succeeded - ContainsText() is very forgiving, so don't worry about whitespace, casing, html tags separating the text, etc.
-					if(browser.ContainsText("Incorrect login or password"))
+					if(browser.ContainsText("Incorrect username or password"))
 					{
 						browser.Log("Login failed!", LogMessageType.Error);
 					}

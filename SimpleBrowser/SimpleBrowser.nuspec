@@ -15,7 +15,7 @@
     <tags>headless browser http cookies browserautomation automation</tags>
   </metadata>
   <files>
-    <file src="SimpleBrowser\bin\Release\SimpleBrowser.dll" target="lib\net40\SimpleBrowser.dll" />
-    <file src="SimpleBrowser\bin\Release\RazorHosting.dll" target="lib\net40\RazorHosting.dll" />
+    <file src="SimpleBrowser\bin\Release\net40\SimpleBrowser.dll" target="lib\net40\SimpleBrowser.dll" />
+    <file src="SimpleBrowser\bin\Release\net40\RazorHosting.dll" target="lib\net40\RazorHosting.dll" />
   </files>
 </package>
