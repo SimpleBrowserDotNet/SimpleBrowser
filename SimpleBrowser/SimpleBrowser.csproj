@@ -59,7 +59,6 @@
     <Compile Include="Elements\FormElement.cs" />
     <Compile Include="Elements\FormElementElement.cs" />
     <Compile Include="Elements\FrameElement.cs" />
-    <Compile Include="Elements\IHasRawPostData.cs" />
     <Compile Include="Elements\ImageInputElement.cs" />
     <Compile Include="Elements\InputElement.cs" />
     <Compile Include="Elements\LabelElement.cs" />
