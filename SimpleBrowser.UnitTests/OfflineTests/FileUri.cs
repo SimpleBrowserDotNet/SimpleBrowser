@@ -1,6 +1,7 @@
 ﻿namespace SimpleBrowser.UnitTests.OfflineTests
 {
-	using System.IO;
+    using System;
+    using System.IO;
 	using System.Linq;
 	using NUnit.Framework;
 
@@ -10,7 +11,7 @@
 		[Test]
 		public void CanLoadHtmlFromFile()
 		{
-			var f = new FileInfo(".\\SampleDocs\\movies1.htm");
+			var f = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"SampleDocs\movies1.htm"));
 			string uri = string.Format("file:///{0}", f.FullName);
 			uri = uri.Replace("\\", "/");
 
@@ -24,7 +25,9 @@
 		{
 			if (Directory.Exists("C:\\Windows\\Temp"))
 			{
-				File.Copy("SampleDocs\\movies1.htm", "C:\\Windows\\Temp\\movies1.htm", true);
+				File.Copy(
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"SampleDocs\movies1.htm"),
+                    @"C:\Windows\Temp\movies1.htm", true);
 
 				var b = new Browser();
 				b.Navigate("file:///c:/Windows/Temp/movies1.htm");
