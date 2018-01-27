@@ -137,6 +137,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
 
             link.Click();
             Assert.IsNotNull(b.CurrentState);
+            Assert.IsNotNull(b.Referer);
             Assert.AreEqual(b.Referer.ToString(), startingUrl);
 
             /* iana.org went HTTPS only. Good for them, but it broke this test for SimpleBrowser.
