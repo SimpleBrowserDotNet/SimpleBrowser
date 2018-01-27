@@ -142,28 +142,30 @@ namespace SimpleBrowser.Elements
                 StringBuilder post = new StringBuilder();
                 foreach (var element in this.Elements)
                 {
-                    if (element is IHasRawPostData)
+                    bool isClickedElement = false;
+                    if (clickedElement != null)
+                    {
+                        isClickedElement = element.Element == clickedElement.Element;
+                    }
+
+                    var values = element.ValuesToSubmit(isClickedElement);
+                    foreach (var value in values)
                     {
                         post.AppendFormat("--{0}\r\n", token);
-                        post.AppendFormat(
-                            "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\n{2}\r\n",
-                            element.Name,
-                            new FileInfo(element.Value).Name,
-                            ((IHasRawPostData)element).GetPostData());
-                    }
-                    else
-                    {
-                        bool isClickedElement = false;
-                        if (clickedElement != null)
+                        if (element is FileUploadElement)
                         {
-                            isClickedElement = element.Element == clickedElement.Element;
+                            post.AppendFormat(
+                                "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\n{2}\r\n",
+                                element.Name,
+                                value.Name,
+                                value.Value);
                         }
-
-                        var values = element.ValuesToSubmit(isClickedElement);
-                        foreach (var value in values)
+                        else
                         {
-                            post.AppendFormat("--{0}\r\n", token);
-                            post.AppendFormat("Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}\r\n", value.Name, value.Value);
+                            post.AppendFormat(
+                                "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}\r\n",
+                                value.Name,
+                                value.Value);
                         }
                     }
                 }

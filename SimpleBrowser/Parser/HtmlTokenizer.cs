@@ -43,7 +43,7 @@ namespace SimpleBrowser.Parser
 		}
 
 		static Regex RxNextToken = new Regex(@"\<((\!((?<doctype>DOCTYPE)|(?<cdata>\[CDATA\[)|(?<comment>(\s)?--)|(?<conditional>\[)))|(?<xmldecl>\?\s?xml)|(?<element>[a-z])|(?<close>/[a-z])|())", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-		static Regex RxNextScriptToken = new Regex(@"\<((?<comment>!(\s)?--)|(?<close>/script\>))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		static Regex RxNextScriptToken = new Regex(@"\<((?<comment>!(\s)?--)|(?<close>/script(\s)?\>))", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		static void ReadNext(ParserContext context)
 		{
 			while(!context.EndOfString)

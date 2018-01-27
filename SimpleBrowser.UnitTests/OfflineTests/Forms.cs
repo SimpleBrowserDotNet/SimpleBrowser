@@ -210,8 +210,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Assert.IsTrue(clickResult == ClickResult.SucceededNavigationComplete);
 
             // Check to make sure the form submitted.
-            var names = b.Select("td.desc");
-            var values = b.Select("td.val");
+            var names = b.Select("tt");
+            var values = b.Select("tt");
             Assert.IsTrue(names.Count() == values.Count());
 
             // Check to make sure the proper values submitted
@@ -268,8 +268,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Assert.IsTrue(clickResult == ClickResult.SucceededNavigationComplete);
 
             // Check to make sure the form submitted.
-            var names = b.Select("td.desc");
-            var values = b.Select("td.val");
+            var names = b.Select("tt");
+            var values = b.Select("tt");
             Assert.IsTrue(names.Count() == values.Count());
             Assert.IsTrue(values.Where(e => e.Value == "readme textarea").FirstOrDefault() != null);
 
@@ -331,8 +331,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             // Check to make sure the form submitted.
             Assert.IsTrue(clickResult == ClickResult.SucceededNavigationComplete);
 
-            var names = b.Select("td.desc");
-            var values = b.Select("td.val");
+            var names = b.Select("tt");
+            var values = b.Select("tt");
             Assert.IsTrue(names.Count() == values.Count());
             Assert.IsTrue(values.Where(e => e.Value == "Name1").FirstOrDefault() != null);
             Assert.IsTrue(values.Where(e => e.Value == "Name2").FirstOrDefault() != null);
@@ -355,8 +355,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             // Check to make sure the form submitted.
             Assert.IsTrue(clickResult == ClickResult.SucceededNavigationComplete);
 
-            names = b.Select("td.desc");
-            values = b.Select("td.val");
+            names = b.Select("tt");
+            values = b.Select("tt");
             Assert.IsTrue(values.Where(e => e.Value == "Submit2").FirstOrDefault() != null);
             Assert.IsTrue(values.Where(e => e.Value == "Name2a").FirstOrDefault() != null);
             Assert.IsFalse(values.Where(e => e.Value == "Name2").FirstOrDefault() != null);
