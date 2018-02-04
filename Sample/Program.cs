@@ -70,7 +70,14 @@ namespace Sample
 			finally
 			{
 				var path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile("SimpleBrowser Sample - Request Log"));
-				Process.Start(path);
+
+#if NETCOREAPP2_0
+                // dotnet core doesn't seem to be able to start process with path to html file
+                Console.WriteLine("Log file published to:");
+                Console.WriteLine(path);
+#else
+                Process.Start(path);
+#endif
 			}
 		}
 

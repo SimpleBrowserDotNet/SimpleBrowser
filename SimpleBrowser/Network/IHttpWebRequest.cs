@@ -37,6 +37,8 @@ namespace SimpleBrowser.Network
 
 		string Referer { get; set; }
 
-		string Host { get; set; }
+        Uri Address { get; }
+        
+        string Host { get; set; }
 	}
 }

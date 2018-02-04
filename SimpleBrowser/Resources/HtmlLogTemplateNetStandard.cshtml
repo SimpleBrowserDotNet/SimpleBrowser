@@ -1,0 +1,231 @@
+﻿@using SimpleBrowser;
+@using System.Web;
+@{
+	bool lastItemIsLogMessage = false;
+}
+<!doctype html>
+<html>
+	<head>
+		<title>@Model.Title</title>
+		<style type="text/css">
+			body { font-family: Verdana, Sans-Serif; font-size: 11px; margin: 30px; color: #333; }
+			h1, h2, h3, p { margin: 0 0 15px 0; }
+			h1, h2, h3, h4 { font-family: Arial; color: black; }
+			h1 { font-size: 32px; color: #468966; letter-spacing: -1px; }
+			h2 { font-size: 24px; color: #8E2800; letter-spacing: -1px; }
+			h3 { font-size: 18px; }
+			h4 { font-size: 14px; margin: 0 0 5px 0; color: #8E2800; }
+			hr { border-width: 1px 0 0 0; border-style: solid; border-color: #e5e5e5; height: 1px; margin: 15px 0 14px; }
+			a { color: #36c; text-decoration: none; }
+			a:hover { text-decoration: underline; }
+			.requestlog { border-left: 5px solid #eee; padding-left: 15px; padding-top: 15px; border-top: 1px solid #e5e5e5; }
+			.requestlog + .requestlog { margin-top: 15px; }
+			.keyvaluepairs { margin-bottom: 15px; padding: 5px; }
+			.keyvaluepairs table { border-collapse: collapse; width: 100%; }
+			.keyvaluepairs tr:nth-of-type(even) { background-color: rgba(0,0,0,0.03); }
+			.keyvaluepairs th { font-weight: bold; text-align: left; width: 120px; white-space: nowrap; }
+			.keyvaluepairs th, td { vertical-align: top; padding: 2px 4px; }
+			.keyvaluepairs th:after { content: ':'; }
+			.method, .statuscode { padding: 3px; background-color: #e5e5e5; }
+			.post { background-color: #FFB03B; }
+			.timestamp { color: #999; margin-bottom: 15px; }
+			.requestheaders, .responseheaders { background-color: #FFFAE5; }
+			.postdata, .querydata { background-color: #E5FFF2; }
+			.messages { padding: 10px; background-color: #333; line-height: 1.5em; font-size: 13px; border-left: 5px solid #999; }
+			.messages:before { content:'MESSAGE LOG'; font-size: 10px; display: block; color: #999; float: right; margin: 0 0 5px 10px; }
+			.messages .servertime { color: #999; float: left; }
+			.messages .message { display: block; margin-left: 190px; }
+			.message-user .message { color: cyan; }
+			.message-internal .message { color: #ccc; }
+			.message-error .message { color: red; }
+			.message-stacktrace .message { color: yellow; }
+			#popup { background-color: rgba(0,0,0,0.6); position: fixed; width: 100%; height: 100%; left: 0; top: 0; }
+			#window { position: absolute; background-color: white; -webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.5); padding: 15px; top: 50px; left: 50px; right: 50px; bottom: 50px; }
+			#iframecontainer { position: absolute; top: 55px; left: 15px; right: 15px; bottom: 15px; border: 1px solid #e5e5e5; width: auto; }
+			#iframe { border: 0; margin: 0; width: 100%; height: 100%; }
+			#close a { position: absolute; top: 21px; right: 20px; text-decoration: none; font-size: 13px; }
+		</style>
+		<script type="text/javascript">
+		function popupContent(title, str, encodeStr) {
+			document.getElementById('popup').style.display = '';
+			if(encodeStr) {
+				var prettyjs = document.getElementById('prettyprint').innerText;
+				str = '<html><head><scr'+'ipt type="text/javascript">' + prettyjs + '</scr'+'ipt>'
+					+ '<style type="text/css">body{background-color:#f7f7f7;margin:15px;color:#039;}.str{color:#080}.kwd{color:#008}.com{color:#800}.typ{color:#606}.lit{color:#066}.pun{color:#660}.pln{color:#000}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec{color:#606}ol.linenums{margin-top:0;margin-bottom:0}li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8{list-style:none}li.L1,li.L3,li.L5,li.L7,li.L9{background:#eee}@@media print{.str{color:#060}.kwd{color:#006;font-weight:bold}.com{color:#600;font-style:italic}.typ{color:#404;font-weight:bold}.lit{color:#044}.pun{color:#440}.pln{color:#000}.tag{color:#006;font-weight:bold}.atn{color:#404}.atv{color:#060}</style></head>'
+					+ '<body><code><pre class="prettyprint">' + str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre></code></body><sc'+'ript type="text/javascript">prettyPrint();</scr'+'ipt></html>';
+			}
+			document.getElementById('window-title').innerHTML = title;
+			var doc = document.getElementById('iframe').contentDocument;
+			doc.open();
+			doc.writeln(str);
+			doc.close();
+		}
+		</script>
+	</head>
+	<body>
+		<div id="popup" style="display:none;">
+			<div id="window">
+				<h2 id="window-title">Window Title</h2>
+				<div id="close"><a href="javascript:document.getElementById('popup').style.display='none';">Close</a></div>
+				<div id="iframecontainer"><iframe id="iframe"></iframe></div>
+			</div>
+		</div>
+		<div style="display:none" id="prettyprint">
+window.PR_SHOULD_USE_CONTINUATION=true;window.PR_TAB_WIDTH=8;window.PR_normalizedHtml=window.PR=window.prettyPrintOne=window.prettyPrint=void 0;window._pr_isIE6=function(){var y=navigator&amp;&amp;navigator.userAgent&amp;&amp;navigator.userAgent.match(/\bMSIE ([678])\./);y=y?+y[1]:false;window._pr_isIE6=function(){return y};return y};
+(function(){function y(b){return b.replace(L,&quot;&amp;amp;&quot;).replace(M,&quot;&amp;lt;&quot;).replace(N,&quot;&amp;gt;&quot;)}function H(b,f,i){switch(b.nodeType){case 1:var o=b.tagName.toLowerCase();f.push(&quot;&lt;&quot;,o);var l=b.attributes,n=l.length;if(n){if(i){for(var r=[],j=n;--j&gt;=0;)r[j]=l[j];r.sort(function(q,m){return q.name&lt;m.name?-1:q.name===m.name?0:1});l=r}for(j=0;j&lt;n;++j){r=l[j];r.specified&amp;&amp;f.push(&quot; &quot;,r.name.toLowerCase(),'=&quot;',r.value.replace(L,&quot;&amp;amp;&quot;).replace(M,&quot;&amp;lt;&quot;).replace(N,&quot;&amp;gt;&quot;).replace(X,&quot;&amp;quot;&quot;),'&quot;')}}f.push(&quot;&gt;&quot;);
+for(l=b.firstChild;l;l=l.nextSibling)H(l,f,i);if(b.firstChild||!/^(?:br|link|img)$/.test(o))f.push(&quot;&lt;/&quot;,o,&quot;&gt;&quot;);break;case 3:case 4:f.push(y(b.nodeValue));break}}function O(b){function f(c){if(c.charAt(0)!==&quot;\\&quot;)return c.charCodeAt(0);switch(c.charAt(1)){case &quot;b&quot;:return 8;case &quot;t&quot;:return 9;case &quot;n&quot;:return 10;case &quot;v&quot;:return 11;case &quot;f&quot;:return 12;case &quot;r&quot;:return 13;case &quot;u&quot;:case &quot;x&quot;:return parseInt(c.substring(2),16)||c.charCodeAt(1);case &quot;0&quot;:case &quot;1&quot;:case &quot;2&quot;:case &quot;3&quot;:case &quot;4&quot;:case &quot;5&quot;:case &quot;6&quot;:case &quot;7&quot;:return parseInt(c.substring(1),
+8);default:return c.charCodeAt(1)}}function i(c){if(c&lt;32)return(c&lt;16?&quot;\\x0&quot;:&quot;\\x&quot;)+c.toString(16);c=String.fromCharCode(c);if(c===&quot;\\&quot;||c===&quot;-&quot;||c===&quot;[&quot;||c===&quot;]&quot;)c=&quot;\\&quot;+c;return c}function o(c){var d=c.substring(1,c.length-1).match(RegExp(&quot;\\\\u[0-9A-Fa-f]{4}|\\\\x[0-9A-Fa-f]{2}|\\\\[0-3][0-7]{0,2}|\\\\[0-7]{1,2}|\\\\[\\s\\S]|-|[^-\\\\]&quot;,&quot;g&quot;));c=[];for(var a=[],k=d[0]===&quot;^&quot;,e=k?1:0,h=d.length;e&lt;h;++e){var g=d[e];switch(g){case &quot;\\B&quot;:case &quot;\\b&quot;:case &quot;\\D&quot;:case &quot;\\d&quot;:case &quot;\\S&quot;:case &quot;\\s&quot;:case &quot;\\W&quot;:case &quot;\\w&quot;:c.push(g);
+continue}g=f(g);var s;if(e+2&lt;h&amp;&amp;&quot;-&quot;===d[e+1]){s=f(d[e+2]);e+=2}else s=g;a.push([g,s]);if(!(s&lt;65||g&gt;122)){s&lt;65||g&gt;90||a.push([Math.max(65,g)|32,Math.min(s,90)|32]);s&lt;97||g&gt;122||a.push([Math.max(97,g)&amp;-33,Math.min(s,122)&amp;-33])}}a.sort(function(v,w){return v[0]-w[0]||w[1]-v[1]});d=[];g=[NaN,NaN];for(e=0;e&lt;a.length;++e){h=a[e];if(h[0]&lt;=g[1]+1)g[1]=Math.max(g[1],h[1]);else d.push(g=h)}a=[&quot;[&quot;];k&amp;&amp;a.push(&quot;^&quot;);a.push.apply(a,c);for(e=0;e&lt;d.length;++e){h=d[e];a.push(i(h[0]));if(h[1]&gt;h[0]){h[1]+1&gt;h[0]&amp;&amp;a.push(&quot;-&quot;);
+a.push(i(h[1]))}}a.push(&quot;]&quot;);return a.join(&quot;&quot;)}function l(c){for(var d=c.source.match(RegExp(&quot;(?:\\[(?:[^\\x5C\\x5D]|\\\\[\\s\\S])*\\]|\\\\u[A-Fa-f0-9]{4}|\\\\x[A-Fa-f0-9]{2}|\\\\[0-9]+|\\\\[^ux0-9]|\\(\\?[:!=]|[\\(\\)\\^]|[^\\x5B\\x5C\\(\\)\\^]+)&quot;,&quot;g&quot;)),a=d.length,k=[],e=0,h=0;e&lt;a;++e){var g=d[e];if(g===&quot;(&quot;)++h;else if(&quot;\\&quot;===g.charAt(0))if((g=+g.substring(1))&amp;&amp;g&lt;=h)k[g]=-1}for(e=1;e&lt;k.length;++e)if(-1===k[e])k[e]=++n;for(h=e=0;e&lt;a;++e){g=d[e];if(g===&quot;(&quot;){++h;if(k[h]===undefined)d[e]=&quot;(?:&quot;}else if(&quot;\\&quot;===
+g.charAt(0))if((g=+g.substring(1))&amp;&amp;g&lt;=h)d[e]=&quot;\\&quot;+k[h]}for(h=e=0;e&lt;a;++e)if(&quot;^&quot;===d[e]&amp;&amp;&quot;^&quot;!==d[e+1])d[e]=&quot;&quot;;if(c.ignoreCase&amp;&amp;r)for(e=0;e&lt;a;++e){g=d[e];c=g.charAt(0);if(g.length&gt;=2&amp;&amp;c===&quot;[&quot;)d[e]=o(g);else if(c!==&quot;\\&quot;)d[e]=g.replace(/[a-zA-Z]/g,function(s){s=s.charCodeAt(0);return&quot;[&quot;+String.fromCharCode(s&amp;-33,s|32)+&quot;]&quot;})}return d.join(&quot;&quot;)}for(var n=0,r=false,j=false,q=0,m=b.length;q&lt;m;++q){var t=b[q];if(t.ignoreCase)j=true;else if(/[a-z]/i.test(t.source.replace(/\\u[0-9a-f]{4}|\\x[0-9a-f]{2}|\\[^ux]/gi,
+&quot;&quot;))){r=true;j=false;break}}var p=[];q=0;for(m=b.length;q&lt;m;++q){t=b[q];if(t.global||t.multiline)throw Error(&quot;&quot;+t);p.push(&quot;(?:&quot;+l(t)+&quot;)&quot;)}return RegExp(p.join(&quot;|&quot;),j?&quot;gi&quot;:&quot;g&quot;)}function Y(b){var f=0;return function(i){for(var o=null,l=0,n=0,r=i.length;n&lt;r;++n)switch(i.charAt(n)){case &quot;\t&quot;:o||(o=[]);o.push(i.substring(l,n));l=b-f%b;for(f+=l;l&gt;=0;l-=16)o.push(&quot;                &quot;.substring(0,l));l=n+1;break;case &quot;\n&quot;:f=0;break;default:++f}if(!o)return i;o.push(i.substring(l));return o.join(&quot;&quot;)}}function I(b,
+f,i,o){if(f){b={source:f,c:b};i(b);o.push.apply(o,b.d)}}function B(b,f){var i={},o;(function(){for(var r=b.concat(f),j=[],q={},m=0,t=r.length;m&lt;t;++m){var p=r[m],c=p[3];if(c)for(var d=c.length;--d&gt;=0;)i[c.charAt(d)]=p;p=p[1];c=&quot;&quot;+p;if(!q.hasOwnProperty(c)){j.push(p);q[c]=null}}j.push(/[\0-\uffff]/);o=O(j)})();var l=f.length;function n(r){for(var j=r.c,q=[j,z],m=0,t=r.source.match(o)||[],p={},c=0,d=t.length;c&lt;d;++c){var a=t[c],k=p[a],e=void 0,h;if(typeof k===&quot;string&quot;)h=false;else{var g=i[a.charAt(0)];
+if(g){e=a.match(g[1]);k=g[0]}else{for(h=0;h&lt;l;++h){g=f[h];if(e=a.match(g[1])){k=g[0];break}}e||(k=z)}if((h=k.length&gt;=5&amp;&amp;&quot;lang-&quot;===k.substring(0,5))&amp;&amp;!(e&amp;&amp;typeof e[1]===&quot;string&quot;)){h=false;k=P}h||(p[a]=k)}g=m;m+=a.length;if(h){h=e[1];var s=a.indexOf(h),v=s+h.length;if(e[2]){v=a.length-e[2].length;s=v-h.length}k=k.substring(5);I(j+g,a.substring(0,s),n,q);I(j+g+s,h,Q(k,h),q);I(j+g+v,a.substring(v),n,q)}else q.push(j+g,k)}r.d=q}return n}function x(b){var f=[],i=[];if(b.tripleQuotedStrings)f.push([A,/^(?:\'\'\'(?:[^\'\\]|\\[\s\S]|\'{1,2}(?=[^\']))*(?:\'\'\'|$)|\&quot;\&quot;\&quot;(?:[^\&quot;\\]|\\[\s\S]|\&quot;{1,2}(?=[^\&quot;]))*(?:\&quot;\&quot;\&quot;|$)|\'(?:[^\\\']|\\[\s\S])*(?:\'|$)|\&quot;(?:[^\\\&quot;]|\\[\s\S])*(?:\&quot;|$))/,
+null,&quot;'\&quot;&quot;]);else b.multiLineStrings?f.push([A,/^(?:\'(?:[^\\\']|\\[\s\S])*(?:\'|$)|\&quot;(?:[^\\\&quot;]|\\[\s\S])*(?:\&quot;|$)|\`(?:[^\\\`]|\\[\s\S])*(?:\`|$))/,null,&quot;'\&quot;`&quot;]):f.push([A,/^(?:\'(?:[^\\\'\r\n]|\\.)*(?:\'|$)|\&quot;(?:[^\\\&quot;\r\n]|\\.)*(?:\&quot;|$))/,null,&quot;\&quot;'&quot;]);b.verbatimStrings&amp;&amp;i.push([A,/^@@\&quot;(?:[^\&quot;]|\&quot;\&quot;)*(?:\&quot;|$)/,null]);if(b.hashComments)if(b.cStyleComments){f.push([C,/^#(?:(?:define|elif|else|endif|error|ifdef|include|ifndef|line|pragma|undef|warning)\b|[^\r\n]*)/,null,&quot;#&quot;]);i.push([A,/^&lt;(?:(?:(?:\.\.\/)*|\/?)(?:[\w-]+(?:\/[\w-]+)+)?[\w-]+\.h|[a-z]\w*)&gt;/,
+null])}else f.push([C,/^#[^\r\n]*/,null,&quot;#&quot;]);if(b.cStyleComments){i.push([C,/^\/\/[^\r\n]*/,null]);i.push([C,/^\/\*[\s\S]*?(?:\*\/|$)/,null])}b.regexLiterals&amp;&amp;i.push([&quot;lang-regex&quot;,RegExp(&quot;^&quot;+Z+&quot;(/(?=[^/*])(?:[^/\\x5B\\x5C]|\\x5C[\\s\\S]|\\x5B(?:[^\\x5C\\x5D]|\\x5C[\\s\\S])*(?:\\x5D|$))+/)&quot;)]);b=b.keywords.replace(/^\s+|\s+$/g,&quot;&quot;);b.length&amp;&amp;i.push([R,RegExp(&quot;^(?:&quot;+b.replace(/\s+/g,&quot;|&quot;)+&quot;)\\b&quot;),null]);f.push([z,/^\s+/,null,&quot; \r\n\t\u00a0&quot;]);i.push([J,/^@@[a-z_$][a-z_$@@0-9]*/i,null],[S,/^@@?[A-Z]+[a-z][A-Za-z_$@@0-9]*/,
+null],[z,/^[a-z_$][a-z_$@@0-9]*/i,null],[J,/^(?:0x[a-f0-9]+|(?:\d(?:_\d+)*\d*(?:\.\d*)?|\.\d\+)(?:e[+\-]?\d+)?)[a-z]*/i,null,&quot;0123456789&quot;],[E,/^.[^\s\w\.$@@\'\&quot;\`\/\#]*/,null]);return B(f,i)}function $(b){function f(D){if(D&gt;r){if(j&amp;&amp;j!==q){n.push(&quot;&lt;/span&gt;&quot;);j=null}if(!j&amp;&amp;q){j=q;n.push('&lt;span class=&quot;',j,'&quot;&gt;')}var T=y(p(i.substring(r,D))).replace(e?d:c,&quot;$1&amp;#160;&quot;);e=k.test(T);n.push(T.replace(a,s));r=D}}var i=b.source,o=b.g,l=b.d,n=[],r=0,j=null,q=null,m=0,t=0,p=Y(window.PR_TAB_WIDTH),c=/([\r\n ]) /g,
+d=/(^| ) /gm,a=/\r\n?|\n/g,k=/[ \r\n]$/,e=true,h=window._pr_isIE6();h=h?b.b.tagName===&quot;PRE&quot;?h===6?&quot;&amp;#160;\r\n&quot;:h===7?&quot;&amp;#160;&lt;br&gt;\r&quot;:&quot;&amp;#160;\r&quot;:&quot;&amp;#160;&lt;br /&gt;&quot;:&quot;&lt;br /&gt;&quot;;var g=b.b.className.match(/\blinenums\b(?::(\d+))?/),s;if(g){for(var v=[],w=0;w&lt;10;++w)v[w]=h+'&lt;/li&gt;&lt;li class=&quot;L'+w+'&quot;&gt;';var F=g[1]&amp;&amp;g[1].length?g[1]-1:0;n.push('&lt;ol class=&quot;linenums&quot;&gt;&lt;li class=&quot;L',F%10,'&quot;');F&amp;&amp;n.push(' value=&quot;',F+1,'&quot;');n.push(&quot;&gt;&quot;);s=function(){var D=v[++F%10];return j?&quot;&lt;/span&gt;&quot;+D+'&lt;span class=&quot;'+j+'&quot;&gt;':D}}else s=h;
+for(;;)if(m&lt;o.length?t&lt;l.length?o[m]&lt;=l[t]:true:false){f(o[m]);if(j){n.push(&quot;&lt;/span&gt;&quot;);j=null}n.push(o[m+1]);m+=2}else if(t&lt;l.length){f(l[t]);q=l[t+1];t+=2}else break;f(i.length);j&amp;&amp;n.push(&quot;&lt;/span&gt;&quot;);g&amp;&amp;n.push(&quot;&lt;/li&gt;&lt;/ol&gt;&quot;);b.a=n.join(&quot;&quot;)}function u(b,f){for(var i=f.length;--i&gt;=0;){var o=f[i];if(G.hasOwnProperty(o))&quot;console&quot;in window&amp;&amp;console.warn(&quot;cannot override language handler %s&quot;,o);else G[o]=b}}function Q(b,f){b&amp;&amp;G.hasOwnProperty(b)||(b=/^\s*&lt;/.test(f)?&quot;default-markup&quot;:&quot;default-code&quot;);return G[b]}
+function U(b){var f=b.f,i=b.e;b.a=f;try{var o,l=f.match(aa);f=[];var n=0,r=[];if(l)for(var j=0,q=l.length;j&lt;q;++j){var m=l[j];if(m.length&gt;1&amp;&amp;m.charAt(0)===&quot;&lt;&quot;){if(!ba.test(m))if(ca.test(m)){f.push(m.substring(9,m.length-3));n+=m.length-12}else if(da.test(m)){f.push(&quot;\n&quot;);++n}else if(m.indexOf(V)&gt;=0&amp;&amp;m.replace(/\s(\w+)\s*=\s*(?:\&quot;([^\&quot;]*)\&quot;|'([^\']*)'|(\S+))/g,' $1=&quot;$2$3$4&quot;').match(/[cC][lL][aA][sS][sS]=\&quot;[^\&quot;]*\bnocode\b/)){var t=m.match(W)[2],p=1,c;c=j+1;a:for(;c&lt;q;++c){var d=l[c].match(W);if(d&amp;&amp;
+d[2]===t)if(d[1]===&quot;/&quot;){if(--p===0)break a}else++p}if(c&lt;q){r.push(n,l.slice(j,c+1).join(&quot;&quot;));j=c}else r.push(n,m)}else r.push(n,m)}else{var a;p=m;var k=p.indexOf(&quot;&amp;&quot;);if(k&lt;0)a=p;else{for(--k;(k=p.indexOf(&quot;&amp;#&quot;,k+1))&gt;=0;){var e=p.indexOf(&quot;;&quot;,k);if(e&gt;=0){var h=p.substring(k+3,e),g=10;if(h&amp;&amp;h.charAt(0)===&quot;x&quot;){h=h.substring(1);g=16}var s=parseInt(h,g);isNaN(s)||(p=p.substring(0,k)+String.fromCharCode(s)+p.substring(e+1))}}a=p.replace(ea,&quot;&lt;&quot;).replace(fa,&quot;&gt;&quot;).replace(ga,&quot;'&quot;).replace(ha,'&quot;').replace(ia,&quot; &quot;).replace(ja,
+&quot;&amp;&quot;)}f.push(a);n+=a.length}}o={source:f.join(&quot;&quot;),h:r};var v=o.source;b.source=v;b.c=0;b.g=o.h;Q(i,v)(b);$(b)}catch(w){if(&quot;console&quot;in window)console.log(w&amp;&amp;w.stack?w.stack:w)}}var A=&quot;str&quot;,R=&quot;kwd&quot;,C=&quot;com&quot;,S=&quot;typ&quot;,J=&quot;lit&quot;,E=&quot;pun&quot;,z=&quot;pln&quot;,P=&quot;src&quot;,V=&quot;nocode&quot;,Z=function(){for(var b=[&quot;!&quot;,&quot;!=&quot;,&quot;!==&quot;,&quot;#&quot;,&quot;%&quot;,&quot;%=&quot;,&quot;&amp;&quot;,&quot;&amp;&amp;&quot;,&quot;&amp;&amp;=&quot;,&quot;&amp;=&quot;,&quot;(&quot;,&quot;*&quot;,&quot;*=&quot;,&quot;+=&quot;,&quot;,&quot;,&quot;-=&quot;,&quot;-&gt;&quot;,&quot;/&quot;,&quot;/=&quot;,&quot;:&quot;,&quot;::&quot;,&quot;;&quot;,&quot;&lt;&quot;,&quot;&lt;&lt;&quot;,&quot;&lt;&lt;=&quot;,&quot;&lt;=&quot;,&quot;=&quot;,&quot;==&quot;,&quot;===&quot;,&quot;&gt;&quot;,&quot;&gt;=&quot;,&quot;&gt;&gt;&quot;,&quot;&gt;&gt;=&quot;,&quot;&gt;&gt;&gt;&quot;,&quot;&gt;&gt;&gt;=&quot;,&quot;?&quot;,&quot;@@&quot;,&quot;[&quot;,&quot;^&quot;,&quot;^=&quot;,&quot;^^&quot;,&quot;^^=&quot;,&quot;{&quot;,&quot;|&quot;,&quot;|=&quot;,&quot;||&quot;,&quot;||=&quot;,
+&quot;~&quot;,&quot;break&quot;,&quot;case&quot;,&quot;continue&quot;,&quot;delete&quot;,&quot;do&quot;,&quot;else&quot;,&quot;finally&quot;,&quot;instanceof&quot;,&quot;return&quot;,&quot;throw&quot;,&quot;try&quot;,&quot;typeof&quot;],f=&quot;(?:^^|[+-]&quot;,i=0;i&lt;b.length;++i)f+=&quot;|&quot;+b[i].replace(/([^=&lt;&gt;:&amp;a-z])/g,&quot;\\$1&quot;);f+=&quot;)\\s*&quot;;return f}(),L=/&amp;/g,M=/&lt;/g,N=/&gt;/g,X=/\&quot;/g,ea=/&amp;lt;/g,fa=/&amp;gt;/g,ga=/&amp;apos;/g,ha=/&amp;quot;/g,ja=/&amp;amp;/g,ia=/&amp;nbsp;/g,ka=/[\r\n]/g,K=null,aa=RegExp(&quot;[^&lt;]+|&lt;!--[\\s\\S]*?--\&gt;|&lt;!\\[CDATA\\[[\\s\\S]*?\\]\\]&gt;|&lt;/?[a-zA-Z](?:[^&gt;\&quot;']|'[^']*'|\&quot;[^\&quot;]*\&quot;)*&gt;|&lt;&quot;,&quot;g&quot;),ba=/^&lt;\!--/,ca=/^&lt;!\[CDATA\[/,da=/^&lt;br\b/i,W=/^&lt;(\/?)([a-zA-Z][a-zA-Z0-9]*)/,
+la=x({keywords:&quot;break continue do else for if return while auto case char const default double enum extern float goto int long register short signed sizeof static struct switch typedef union unsigned void volatile catch class delete false import new operator private protected public this throw true try typeof alignof align_union asm axiom bool concept concept_map const_cast constexpr decltype dynamic_cast explicit export friend inline late_check mutable namespace nullptr reinterpret_cast static_assert static_cast template typeid typename using virtual wchar_t where break continue do else for if return while auto case char const default double enum extern float goto int long register short signed sizeof static struct switch typedef union unsigned void volatile catch class delete false import new operator private protected public this throw true try typeof abstract boolean byte extends final finally implements import instanceof null native package strictfp super synchronized throws transient as base by checked decimal delegate descending event fixed foreach from group implicit in interface internal into is lock object out override orderby params partial readonly ref sbyte sealed stackalloc string select uint ulong unchecked unsafe ushort var break continue do else for if return while auto case char const default double enum extern float goto int long register short signed sizeof static struct switch typedef union unsigned void volatile catch class delete false import new operator private protected public this throw true try typeof debugger eval export function get null set undefined var with Infinity NaN caller delete die do dump elsif eval exit foreach for goto if import last local my next no our print package redo require sub undef unless until use wantarray while BEGIN END break continue do else for if return while and as assert class def del elif except exec finally from global import in is lambda nonlocal not or pass print raise try with yield False True None break continue do else for if return while alias and begin case class def defined elsif end ensure false in module next nil not or redo rescue retry self super then true undef unless until when yield BEGIN END break continue do else for if return while case done elif esac eval fi function in local set then until &quot;,
+hashComments:true,cStyleComments:true,multiLineStrings:true,regexLiterals:true}),G={};u(la,[&quot;default-code&quot;]);u(B([],[[z,/^[^&lt;?]+/],[&quot;dec&quot;,/^&lt;!\w[^&gt;]*(?:&gt;|$)/],[C,/^&lt;\!--[\s\S]*?(?:-\-&gt;|$)/],[&quot;lang-&quot;,/^&lt;\?([\s\S]+?)(?:\?&gt;|$)/],[&quot;lang-&quot;,/^&lt;%([\s\S]+?)(?:%&gt;|$)/],[E,/^(?:&lt;[%?]|[%?]&gt;)/],[&quot;lang-&quot;,/^&lt;xmp\b[^&gt;]*&gt;([\s\S]+?)&lt;\/xmp\b[^&gt;]*&gt;/i],[&quot;lang-js&quot;,/^&lt;script\b[^&gt;]*&gt;([\s\S]*?)(&lt;\/script\b[^&gt;]*&gt;)/i],[&quot;lang-css&quot;,/^&lt;style\b[^&gt;]*&gt;([\s\S]*?)(&lt;\/style\b[^&gt;]*&gt;)/i],[&quot;lang-in.tag&quot;,/^(&lt;\/?[a-z][^&lt;&gt;]*&gt;)/i]]),[&quot;default-markup&quot;,
+&quot;htm&quot;,&quot;html&quot;,&quot;mxml&quot;,&quot;xhtml&quot;,&quot;xml&quot;,&quot;xsl&quot;]);u(B([[z,/^[\s]+/,null,&quot; \t\r\n&quot;],[&quot;atv&quot;,/^(?:\&quot;[^\&quot;]*\&quot;?|\'[^\']*\'?)/,null,&quot;\&quot;'&quot;]],[[&quot;tag&quot;,/^^&lt;\/?[a-z](?:[\w.:-]*\w)?|\/?&gt;$/i],[&quot;atn&quot;,/^(?!style[\s=]|on)[a-z](?:[\w:-]*\w)?/i],[&quot;lang-uq.val&quot;,/^=\s*([^&gt;\'\&quot;\s]*(?:[^&gt;\'\&quot;\s\/]|\/(?=\s)))/],[E,/^[=&lt;&gt;\/]+/],[&quot;lang-js&quot;,/^on\w+\s*=\s*\&quot;([^\&quot;]+)\&quot;/i],[&quot;lang-js&quot;,/^on\w+\s*=\s*\'([^\']+)\'/i],[&quot;lang-js&quot;,/^on\w+\s*=\s*([^\&quot;\'&gt;\s]+)/i],[&quot;lang-css&quot;,/^style\s*=\s*\&quot;([^\&quot;]+)\&quot;/i],[&quot;lang-css&quot;,/^style\s*=\s*\'([^\']+)\'/i],
+[&quot;lang-css&quot;,/^style\s*=\s*([^\&quot;\'&gt;\s]+)/i]]),[&quot;in.tag&quot;]);u(B([],[[&quot;atv&quot;,/^[\s\S]+/]]),[&quot;uq.val&quot;]);u(x({keywords:&quot;break continue do else for if return while auto case char const default double enum extern float goto int long register short signed sizeof static struct switch typedef union unsigned void volatile catch class delete false import new operator private protected public this throw true try typeof alignof align_union asm axiom bool concept concept_map const_cast constexpr decltype dynamic_cast explicit export friend inline late_check mutable namespace nullptr reinterpret_cast static_assert static_cast template typeid typename using virtual wchar_t where &quot;,
+hashComments:true,cStyleComments:true}),[&quot;c&quot;,&quot;cc&quot;,&quot;cpp&quot;,&quot;cxx&quot;,&quot;cyc&quot;,&quot;m&quot;]);u(x({keywords:&quot;null true false&quot;}),[&quot;json&quot;]);u(x({keywords:&quot;break continue do else for if return while auto case char const default double enum extern float goto int long register short signed sizeof static struct switch typedef union unsigned void volatile catch class delete false import new operator private protected public this throw true try typeof abstract boolean byte extends final finally implements import instanceof null native package strictfp super synchronized throws transient as base by checked decimal delegate descending event fixed foreach from group implicit in interface internal into is lock object out override orderby params partial readonly ref sbyte sealed stackalloc string select uint ulong unchecked unsafe ushort var &quot;,
+hashComments:true,cStyleComments:true,verbatimStrings:true}),[&quot;cs&quot;]);u(x({keywords:&quot;break continue do else for if return while auto case char const default double enum extern float goto int long register short signed sizeof static struct switch typedef union unsigned void volatile catch class delete false import new operator private protected public this throw true try typeof abstract boolean byte extends final finally implements import instanceof null native package strictfp super synchronized throws transient &quot;,
+cStyleComments:true}),[&quot;java&quot;]);u(x({keywords:&quot;break continue do else for if return while case done elif esac eval fi function in local set then until &quot;,hashComments:true,multiLineStrings:true}),[&quot;bsh&quot;,&quot;csh&quot;,&quot;sh&quot;]);u(x({keywords:&quot;break continue do else for if return while and as assert class def del elif except exec finally from global import in is lambda nonlocal not or pass print raise try with yield False True None &quot;,hashComments:true,multiLineStrings:true,tripleQuotedStrings:true}),[&quot;cv&quot;,&quot;py&quot;]);
+u(x({keywords:&quot;caller delete die do dump elsif eval exit foreach for goto if import last local my next no our print package redo require sub undef unless until use wantarray while BEGIN END &quot;,hashComments:true,multiLineStrings:true,regexLiterals:true}),[&quot;perl&quot;,&quot;pl&quot;,&quot;pm&quot;]);u(x({keywords:&quot;break continue do else for if return while alias and begin case class def defined elsif end ensure false in module next nil not or redo rescue retry self super then true undef unless until when yield BEGIN END &quot;,hashComments:true,
+multiLineStrings:true,regexLiterals:true}),[&quot;rb&quot;]);u(x({keywords:&quot;break continue do else for if return while auto case char const default double enum extern float goto int long register short signed sizeof static struct switch typedef union unsigned void volatile catch class delete false import new operator private protected public this throw true try typeof debugger eval export function get null set undefined var with Infinity NaN &quot;,cStyleComments:true,regexLiterals:true}),[&quot;js&quot;]);u(B([],[[A,/^[\s\S]+/]]),
+[&quot;regex&quot;]);window.PR_normalizedHtml=H;window.prettyPrintOne=function(b,f){var i={f:b,e:f};U(i);return i.a};window.prettyPrint=function(b){function f(){for(var t=window.PR_SHOULD_USE_CONTINUATION?j.now()+250:Infinity;q&lt;o.length&amp;&amp;j.now()&lt;t;q++){var p=o[q];if(p.className&amp;&amp;p.className.indexOf(&quot;prettyprint&quot;)&gt;=0){var c=p.className.match(/\blang-(\w+)\b/);if(c)c=c[1];for(var d=false,a=p.parentNode;a;a=a.parentNode)if((a.tagName===&quot;pre&quot;||a.tagName===&quot;code&quot;||a.tagName===&quot;xmp&quot;)&amp;&amp;a.className&amp;&amp;a.className.indexOf(&quot;prettyprint&quot;)&gt;=
+0){d=true;break}if(!d){a=p;if(null===K){d=document.createElement(&quot;PRE&quot;);d.appendChild(document.createTextNode('&lt;!DOCTYPE foo PUBLIC &quot;foo bar&quot;&gt;\n&lt;foo /&gt;'));K=!/&lt;/.test(d.innerHTML)}if(K){d=a.innerHTML;if(&quot;XMP&quot;===a.tagName)d=y(d);else{a=a;if(&quot;PRE&quot;===a.tagName)a=true;else if(ka.test(d)){var k=&quot;&quot;;if(a.currentStyle)k=a.currentStyle.whiteSpace;else if(window.getComputedStyle)k=window.getComputedStyle(a,null).whiteSpace;a=!k||k===&quot;pre&quot;}else a=true;a||(d=d.replace(/(&lt;br\s*\/?&gt;)[\r\n]+/g,&quot;$1&quot;).replace(/(?:[\r\n]+[ \t]*)+/g,
+&quot; &quot;))}d=d}else{d=[];for(a=a.firstChild;a;a=a.nextSibling)H(a,d);d=d.join(&quot;&quot;)}d=d.replace(/(?:\r\n?|\n)$/,&quot;&quot;);m={f:d,e:c,b:p};U(m);if(p=m.a){c=m.b;if(&quot;XMP&quot;===c.tagName){d=document.createElement(&quot;PRE&quot;);for(a=0;a&lt;c.attributes.length;++a){k=c.attributes[a];if(k.specified)if(k.name.toLowerCase()===&quot;class&quot;)d.className=k.value;else d.setAttribute(k.name,k.value)}d.innerHTML=p;c.parentNode.replaceChild(d,c)}else c.innerHTML=p}}}}if(q&lt;o.length)setTimeout(f,250);else b&amp;&amp;b()}for(var i=[document.getElementsByTagName(&quot;pre&quot;),
+document.getElementsByTagName(&quot;code&quot;),document.getElementsByTagName(&quot;xmp&quot;)],o=[],l=0;l&lt;i.length;++l)for(var n=0,r=i[l].length;n&lt;r;++n)o.push(i[l][n]);i=null;var j=Date;j.now||(j={now:function(){return(new Date).getTime()}});var q=0,m;f()};window.PR={combinePrefixPatterns:O,createSimpleLexer:B,registerLangHandler:u,sourceDecorator:x,PR_ATTRIB_NAME:&quot;atn&quot;,PR_ATTRIB_VALUE:&quot;atv&quot;,PR_COMMENT:C,PR_DECLARATION:&quot;dec&quot;,PR_KEYWORD:R,PR_LITERAL:J,PR_NOCODE:V,PR_PLAIN:z,PR_PUNCTUATION:E,PR_SOURCE:P,PR_STRING:A,
+PR_TAG:&quot;tag&quot;,PR_TYPE:S}})()
+		</div>
+
+		<h1>@Model.Title</h1>
+		<p>This browser automation log was captured on <b>@Model.CaptureDate</b> and ran for a duration of <b>@Model.TotalDuration</b>, making a total of <b>@Model.RequestsCount</b> request(s).</p>
+		
+		<h2>Details</h2>
+		@for(var i=0; i<Model.Logs.Count; i++) {
+			var entry = Model.Logs[i];
+			<!-- LOG ENTRY #@i : @entry -->
+			if(!lastItemIsLogMessage && entry is LogMessage) {
+				lastItemIsLogMessage = true;
+		<div class="messages">
+				@for(; i<Model.Logs.Count && Model.Logs[i] is LogMessage; i++) {
+					var log = Model.Logs[i] as LogMessage;
+			<div class="logmessage message-@log.Type.ToString().ToLower()">
+				<span class="servertime">@log.ServerTime.ToString("dd-MMM-yyyy h:mm.fff tt")</span>
+				<span class="message">@log.Message</span>
+			</div>
+				}
+		</div>
+				if(i >= Model.Logs.Count) { break; }
+			}
+			entry = Model.Logs[i];
+			if(entry is HttpRequestLog) {
+				lastItemIsLogMessage = false;
+				var log = entry as HttpRequestLog;
+		<div class="requestlog" id="log-@i">
+			<div class="timestamp"><span class="label">Logged at:</span> <span class="servertime">@log.ServerTime.ToString("dd-MMM-yyyy h:mm.fff tt")</span></div>
+			
+			<h3 class="requestheading"><span class="method @log.Method.ToLower()">@log.Method</span> Request to <a href="@log.Url">@log.Url</a></h3>
+			@if(log.QueryStringData != null && log.QueryStringData.Count > 0) {
+			<div class="keyvaluepairs querydata">
+				<h4>Querystring Data (Extracted from URL)</h4>
+				@if(log.QueryStringData != null && log.QueryStringData.Count > 0) {
+				<table>
+					<tbody>
+						@foreach(string key in log.QueryStringData.AllKeys) {
+							foreach(string value in log.QueryStringData.GetValues(key)) {
+						<tr>
+							<th>@key</th>
+							<td>@(log.QueryStringData[key] ?? "<span class=\"null\">null</span></text>")</td>
+						</tr>
+							}
+						}
+					</tbody>
+				</table>
+				} else {
+				<p class="none">None.</p>
+				}
+			</div>
+			}
+			@if(log.Method == "POST") {
+			<div class="keyvaluepairs postdata">
+				<h4>Posted Data</h4>
+				@if(log.PostData != null && log.PostData.Count > 0) {
+				<table>
+					<tbody>
+						@foreach(string key in log.PostData.AllKeys) {
+							foreach(string value in log.PostData.GetValues(key)) {
+						<tr>
+							<th>@key</th>
+							<td>@(log.PostData[key] ?? "<span class=\"null\">null</span></text>")</td>
+						</tr>
+							}
+						}
+					</tbody>
+				</table>
+				} else {
+				<p class="none">None.</p>
+				}
+			</div>
+			}
+			<div class="keyvaluepairs requestheaders">
+				<h4>Request Headers</h4>
+				@if(log.RequestHeaders != null && log.RequestHeaders.Count > 0) {
+				<table>
+					<tbody>
+						@foreach(string key in log.RequestHeaders.AllKeys) {
+							foreach(string value in log.RequestHeaders.GetValues(key)) {
+						<tr>
+							<th>@key</th>
+							<td>@(log.RequestHeaders[key] ?? "<span class=\"null\">null</span></text>")</td>
+						</tr>
+							}
+						}
+					</tbody>
+				</table>
+				} else {
+				<p class="none">None.</p>
+				}
+			</div>
+
+			<h3 class="responseheading"><span class="statuscode">@log.ResponseCode</span> Response from Server</h3>
+			<div class="keyvaluepairs responseheaders">
+				<h4>Response Headers</h4>
+				@if(log.ResponseHeaders != null && log.ResponseHeaders.Count > 0) {
+				<table>
+					<tbody>
+						@foreach(string key in log.ResponseHeaders.AllKeys) {
+							foreach(string value in log.ResponseHeaders.GetValues(key)) {
+						<tr>
+							<th>@key</th>
+							<td>@(log.ResponseHeaders[key] ?? "<span class=\"null\">null</span></text>")</td>
+						</tr>
+							}
+						}
+					</tbody>
+				</table>
+				} else {
+				<p class="none">None.</p>
+				}
+			</div>
+
+			<p class="options">
+				View: <span class="option"><a href="javascript:popupContent('Response Text', document.getElementById('text-@(i)').value);">Unparsed Response</a> (<a href="javascript:popupContent('Response Text', document.getElementById('text-@(i)').value, true);">Code View</a>)</span>
+				| <span class="option"><a href="javascript:popupContent('Response Text', document.getElementById('html-@(i)').value);">Parsed HTML</a> (<a href="javascript:popupContent('Response Text', document.getElementById('html-@(i)').value, true);">Code View</a>)</span>
+			</p>
+
+			<input type="hidden" id="text-@i" value="@HttpUtility.HtmlEncode(log.Text ?? "")" />
+			<input type="hidden" id="html-@i" value="@HttpUtility.HtmlEncode(log.ParsedHtml ?? "")" />
+		</div>
+			}
+		}
+	</body>
+</html>

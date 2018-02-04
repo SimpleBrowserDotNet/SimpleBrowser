@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+#if NET40
 using RazorHosting;
+#endif
 using SimpleBrowser.Properties;
 
 namespace SimpleBrowser
@@ -19,15 +21,26 @@ namespace SimpleBrowser
 
 		public string Render(List<LogItem> logs, string title)
 		{
-			var engine = new RazorEngine<RazorTemplateBase>();
-			var html = engine.RenderTemplate(Resources.HtmlLogTemplate, new[] { typeof(Browser).Assembly.Location, "System.Web.dll" }, new RazorModel {
-				CaptureDate = DateTime.UtcNow,
-				TotalDuration = logs.Count == 0 ? TimeSpan.MinValue : logs.Last().ServerTime - logs.First().ServerTime,
-				Title = title,
-				Logs = logs,
-				RequestsCount = logs.Count(l => l is HttpRequestLog)
-			});
+            var model = new RazorModel
+            {
+                CaptureDate = DateTime.UtcNow,
+                TotalDuration = logs.Count == 0 ? TimeSpan.MinValue : logs.Last().ServerTime - logs.First().ServerTime,
+                Title = title,
+                Logs = logs,
+                RequestsCount = logs.Count(l => l is HttpRequestLog)
+            };
+
+#if NET40
+            var engine = new RazorEngine<RazorTemplateBase>();
+			var html = engine.RenderTemplate(Resources.HtmlLogTemplate, new[] { typeof(Browser).Assembly.Location, "System.Web.dll" }, model);
 			return html ?? engine.ErrorMessage;
-		}
-	}
+#else
+            var engine = new RazorLight.RazorLightEngineBuilder()
+                .UseMemoryCachingProvider()
+                .Build();
+
+            return engine.CompileRenderAsync("HtmlLog", Resources.HtmlLogTemplateNetStandard, model).Result;
+#endif
+        }
+    }
 }

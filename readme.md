@@ -8,7 +8,8 @@ other values before submission or navigation.
 
 Requirements
 ------------
-* .Net Framework 4.0
+* .NET Framework 4.0 or higher
+* .NET Standard 2.0 compatible runtime
 
 Features
 --------

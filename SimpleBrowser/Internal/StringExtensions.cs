@@ -90,8 +90,15 @@ namespace SimpleBrowser
 		failed:
 			if(char.IsDigit(s[0]) || s[0] == '-')
 				return Color.FromArgb(s.ToInt());
-			return Color.FromKnownColor(s.ToEnum<KnownColor>());
-		}
+
+        // In .NET 4 the Color.FromName method also exists, we could use it.
+        // The string parameter matches with the same names as in the KnownColor enumeration (see docs).
+#if NET40
+            return Color.FromKnownColor(s.ToEnum<KnownColor>());
+#else
+            return Color.FromName(s);
+#endif
+        }
 
 		public static Color ToColorFromHex(this string s)
 		{

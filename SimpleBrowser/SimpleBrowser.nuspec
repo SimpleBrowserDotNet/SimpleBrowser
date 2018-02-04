@@ -6,6 +6,10 @@
     <owners>Nathan Ridley</owners>
     <projectUrl>https://github.com/axefrog/SimpleBrowser</projectUrl>
     <dependencies>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+        <dependency id="RazorLight" version="2.0.0-beta1" />
+      </group>
     </dependencies>
     <id>SimpleBrowser</id>
     <title>SimpleBrowser</title>
@@ -17,5 +21,6 @@
   <files>
     <file src="SimpleBrowser\bin\Release\net40\SimpleBrowser.dll" target="lib\net40\SimpleBrowser.dll" />
     <file src="SimpleBrowser\bin\Release\net40\RazorHosting.dll" target="lib\net40\RazorHosting.dll" />
+    <file src="SimpleBrowser\bin\Release\netstandard2.0\SimpleBrowser.dll" target="lib\netstandard2.0\SimpleBrowser.dll" />
   </files>
 </package>
