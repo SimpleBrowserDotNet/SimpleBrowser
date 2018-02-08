@@ -22,8 +22,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public InputElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets a value indicating whether the element is readonly.
@@ -33,10 +32,7 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool ReadOnly
         {
-            get
-            {
-                return this.GetAttribute("readonly") != null;
-            }
+            get => GetAttribute("readonly") != null;
         }
 
         /// <summary>
@@ -46,7 +42,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var attr = this.GetAttribute("value");
+                var attr = GetAttribute("value");
                 if (attr == null)
                 {
                     return string.Empty; // no value attribute means empty string
@@ -58,7 +54,7 @@ namespace SimpleBrowser.Elements
             set
             {
                 // Don't set the value of a read only or disabled input
-                if (this.ReadOnly || this.Disabled)
+                if (ReadOnly || Disabled)
                 {
                     return;
                 }
@@ -101,10 +97,7 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string InputType
         {
-            get
-            {
-                return this.GetAttributeValue("type");
-            }
+            get => GetAttributeValue("type");
         }
 
         /// <summary>
@@ -114,15 +107,15 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
+            if (!string.IsNullOrEmpty(Name) && !Disabled)
             {
-                if (this.Name.Equals("_charset_") && string.IsNullOrEmpty(this.Value) && this.InputType.Equals("hidden", StringComparison.OrdinalIgnoreCase))
+                if (Name.Equals("_charset_") && string.IsNullOrEmpty(Value) && InputType.Equals("hidden", StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new UserVariableEntry() { Name = this.Name, Value = "iso-8859-1" };
+                    yield return new UserVariableEntry() { Name = Name, Value = "iso-8859-1" };
                 }
                 else
                 {
-                    yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+                    yield return new UserVariableEntry() { Name = Name, Value = Value };
                 }
             }
 

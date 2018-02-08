@@ -27,8 +27,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public SelectElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets or sets the value of the select element value attribute.
@@ -37,7 +36,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var optionElement = this.Options.Where(d => d.Selected).FirstOrDefault() ?? this.Options.FirstOrDefault();
+                var optionElement = Options.Where(d => d.Selected).FirstOrDefault() ?? Options.FirstOrDefault();
                 if (optionElement == null)
                 {
                     return null;
@@ -49,7 +48,7 @@ namespace SimpleBrowser.Elements
             set
             {
                 // Don't set the value of a disabled select
-                if (this.Disabled)
+                if (Disabled)
                 {
                     return;
                 }
@@ -92,11 +91,11 @@ namespace SimpleBrowser.Elements
                 {
                     var optionElements = Element.Descendants()
                         .Where(e => e.Name.LocalName.ToLower() == "option")
-                        .Select(e => this.OwningBrowser.CreateHtmlElement<OptionElement>(e));
+                        .Select(e => OwningBrowser.CreateHtmlElement<OptionElement>(e));
                     this.options = optionElements;
                 }
 
-                return this.options;
+                return options;
             }
         }
 
@@ -107,13 +106,13 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/></returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
+            if (!string.IsNullOrEmpty(Name) && !Disabled)
             {
-                foreach (var item in this.Options)
+                foreach (var item in Options)
                 {
                     if (item.Selected)
                     {
-                        yield return new UserVariableEntry() { Name = this.Name, Value = item.OptionValue };
+                        yield return new UserVariableEntry() { Name = Name, Value = item.OptionValue };
                     }
                 }
             }
@@ -128,13 +127,13 @@ namespace SimpleBrowser.Elements
         /// <returns>True if the option is selected, otherwise false.</returns>
         internal bool IsSelected(OptionElement optionElement)
         {
-            if (this.MultiValued || this.Options.Any(o => o.GetAttributeValue("selected") != null))
+            if (MultiValued || Options.Any(o => o.GetAttributeValue("selected") != null))
             {
                 return optionElement.GetAttributeValue("selected") != null;
             }
             else
             {
-                return optionElement.Element == this.Options.First().Element;
+                return optionElement.Element == Options.First().Element;
             }
         }
 
@@ -152,9 +151,9 @@ namespace SimpleBrowser.Elements
             else
             {
                 optionElement.Element.SetAttributeValue(XName.Get("selected"), "selected");
-                if (!this.MultiValued)
+                if (!MultiValued)
                 {
-                    foreach (var option in this.Options)
+                    foreach (var option in Options)
                     {
                         if (option.Element != optionElement.Element)
                         {

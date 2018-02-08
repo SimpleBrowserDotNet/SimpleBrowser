@@ -22,8 +22,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public FormElementElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets the form associated with this form element. Null, if no associated form could be found.
@@ -33,27 +32,27 @@ namespace SimpleBrowser.Elements
             get
             {
                 // Look for the form attribute first.
-                if (this.Element.HasAttributeCI("form"))
+                if (Element.HasAttributeCI("form"))
                 {
-                    XElement formAttribute = this.Element.Document.Descendants("form").Where(e => e.HasAttributeCI("id") && e.GetAttributeCI("id").Equals(this.Element.GetAttributeCI("form"))).FirstOrDefault();
+                    XElement formAttribute = Element.Document.Descendants("form").Where(e => e.HasAttributeCI("id") && e.GetAttributeCI("id").Equals(Element.GetAttributeCI("form"))).FirstOrDefault();
                     if (formAttribute != null)
                     {
-                        return this.OwningBrowser.CreateHtmlElement(formAttribute);
+                        return OwningBrowser.CreateHtmlElement(formAttribute);
                     }
                 }
 
                 // Look for a parent form element.
-                XElement formElement = this.Element.Ancestors("form").FirstOrDefault();
+                XElement formElement = Element.Ancestors("form").FirstOrDefault();
                 if (formElement != null)
                 {
-                    return this.OwningBrowser.CreateHtmlElement(formElement);
+                    return OwningBrowser.CreateHtmlElement(formElement);
                 }
 
                 // Look for a form preceeding this element.
-                XElement previousElement = this.Element.ElementsBeforeSelf("form").LastOrDefault();
+                XElement previousElement = Element.ElementsBeforeSelf("form").LastOrDefault();
                 if (previousElement != null)
                 {
-                    return this.OwningBrowser.CreateHtmlElement(previousElement);
+                    return OwningBrowser.CreateHtmlElement(previousElement);
                 }
 
                 /// Null, if not found. In which case, this input never submits values with the form.
@@ -66,16 +65,7 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string Name
         {
-            get
-            {
-                var attr = GetAttribute("name");
-                if (attr == null)
-                {
-                    return null;
-                }
-
-                return attr.Value;
-            }
+            get => GetAttribute("name")?.Value;
         }
 
         /// <summary>
@@ -86,10 +76,7 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool Disabled
         {
-            get
-            {
-                return this.GetAttribute("disabled") != null;
-            }
+            get => GetAttribute("disabled") != null;
         }
 
         /// <summary>
@@ -97,15 +84,8 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public virtual string Value
         {
-            get
-            {
-                return this.Element.Value;
-            }
-
-            set
-            {
-                this.Element.Value = value;
-            }
+            get => Element.Value;
+            set => Element.Value = value;
         }
 
         /// <summary>

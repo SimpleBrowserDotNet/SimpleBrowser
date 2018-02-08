@@ -21,8 +21,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public RadioInputElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets or sets the selected (checked) state of the radio
@@ -31,22 +30,22 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return this.GetAttribute("checked") != null;
+                return GetAttribute("checked") != null;
             }
 
             set
             {
-                if (this.Disabled)
+                if (Disabled)
                 {
                     return;
                 }
 
                 if (value)
                 {
-                    this.Element.SetAttributeValue("checked", "checked");
-                    foreach (var other in this.Siblings)
+                    Element.SetAttributeValue("checked", "checked");
+                    foreach (var other in Siblings)
                     {
-                        if (other.Element != this.Element)
+                        if (other.Element != Element)
                         {
                             other.Selected = false;
                         }
@@ -54,7 +53,7 @@ namespace SimpleBrowser.Elements
                 }
                 else
                 {
-                    this.Element.RemoveAttributeCI("checked");
+                    Element.RemoveAttributeCI("checked");
                 }
             }
         }
@@ -66,9 +65,9 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var others = this.Element.Ancestors(XName.Get("form")).Descendants(XName.Get("input"))
-                    .Where(e => e.GetAttributeCI("type") == "radio" && e.GetAttributeCI("name") == this.Name)
-                    .Select(e => this.OwningBrowser.CreateHtmlElement<RadioInputElement>(e));
+                var others = Element.Ancestors(XName.Get("form")).Descendants(XName.Get("input"))
+                    .Where(e => e.GetAttributeCI("type") == "radio" && e.GetAttributeCI("name") == Name)
+                    .Select(e => OwningBrowser.CreateHtmlElement<RadioInputElement>(e));
                 return others;
             }
         }
@@ -79,15 +78,15 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click()
         {
-            if (this.Disabled)
+            if (Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
             base.Click();
-            if (!this.Selected)
+            if (!Selected)
             {
-                this.Selected = true;
+                Selected = true;
             }
 
             return ClickResult.SucceededNoNavigation;

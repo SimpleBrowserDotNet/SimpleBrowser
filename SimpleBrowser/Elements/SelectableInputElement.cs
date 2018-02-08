@@ -21,8 +21,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public SelectableInputElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets or sets a value indicating whether the selectable input element is selected.
@@ -36,9 +35,9 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (this.Selected && !string.IsNullOrEmpty(this.Name) && !this.Disabled)
+            if (Selected && !string.IsNullOrEmpty(Name) && !Disabled)
             {
-                yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+                yield return new UserVariableEntry() { Name = Name, Value = Value };
             }
 
             yield break;

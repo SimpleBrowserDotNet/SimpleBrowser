@@ -8,7 +8,6 @@ namespace SimpleBrowser.Elements
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Text;
     using System.Xml.Linq;
@@ -32,8 +31,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The XElement from the document corresponding to this element.</param>
         public FormElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets an enumeration of child form elements
@@ -48,11 +46,11 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var formElements = this.OwningBrowser.XDocument.Descendants()
+                var formElements = OwningBrowser.XDocument.Descendants()
                     .Where(e => formInputElementNames.Contains(e.Name.LocalName.ToLower()))
-                    .Select(e => this.OwningBrowser.CreateHtmlElement<FormElementElement>(e));
+                    .Select(e => OwningBrowser.CreateHtmlElement<FormElementElement>(e));
 
-                return formElements.Where(e => e.OwningForm != null && e.OwningForm.XElement == this.XElement);
+                return formElements.Where(e => e.OwningForm != null && e.OwningForm.XElement == XElement);
             }
         }
 
@@ -64,7 +62,7 @@ namespace SimpleBrowser.Elements
             get
             {
                 var actionAttr = GetAttribute(Element, "action");
-                return actionAttr == null ? this.OwningBrowser.Url.ToString() : actionAttr.Value;
+                return actionAttr == null ? OwningBrowser.Url.ToString() : actionAttr.Value;
             }
         }
 
@@ -87,7 +85,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                string val = this.GetAttributeValue("enctype");
+                string val = GetAttributeValue("enctype");
                 if (string.IsNullOrWhiteSpace(val))
                 {
                     val = FormEncoding.FormUrlencode;
@@ -105,7 +103,7 @@ namespace SimpleBrowser.Elements
         /// <returns>True, if the form submitted successfully, false otherwise.</returns>
         public override bool SubmitForm(string url = null, HtmlElement clickedElement = null)
         {
-            return this.Submit(url, clickedElement);
+            return Submit(url, clickedElement);
         }
 
         /// <summary>
@@ -116,11 +114,14 @@ namespace SimpleBrowser.Elements
         /// <returns>True, if the form submitted successfully, false otherwise.</returns>
         private bool Submit(string url = null, HtmlElement clickedElement = null)
         {
-            NavigationArgs navigation = new NavigationArgs();
-            navigation.Uri = url ?? this.Action;
-            navigation.Method = this.Method;
-            navigation.ContentType = FormEncoding.FormUrlencode;
-            foreach (var entry in this.Elements.SelectMany(e =>
+            var navigation = new NavigationArgs
+            {
+                Uri = url ?? Action,
+                Method = Method,
+                ContentType = FormEncoding.FormUrlencode
+            };
+
+            foreach (var entry in Elements.SelectMany(e =>
                     {
                         bool isClicked = false;
                         if (clickedElement != null && clickedElement.Element == e.Element)
@@ -134,13 +135,13 @@ namespace SimpleBrowser.Elements
                 navigation.UserVariables.Add(entry.Name, entry.Value);
             }
 
-            if (this.EncType == FormEncoding.MultipartForm && this.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+            if (EncType == FormEncoding.MultipartForm && Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
             {
                 // create postdata according to multipart specs
                 Guid token = Guid.NewGuid();
                 navigation.UserVariables = null;
                 StringBuilder post = new StringBuilder();
-                foreach (var element in this.Elements)
+                foreach (var element in Elements)
                 {
                     bool isClickedElement = false;
                     if (clickedElement != null)
@@ -175,7 +176,7 @@ namespace SimpleBrowser.Elements
                 navigation.ContentType = FormEncoding.MultipartForm + "; boundary=" + token;
             }
 
-            return this.RequestNavigation(navigation);
+            return RequestNavigation(navigation);
         }
 
         /// <summary>

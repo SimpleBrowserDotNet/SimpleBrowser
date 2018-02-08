@@ -21,8 +21,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public CheckboxInputElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets or sets the selected (checked) state of the checkbox
@@ -31,23 +30,23 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return this.GetAttribute("checked") != null;
+                return GetAttribute("checked") != null;
             }
 
             set
             {
-                if (this.Disabled)
+                if (Disabled)
                 {
                     return;
                 }
 
                 if (value)
                 {
-                    this.Element.SetAttributeValue("checked", "checked");
+                    Element.SetAttributeValue("checked", "checked");
                 }
                 else
                 {
-                    this.Element.RemoveAttributeCI("checked");
+                    Element.RemoveAttributeCI("checked");
                 }
             }
         }
@@ -58,13 +57,13 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click()
         {
-            if (this.Disabled)
+            if (Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
             base.Click();
-            this.Selected = !this.Selected;
+            Selected = !Selected;
             return ClickResult.SucceededNoNavigation;
         }
 
@@ -75,11 +74,11 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (this.XElement.HasAttributeCI("checked") && !string.IsNullOrEmpty(this.Name) && !this.Disabled)
+            if (XElement.HasAttributeCI("checked") && !string.IsNullOrEmpty(Name) && !Disabled)
             {
                 yield return new UserVariableEntry()
                 {
-                    Name = this.Name, Value = string.IsNullOrEmpty(this.Value) ? "on" : this.Value
+                    Name = Name, Value = string.IsNullOrEmpty(Value) ? "on" : Value
                 };
             }
 

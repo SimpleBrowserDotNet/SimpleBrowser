@@ -31,8 +31,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public ImageInputElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets the form values to submit for this input
@@ -41,20 +40,20 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (isClickedElement && !this.Disabled)
+            if (isClickedElement && !Disabled)
             {
-                if (string.IsNullOrEmpty(this.Name))
+                if (string.IsNullOrEmpty(Name))
                 {
-                    yield return new UserVariableEntry() { Name = "x", Value = this.x.ToString() };
-                    yield return new UserVariableEntry() { Name = "y", Value = this.y.ToString() };
+                    yield return new UserVariableEntry() { Name = "x", Value = x.ToString() };
+                    yield return new UserVariableEntry() { Name = "y", Value = y.ToString() };
                 }
                 else
                 {
-                    yield return new UserVariableEntry() { Name = string.Format("{0}.x", this.Name), Value = this.x.ToString() };
-                    yield return new UserVariableEntry() { Name = string.Format("{0}.y", this.Name), Value = this.y.ToString() };
-                    if (!string.IsNullOrEmpty(this.Value))
+                    yield return new UserVariableEntry() { Name = string.Format("{0}.x", Name), Value = x.ToString() };
+                    yield return new UserVariableEntry() { Name = string.Format("{0}.y", Name), Value = y.ToString() };
+                    if (!string.IsNullOrEmpty(Value))
                     {
-                        yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+                        yield return new UserVariableEntry() { Name = Name, Value = Value };
                     }
                 }
             }
@@ -70,7 +69,7 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click(uint x, uint y)
         {
-            if (this.Disabled)
+            if (Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
@@ -78,7 +77,7 @@ namespace SimpleBrowser.Elements
             this.x = x;
             this.y = y;
 
-            if (this.SubmitForm(clickedElement: this))
+            if (SubmitForm(clickedElement: this))
             {
                 return ClickResult.SucceededNavigationComplete;
             }
