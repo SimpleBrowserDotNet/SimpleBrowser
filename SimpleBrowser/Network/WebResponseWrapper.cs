@@ -1,85 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
 
 namespace SimpleBrowser.Network
 {
-	class WebResponseWrapper: IHttpWebResponse
-	{
-		public WebResponseWrapper(HttpWebResponse resp)
-		{
-			_wr = resp;
-		}
-		HttpWebResponse _wr;
+    internal class WebResponseWrapper : IHttpWebResponse
+    {
+        HttpWebResponse _wr;
 
-		#region IHttpWebResponse Members
+        public WebResponseWrapper(HttpWebResponse resp)
+        {
+            _wr = resp;
+        }
 
-		public Stream GetResponseStream()
-		{
-			return _wr.GetResponseStream();
-		}
+        #region IHttpWebResponse Members
 
-		public string CharacterSet
-		{
-			get
-			{
-				return _wr.CharacterSet;
-			}
-			set
-			{
-				throw new NotImplementedException();
-			}
-		}
+        public Stream GetResponseStream()
+            => _wr.GetResponseStream();
 
-		public string ContentType
-		{
-			get
-			{
-				return _wr.ContentType;
-			}
-			set
-			{
-				_wr.ContentType = value;
-			}
-		}
+        public string CharacterSet
+        {
+            get => _wr.CharacterSet;
+            set => throw new NotImplementedException();
+        }
 
-		public System.Net.WebHeaderCollection Headers
-		{
-			get
-			{
-				return _wr.Headers;
-			}
-			set
-			{
-				throw new NotImplementedException();
-			}
-		}
+        public string ContentType
+        {
+            get => _wr.ContentType;
+            set => _wr.ContentType = value;
+        }
 
-		public HttpStatusCode StatusCode
-		{
-			get
-			{
-				return _wr.StatusCode;
-			}
-			set
-			{
-				throw new NotImplementedException();
-			}
-		}
+        public WebHeaderCollection Headers
+        {
+            get => _wr.Headers;
+            set => throw new NotImplementedException();
+        }
 
-		#endregion
+        public HttpStatusCode StatusCode
+        {
+            get => _wr.StatusCode;
+            set => throw new NotImplementedException();
+        }
 
+        #endregion
 
-		#region IDisposable Members
+        #region IDisposable Members
 
-		public void Dispose()
-		{
-			((IDisposable)_wr).Dispose();
-		}
+        public void Dispose()
+        {
+            (_wr as IDisposable)?.Dispose();
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

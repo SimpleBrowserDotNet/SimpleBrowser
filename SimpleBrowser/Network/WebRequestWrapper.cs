@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net;
+using System.Text;
 
 namespace SimpleBrowser.Network
 {
-    class WebRequestWrapper : IHttpWebRequest
+    internal class WebRequestWrapper : IHttpWebRequest
     {
         private static int[] _allowedRedirectStatusCodes = { 300, 301, 302, 303, 307, 308 };
+        HttpWebRequest _wr = null;
 
         public WebRequestWrapper(Uri url)
         {
             _wr = (HttpWebRequest)HttpWebRequest.Create(url);
         }
-        HttpWebRequest _wr = null;
 
         #region IHttpWebRequest Members
 

@@ -12,10 +12,7 @@ namespace SimpleBrowser
 	{
 		public static bool MatchesAny(this string source, params string[] comparisons)
 		{
-			foreach(string s in comparisons)
-				if(s == source)
-					return true;
-			return false;
+            return comparisons.Any(s => s == source);
 		}
 
 		public static bool CaseInsensitiveCompare(this string str1, string str2)

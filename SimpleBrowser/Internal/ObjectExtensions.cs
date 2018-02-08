@@ -4,6 +4,12 @@ using System.Reflection;
 
 namespace SimpleBrowser
 {
+    // TODO Review 
+    //   1) consider making thing class internal, as it resides in the Internal directory
+    //      --> prefered, though a breaking change
+    //   2) or if keeping public
+    //      --> consider adding XML comments (documentation) to all public members
+
 	public static class ObjectExtensions
 	{
 		public static bool EqualsAny(this object source, params object[] comparisons)

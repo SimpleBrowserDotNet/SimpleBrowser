@@ -3,23 +3,21 @@
 	using System.Net;
 	using System.Text;
 
-	/// <summary>
-	/// A class to parse the set-cookies HTTP header and return a CookieCollection.
-	/// </summary>
-	class SetCookieHeaderParser
+    /// <summary>
+    /// A class to parse the set-cookies HTTP header and return a CookieCollection.
+    /// </summary>
+    internal class SetCookieHeaderParser
 	{
 		/// <summary>
 		/// Parses the set-cookie HTTP header.
 		/// </summary>
 		/// <param name="defaultHost">The host sending the header.</param>
 		/// <param name="header">The-set cookie header received from the host.</param>
-		/// <returns></returns>
 		public static CookieCollection GetAllCookiesFromHeader(string defaultHost, string header)
 		{
-            header = header.Replace("\r", "");
-            header = header.Replace("\n", "");
+            header = header.Replace("\r", "").Replace("\n", "");
             int index = 0;
-            CookieCollection cc = new CookieCollection();
+            var cc = new CookieCollection();
             while (index < header.Length)
 		    {
 		        index = ParseCookie(header, index, cc, defaultHost);
@@ -189,7 +187,7 @@
         /// <returns>The encoded cookie name.</returns>
         private static string EncodeCookieName(string name)
         {
-            StringBuilder validName = new StringBuilder(name);
+            var validName = new StringBuilder(name);
             validName.Replace("=", "%3D");
             validName.Replace(";", "%3B");
             validName.Replace(",", "%2C");

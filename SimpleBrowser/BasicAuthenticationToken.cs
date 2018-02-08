@@ -80,7 +80,7 @@
 		/// </remarks>
 		public void UpdateExpiration()
 		{
-			this.Expiration = DateTime.Now + new TimeSpan(0, (int)BasicAuthenticationToken.Timeout, 0);
+			Expiration = DateTime.Now + new TimeSpan(0, (int)BasicAuthenticationToken.Timeout, 0);
 		}
 	}
 }

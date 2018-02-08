@@ -9,7 +9,8 @@ namespace SimpleBrowser
 	internal static class StringUtil
 	{
 		private static readonly Random Randomizer = new Random(Convert.ToInt32(DateTime.UtcNow.Ticks % int.MaxValue));
-		public static string GenerateRandomString(int chars)
+
+        public static string GenerateRandomString(int chars)
 		{
 			string s = "";
 			for (int i = 0; i < chars; i++)
@@ -52,7 +53,7 @@ namespace SimpleBrowser
 		{
 			if (values == null)
 				return string.Empty;
-			List<string> list = new List<string>();
+			var list = new List<string>();
 			foreach (string key in values.Keys)
 			{
 				foreach (string value in values.GetValues(key))
@@ -63,10 +64,11 @@ namespace SimpleBrowser
 
 		public static string MakeQueryString(params KeyValuePair<string, string>[] values)
 		{
-			Dictionary<string, string> v = new Dictionary<string, string>();
+			var v = new Dictionary<string, string>();
 			foreach (KeyValuePair<string, string> kvp in values)
 				v[kvp.Key] = kvp.Value;
-			return MakeQueryString(v);
+
+            return MakeQueryString(v);
 		}
 
 		public static NameValueCollection MakeCollectionFromQueryString(string queryString)
@@ -74,7 +76,7 @@ namespace SimpleBrowser
 			if (queryString == null)
 				return new NameValueCollection();
 
-			NameValueCollection values = new NameValueCollection();
+			var values = new NameValueCollection();
 			foreach (string kvp in queryString.Split(new[] { "&" }, StringSplitOptions.RemoveEmptyEntries))
 			{
 				string[] val = kvp.Split('=');
