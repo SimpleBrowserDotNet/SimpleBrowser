@@ -35,6 +35,10 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
   
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+  
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
     <Reference Include="RazorHosting">
       <HintPath>..\Dependencies\RazorHosting.dll</HintPath>
@@ -47,7 +51,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="RazorLight" Version="2.0.0-beta1" />
   </ItemGroup>
 
