@@ -24,8 +24,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public FileUploadElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Returns the values to send with a form submission for this form element
@@ -38,13 +37,13 @@ namespace SimpleBrowser.Elements
             string extension = string.Empty;
             string contentType = string.Empty;
 
-            if (File.Exists(this.Value))
+            if (File.Exists(Value))
             {
                 // Todo: create a mime type for extensions
-                filename = this.Value;
+                filename = Value;
                 byte[] allBytes = allBytes = File.ReadAllBytes(filename);
 
-                FileInfo fileInfo = new FileInfo(filename);
+                var fileInfo = new FileInfo(filename);
                 extension = fileInfo.Extension;
                 filename = fileInfo.Name;
 

@@ -7,9 +7,9 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Nathan Ridley, Teun Duynstee, Kevin Yochum, Joe Feser</Authors>
-    <TargetFrameworks>net40</TargetFrameworks>
+    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <AssemblyName>SimpleBrowser.UnitTests</AssemblyName>
     <OutputType>Library</OutputType>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -54,16 +54,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SimpleBrowser\SimpleBrowser.csproj" />
-    <PackageReference Include="NUnit" Version="3.9.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net40' ">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="Moq" Version="4.7.145" />    
+    <PackageReference Include="NUnit" Version="3.9.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />
-    <PackageReference Include="Moq" Version="4.2.1510.2205" />
   </ItemGroup>
 
   <ItemGroup>

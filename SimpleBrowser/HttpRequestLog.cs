@@ -27,8 +27,10 @@ namespace SimpleBrowser
 		public WebHeaderCollection ResponseHeaders { get; set; }
 		public int ResponseCode { get; set; }
 		public Uri Url { get; set; }
+        public Uri Address { get; set; }
+        public string Host { get; set; }
 
-		public XDocument ToXml()
+        public XDocument ToXml()
 		{
 			var doc = new XDocument(
 				new XElement("HttpRequestLog",

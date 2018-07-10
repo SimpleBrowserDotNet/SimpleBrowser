@@ -21,8 +21,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public TextAreaElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets a value indicating whether the element is readonly.
@@ -32,10 +31,7 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool ReadOnly
         {
-            get
-            {
-                return this.GetAttribute("readonly") != null;
-            }
+            get => GetAttribute("readonly") != null;
         }
 
         /// <summary>
@@ -51,7 +47,7 @@ namespace SimpleBrowser.Elements
             set
             {
                 // Don't set the value of a read only or disabled text area
-                if (this.ReadOnly || this.Disabled)
+                if (ReadOnly || Disabled)
                 {
                     return;
                 }
@@ -60,19 +56,12 @@ namespace SimpleBrowser.Elements
                 if (Element.HasAttributeCI("maxlength"))
                 {
                     string maxLengthStr = Element.GetAttributeCI("maxlength");
-                    try
+
+                    if (int.TryParse(maxLengthStr, out var parseMaxLength) && parseMaxLength >= 0)
                     {
-                        int length = Convert.ToInt32(maxLengthStr);
-                        if (length >= 0)
-                        {
-                            maxLength = length;
-                        }
-                        //// Do nothing (implicitly) if the value of maxlength is negative, per the HTML5 spec.
+                        maxLength = parseMaxLength;
                     }
-                    catch
-                    {
-                        //// Do nothing if the value of the maxlength is not a valid integer value, per the HTML5 spec.
-                    }
+                    // Do nothing (implicitly) if the value of maxlength is negative, per the HTML5 spec.
                 }
 
                 Element.RemoveNodes();
@@ -97,9 +86,9 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
+            if (!string.IsNullOrEmpty(Name) && !Disabled)
             {
-                yield return new UserVariableEntry() { Name = this.Name, Value = this.Value };
+                yield return new UserVariableEntry() { Name = Name, Value = Value };
             }
 
             yield break;

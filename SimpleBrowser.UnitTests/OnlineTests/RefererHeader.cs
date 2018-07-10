@@ -67,6 +67,9 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         /// Tests the None When Downgrade Referrer Policy State when transitioning from secure to unsecure.
         /// </summary>
         [Test]
+#if NETCOREAPP2_0
+        [Ignore("External website browsing has problems. To be investigated to use different provider.")]
+#endif
         public void When_Testing_Referer_NoneWhenDowngrade_Secure_Transition()
         {
             string startingUrl = "https://www.codeproject.com";
@@ -116,6 +119,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         /// Tests the Unsafe URL Referrer Policy State with a secure transition.
         /// </summary>
         [Test]
+        [Ignore("Test fails due to changed external website")]
         public void When_Testing_Referer_Unsafe_Url_Secure_Transition()
         {
             string startingUrl = "https://www.codeproject.com/";

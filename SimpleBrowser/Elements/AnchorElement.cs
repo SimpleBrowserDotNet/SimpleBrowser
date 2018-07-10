@@ -25,18 +25,14 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public AnchorElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets the value of the $href$ attribute
         /// </summary>
         public string Href
         {
-            get
-            {
-                return this.Element.GetAttributeCI("href");
-            }
+            get => Element.GetAttributeCI("href");
         }
 
         /// <summary>
@@ -44,10 +40,7 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string Target
         {
-            get
-            {
-                return this.Element.GetAttributeCI("target");
-            }
+            get => Element.GetAttributeCI("target");
         }
 
         /// <summary>
@@ -55,10 +48,7 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string Rel
         {
-            get
-            {
-                return this.Element.GetAttributeCI("rel");
-            }
+            get => Element.GetAttributeCI("rel");
         }
 
         /// <summary>
@@ -68,11 +58,11 @@ namespace SimpleBrowser.Elements
         public override ClickResult Click()
         {
             base.Click();
-            var match = postbackRecognizer.Match(this.Href);
+            var match = postbackRecognizer.Match(Href);
             if (match.Success)
             {
                 var name = match.Groups[1].Value;
-                var eventTarget = this.OwningBrowser.Select("input[name=__EVENTTARGET]");
+                var eventTarget = OwningBrowser.Select("input[name=__EVENTTARGET]");
 
                 // IIS does browser sniffing. If using the default SimpleBrowser user agent string,
                 // IIS will not render the hidden __EVENTTARGET input. If, for whatever reason,
@@ -85,8 +75,8 @@ namespace SimpleBrowser.Elements
                     elt.SetAttributeCI("id", "__EVENTTARGET");
                     elt.SetAttributeCI("value", name);
 
-                    this.XElement.AddBeforeSelf(elt);
-                    eventTarget = this.OwningBrowser.Select("input[name=__EVENTTARGET]");
+                    XElement.AddBeforeSelf(elt);
+                    eventTarget = OwningBrowser.Select("input[name=__EVENTTARGET]");
                 }
 
                 if (!eventTarget.Exists)
@@ -97,7 +87,7 @@ namespace SimpleBrowser.Elements
 
                 eventTarget.Value = name;
 
-                if (this.SubmitForm())
+                if (SubmitForm())
                 {
                     return ClickResult.SucceededNavigationComplete;
                 }
@@ -107,8 +97,8 @@ namespace SimpleBrowser.Elements
                 }
             }
 
-            string url = this.Href;
-            string target = this.Target;
+            string url = Href;
+            string target = Target;
             string queryStringValues = null;
 
             if ((OwningBrowser.KeyState & (KeyStateOption.Ctrl | KeyStateOption.Shift)) != KeyStateOption.None)
@@ -125,19 +115,19 @@ namespace SimpleBrowser.Elements
                 }
             }
 
-            NavigationArgs navArgs = new NavigationArgs()
+            var navArgs = new NavigationArgs()
             {
                 Uri = url,
                 Target = target,
                 UserVariables = StringUtil.MakeCollectionFromQueryString(queryStringValues)
             };
 
-            if (this.Rel == "noreferrer")
+            if (Rel == "noreferrer")
             {
                 navArgs.NavigationAttributes.Add("rel", "noreferrer");
             }
 
-            if (this.RequestNavigation(navArgs))
+            if (RequestNavigation(navArgs))
             {
                 return ClickResult.SucceededNavigationComplete;
             }

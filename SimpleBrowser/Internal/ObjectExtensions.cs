@@ -1,10 +1,15 @@
 ﻿using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
-using System.Web.Script.Serialization;
 
 namespace SimpleBrowser
 {
+    // TODO Review 
+    //   1) consider making thing class internal, as it resides in the Internal directory
+    //      --> prefered, though a breaking change
+    //   2) or if keeping public
+    //      --> consider adding XML comments (documentation) to all public members
+
 	public static class ObjectExtensions
 	{
 		public static bool EqualsAny(this object source, params object[] comparisons)
@@ -17,6 +22,7 @@ namespace SimpleBrowser
 			var nvc = new NameValueCollection();
 			foreach(var p in o.GetType().GetProperties(BindingFlags.GetProperty | BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance))
 				nvc.Add(p.Name, (p.GetValue(o, null) ?? "").ToString());
+
 			return nvc;
 		}
 
@@ -35,13 +41,12 @@ namespace SimpleBrowser
 
 		public static string ToJson(this object obj)
 		{
-			return new JavaScriptSerializer().Serialize(obj);
-		}
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
+        }
 
 		public static T DuckTypeAs<T>(this object o)
-		{
-			var jss = new JavaScriptSerializer();
-			return jss.Deserialize<T>(jss.Serialize(o));
-		}
-	}
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(Newtonsoft.Json.JsonConvert.SerializeObject(o));
+        }
+    }
 }

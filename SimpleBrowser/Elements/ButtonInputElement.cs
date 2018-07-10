@@ -20,8 +20,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public ButtonInputElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets the form values to submit for this input
@@ -30,7 +29,7 @@ namespace SimpleBrowser.Elements
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
         public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
         {
-            if (isClickedElement && !string.IsNullOrEmpty(this.Name))
+            if (isClickedElement && !string.IsNullOrEmpty(Name))
             {
                 return base.ValuesToSubmit(isClickedElement);
             }
@@ -44,13 +43,13 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click()
         {
-            if (this.Disabled)
+            if (Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
             base.Click();
-            if (this.SubmitForm(clickedElement: this))
+            if (SubmitForm(clickedElement: this))
             {
                 return ClickResult.SucceededNavigationComplete;
             }

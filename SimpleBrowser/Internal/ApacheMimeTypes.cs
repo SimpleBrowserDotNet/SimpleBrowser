@@ -897,7 +897,8 @@ namespace SimpleBrowser.Internal
 			{ "zirz", "application/vnd.zul" },
 			{ "zmm", "application/vnd.handheld-entertainment+xml" },
 		};
-		public static string MimeForExtension(string extension)
+
+        public static string MimeForExtension(string extension)
 		{
 			extension = extension.Trim('.').ToLower();
 			if(MimeTypes.ContainsKey(extension))

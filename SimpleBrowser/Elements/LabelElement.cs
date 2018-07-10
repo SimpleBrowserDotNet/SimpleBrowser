@@ -25,8 +25,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public LabelElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets the value of the input element associated with this label element.
@@ -37,17 +36,13 @@ namespace SimpleBrowser.Elements
             {
                 if (this.associatedElement == null)
                 {
-                    string id = this.Element.GetAttributeCI("for");
+                    string id = Element.GetAttributeCI("for");
                     if (id == null)
-                    {
                         return null;
-                    }
 
-                    var element = this.Element.Document.Descendants().Where(e => e.GetAttributeCI("id") == id).FirstOrDefault();
+                    var element = Element.Document.Descendants().Where(e => e.GetAttributeCI("id") == id).FirstOrDefault();
                     if (element == null)
-                    {
                         return null;
-                    }
 
                     this.associatedElement = OwningBrowser.CreateHtmlElement<HtmlElement>(element);
                 }
@@ -62,18 +57,15 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click()
         {
-            if (this.Disabled)
+            if (Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
             base.Click();
-            if (this.For != null)
-            {
-                return this.For.Click();
-            }
-
-            return ClickResult.SucceededNoOp;
+            
+                // Click on the associated (For) item or else return success without any operation
+                return For?.Click() ?? ClickResult.SucceededNoOp;
         }
     }
 }

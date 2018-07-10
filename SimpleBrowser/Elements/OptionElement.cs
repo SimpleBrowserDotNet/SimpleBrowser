@@ -26,8 +26,7 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public OptionElement(XElement element)
             : base(element)
-        {
-        }
+        { }
 
         /// <summary>
         /// Gets the option value of the option element
@@ -39,7 +38,7 @@ namespace SimpleBrowser.Elements
                 var attr = GetAttribute("value");
                 if (attr == null)
                 {
-                    return this.Element.Value.Trim();
+                    return Element.Value.Trim();
                 }
 
                 return attr.Value.Trim();
@@ -51,15 +50,8 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public override string Value
         {
-            get
-            {
-                return this.Element.Value.Trim();
-            }
-
-            set
-            {
-                throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
-            }
+            get => Element.Value.Trim();
+            set => throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
         }
 
         /// <summary>
@@ -72,7 +64,7 @@ namespace SimpleBrowser.Elements
                 if (this.owner == null)
                 {
                     var selectElement = Element.Ancestors().First(e => e.Name.LocalName.ToLower() == "select");
-                    this.owner = this.OwningBrowser.CreateHtmlElement<SelectElement>(selectElement);
+                    this.owner = OwningBrowser.CreateHtmlElement<SelectElement>(selectElement);
                 }
 
                 return this.owner;
@@ -104,13 +96,13 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click()
         {
-            if (this.Disabled)
+            if (Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
             base.Click();
-            this.Selected = !this.Selected;
+            Selected = !Selected;
             return ClickResult.SucceededNoNavigation;
         }
     }

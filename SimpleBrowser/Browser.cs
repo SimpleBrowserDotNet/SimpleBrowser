@@ -948,7 +948,9 @@ namespace SimpleBrowser
                         PostData = userVariables,
                         PostBody = postBody,
                         RequestHeaders = req.Headers,
-                        Url = uri
+                        Url = uri,
+                        Address = req.Address,
+                        Host = req.Host
                     };
 
                     try

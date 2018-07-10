@@ -5,19 +5,19 @@ using System.Text;
 
 namespace SimpleBrowser.Network
 {
-	public interface IWebRequestFactory
+    // TODO Review 
+    //   1) consider adding XML comments (documentation) to all public members
+
+    public interface IWebRequestFactory
 	{
 		IHttpWebRequest GetWebRequest(Uri url);
 	}
+
 	public class DefaultRequestFactory : IWebRequestFactory
 	{
-		#region IWebRequestFactory Members
-
 		public IHttpWebRequest GetWebRequest(Uri url)
 		{
 			return new WebRequestWrapper(url);
 		}
-
-		#endregion
 	}
 }

@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBrowser", "SimpleBrowser\SimpleBrowser.csproj", "{041EB5E9-DE14-41BA-B59D-F77612578CD6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{5A003D0D-9F0F-470E-A75C-C61033008A96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "Sample\Sample.csproj", "{5A003D0D-9F0F-470E-A75C-C61033008A96}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBrowser.UnitTests", "SimpleBrowser.UnitTests\SimpleBrowser.UnitTests.csproj", "{C0A2F5F6-088D-44E8-BBE3-400A8F84C0D3}"
 EndProject

@@ -1,186 +1,134 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net;
+using System.Text;
 
 namespace SimpleBrowser.Network
 {
-	class WebRequestWrapper : IHttpWebRequest
-	{
-		public WebRequestWrapper(Uri url)
-		{
-			_wr = (HttpWebRequest)HttpWebRequest.Create(url);
-		}
-		HttpWebRequest _wr = null;
+    internal class WebRequestWrapper : IHttpWebRequest
+    {
+        private static int[] _allowedRedirectStatusCodes = { 300, 301, 302, 303, 307, 308 };
+        HttpWebRequest _wr = null;
 
-		#region IHttpWebRequest Members
+        public WebRequestWrapper(Uri url)
+        {
+            _wr = (HttpWebRequest)HttpWebRequest.Create(url);
+        }
 
-		public System.IO.Stream GetRequestStream()
-		{
-			return _wr.GetRequestStream();
-		}
+        #region IHttpWebRequest Members
 
-		public IHttpWebResponse GetResponse()
-		{
-			return new WebResponseWrapper((HttpWebResponse)_wr.GetResponse());
-		}
+        public System.IO.Stream GetRequestStream()
+        {
+            return _wr.GetRequestStream();
+        }
 
-		public DecompressionMethods AutomaticDecompression
-		{
-			get
-			{
-				return _wr.AutomaticDecompression;
-			}
-			set
-			{
-				_wr.AutomaticDecompression = value;
-			}
-		}
+        public IHttpWebResponse GetResponse()
+        {
+            HttpWebResponse response;
 
-		public long ContentLength
-		{
-			get
-			{
-				return _wr.ContentLength;
-			}
-			set
-			{
-				_wr.ContentLength = value;
-			}
-		}
+#if NETSTANDARD2_0
+            try
+            {
+#endif
+                response = (HttpWebResponse)_wr.GetResponse();
+#if NETSTANDARD2_0
+            }
+            // .NET Core throws an exception on the redirect status codes
+            // thus we need to handle the exception and inspect the actual
+            // response to determine if we need to redirect.
+            catch (WebException ex)
+                when (_allowedRedirectStatusCodes.Contains(((int?)(ex.Response as HttpWebResponse)?.StatusCode) ?? -1))
+            {
+                response = (HttpWebResponse)ex.Response;
+            }
+#endif
 
-		public WebHeaderCollection Headers
-		{
-			get
-			{
-				return _wr.Headers;
-			}
-			set
-			{
-				_wr.Headers = value;
-			}
-		}
+            return new WebResponseWrapper(response);
+        }
 
-		public string ContentType
-		{
-			get
-			{
-				return _wr.ContentType;
-			}
-			set
-			{
-				_wr.ContentType = value;
-			}
-		}
+        public DecompressionMethods AutomaticDecompression
+        {
+            get => _wr.AutomaticDecompression;
+            set => _wr.AutomaticDecompression = value;
+        }
 
-		public string Method
-		{
-			get
-			{
-				return _wr.Method;
-			}
-			set
-			{
-				_wr.Method = value;
-			}
-		}
+        public long ContentLength
+        {
+            get => _wr.ContentLength;
+            set => _wr.ContentLength = value;
+        }
 
-		public string UserAgent
-		{
-			get
-			{
-				return _wr.UserAgent;
-			}
-			set
-			{
-				_wr.UserAgent = value;
-			}
-		}
+        public WebHeaderCollection Headers
+        {
+            get => _wr.Headers;
+            set => _wr.Headers = value;
+        }
 
-		public string Accept
-		{
-			get
-			{
-				return _wr.Accept;
-			}
-			set
-			{
-				_wr.Accept = value; ;
-			}
-		}
+        public string ContentType
+        {
+            get => _wr.ContentType;
+            set => _wr.ContentType = value;
+        }
 
-		public int Timeout
-		{
-			get
-			{
-				return _wr.Timeout;
-			}
-			set
-			{
-				_wr.Timeout = value;
-			}
-		}
+        public string Method
+        {
+            get => _wr.Method;
+            set => _wr.Method = value;
+        }
 
-		public bool AllowAutoRedirect
-		{
-			get
-			{
-				return _wr.AllowAutoRedirect;
-			}
-			set
-			{
-				_wr.AllowAutoRedirect = value;
-			}
-		}
+        public string UserAgent
+        {
+            get => _wr.UserAgent;
+            set => _wr.UserAgent = value;
+        }
 
-		public CookieContainer CookieContainer
-		{
-			get
-			{
-				return _wr.CookieContainer;
-			}
-			set
-			{
-				_wr.CookieContainer = value;
-			}
-		}
+        public string Accept
+        {
+            get => _wr.Accept;
+            set => _wr.Accept = value;
+        }
 
-		public IWebProxy Proxy
-		{
-			get
-			{
-				return _wr.Proxy;
-			}
-			set
-			{
-				_wr.Proxy = value;
-			}
-		}
+        public int Timeout
+        {
+            get => _wr.Timeout;
+            set => _wr.Timeout = value;
+        }
 
-		public string Referer
-		{
-			get
-			{
-				return _wr.Referer;
-			}
-			set
-			{
-				_wr.Referer = Uri.EscapeUriString(value);
-			}
-		}
+        public bool AllowAutoRedirect
+        {
+            get => _wr.AllowAutoRedirect;
+            set => _wr.AllowAutoRedirect = value;
+        }
 
-		public string Host
-		{
-			get
-			{
-				return _wr.Host;
-			}
-			set
-			{
-				_wr.Host = value;
-			}
-		}
-	  #endregion
-	}
+        public CookieContainer CookieContainer
+        {
+            get => _wr.CookieContainer;
+            set => _wr.CookieContainer = value;
+        }
+
+        public IWebProxy Proxy
+        {
+            get => _wr.Proxy;
+            set => _wr.Proxy = value;
+        }
+
+        public string Referer
+        {
+            get => _wr.Referer;
+            set => _wr.Referer = Uri.EscapeUriString(value);
+        }
+
+        public Uri Address
+        {
+            get => _wr.Address;
+        }
+
+        public string Host
+        {
+            get => _wr.Host;
+            set => _wr.Host = value;
+        }
+#endregion
+    }
 }
