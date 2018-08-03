@@ -1,12 +1,11 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="TextAreaElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Elements
 {
-    using System;
     using System.Collections.Generic;
     using System.Xml.Linq;
 
@@ -31,7 +30,7 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool ReadOnly
         {
-            get => GetAttribute("readonly") != null;
+            get => this.GetAttribute("readonly") != null;
         }
 
         /// <summary>
@@ -47,34 +46,34 @@ namespace SimpleBrowser.Elements
             set
             {
                 // Don't set the value of a read only or disabled text area
-                if (ReadOnly || Disabled)
+                if (this.ReadOnly || this.Disabled)
                 {
                     return;
                 }
 
                 int maxLength = int.MaxValue;
-                if (Element.HasAttributeCI("maxlength"))
+                if (this.Element.HasAttributeCI("maxlength"))
                 {
-                    string maxLengthStr = Element.GetAttributeCI("maxlength");
+                    string maxLengthStr = this.Element.GetAttributeCI("maxlength");
 
-                    if (int.TryParse(maxLengthStr, out var parseMaxLength) && parseMaxLength >= 0)
+                    if (int.TryParse(maxLengthStr, out int parseMaxLength) && parseMaxLength >= 0)
                     {
                         maxLength = parseMaxLength;
                     }
                     // Do nothing (implicitly) if the value of maxlength is negative, per the HTML5 spec.
                 }
 
-                Element.RemoveNodes();
+                this.Element.RemoveNodes();
 
                 // If the length of the value being assigned is too long, truncate it.
                 if (value.Length > maxLength)
                 {
-                    Element.AddFirst(value.Substring(0, maxLength));
+                    this.Element.AddFirst(value.Substring(0, maxLength));
                 }
                 else
                 {
-                    Element.SetAttributeValue("value", value);
-                    Element.AddFirst(value);
+                    this.Element.SetAttributeValue("value", value);
+                    this.Element.AddFirst(value);
                 }
             }
         }
@@ -84,11 +83,29 @@ namespace SimpleBrowser.Elements
         /// </summary>
         /// <param name="isClickedElement">True, if the action to submit the form was clicking this element. Otherwise, false.</param>
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
-        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement, bool validate)
         {
-            if (!string.IsNullOrEmpty(Name) && !Disabled)
+            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
             {
+                if (validate)
+                {
+                    try
+                    {
+                        this.ValidateMinimumLength();
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+
                 yield return new UserVariableEntry() { Name = Name, Value = Value };
+
+                XAttribute dirNameAttribute = this.GetAttribute("dirname");
+                if (dirNameAttribute != null)
+                {
+                    yield return new UserVariableEntry() { Name = dirNameAttribute.Value, Value = this.OwningBrowser.Culture.TextInfo.IsRightToLeft ? "rtl" : "ltr" };
+                }
             }
 
             yield break;

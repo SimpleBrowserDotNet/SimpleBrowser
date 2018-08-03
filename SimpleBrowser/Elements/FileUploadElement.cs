@@ -6,7 +6,6 @@
 
 namespace SimpleBrowser.Elements
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
@@ -31,19 +30,19 @@ namespace SimpleBrowser.Elements
         /// </summary>
         /// <param name="isClickedElement">A value indicating whether the clicking of this element caused the form submission.</param>
         /// <returns>An empty collection of <see cref="UserVariableEntry"/></returns>
-        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement, bool validate)
         {
             string filename = string.Empty;
             string extension = string.Empty;
             string contentType = string.Empty;
 
-            if (File.Exists(Value))
+            if (File.Exists(this.Value))
             {
                 // Todo: create a mime type for extensions
-                filename = Value;
+                filename = this.Value;
                 byte[] allBytes = allBytes = File.ReadAllBytes(filename);
 
-                var fileInfo = new FileInfo(filename);
+                FileInfo fileInfo = new FileInfo(filename);
                 extension = fileInfo.Extension;
                 filename = fileInfo.Name;
 

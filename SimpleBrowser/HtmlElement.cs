@@ -109,9 +109,9 @@ namespace SimpleBrowser
             public string Target;
             public string Method = "GET";
             public NameValueCollection UserVariables = new NameValueCollection();
-            public string PostData = "";
-            public string ContentType = "";
-            public string EncodingType = "";
+            public string PostData = string.Empty;
+            public string ContentType = string.Empty;
+            public string EncodingType = string.Empty;
             public int TimeoutMilliseconds;
 
             /// <summary>
@@ -161,11 +161,30 @@ namespace SimpleBrowser
                             break;
                         case "submit":
                         case "button":
-                        case "reset":
                             result = new ButtonInputElement(element);
                             break;
                         case "file":
                             result = new FileUploadElement(element);
+                            break;
+                        case "email":
+                            result = new EmailInputElement(element);
+                            break;
+                        case "url":
+                            result = new UrlInputElement(element);
+                            break;
+                        case "datetime-local":
+                        case "date":
+                        case "month":
+                        case "week":
+                        case "time":
+                            result = new DateTimeInputElement(element);
+                            break;
+                        case "number":
+                        case "range":
+                            result = new NumberInputElement(element);
+                            break;
+                        case "color":
+                            result = new ColorInputElement(element);
                             break;
                         default:
                             result = new InputElement(element);
@@ -219,19 +238,19 @@ namespace SimpleBrowser
 
         public virtual bool SubmitForm(string url = null, HtmlElement clickedElement = null)
         {
-            XElement formElem = null;
+            XElement formElement = null;
             if (this.Element.HasAttributeCI("form"))
             {
-                formElem = this.Element.Document.Descendants().Where(e => e.HasAttributeCI("id") && e.GetAttributeCI("id").Equals(this.Element.GetAttributeCI("form"))).First();
+                formElement = this.Element.Document.Descendants().Where(e => e.HasAttributeCI("id") && e.GetAttributeCI("id").Equals(this.Element.GetAttributeCI("form"))).First();
             }
             else
             {
-                formElem = this.Element.GetAncestorCI("form");
+                formElement = this.Element.GetAncestorCI("form");
             }
 
-            if (formElem != null)
+            if (formElement != null)
             {
-                FormElement form = this.OwningBrowser.CreateHtmlElement<FormElement>(formElem);
+                FormElement form = this.OwningBrowser.CreateHtmlElement<FormElement>(formElement);
                 return form.SubmitForm(url, clickedElement);
             }
             return false;

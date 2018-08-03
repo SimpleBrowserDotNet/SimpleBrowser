@@ -10,6 +10,7 @@ namespace SimpleBrowser
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -62,7 +63,7 @@ namespace SimpleBrowser
         {
             _allWindows = context ?? new List<Browser>();
             AutoRedirect = true;
-            UserAgent = "SimpleBrowser (http://github.com/axefrog/SimpleBrowser)";
+            UserAgent = "SimpleBrowser (https://github.com/SimpleBrowserDotNet/SimpleBrowser)";
             RetainLogs = true;
             UseGZip = true;
             Cookies = new CookieContainer();
@@ -76,6 +77,7 @@ namespace SimpleBrowser
             WindowHandle = name;
             this.Register(this);
             this.RefererMode = RefererModes.NoneWhenDowngrade;
+            this.Culture = CultureInfo.CurrentCulture;
         }
 
         public event Action<Browser, string> MessageLogged;
@@ -109,6 +111,14 @@ namespace SimpleBrowser
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the browser culture.
+        /// </summary>
+        /// <remarks>
+        /// The default culture is the culture of the user or system on which the browser is running.
+        /// </remarks>
+        public CultureInfo Culture { get; set; }
 
         public string ContentType
         {

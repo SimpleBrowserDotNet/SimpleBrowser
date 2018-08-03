@@ -1,12 +1,11 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="ImageInputElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Elements
 {
-    using System;
     using System.Collections.Generic;
     using System.Xml.Linq;
 
@@ -38,20 +37,20 @@ namespace SimpleBrowser.Elements
         /// </summary>
         /// <param name="isClickedElement">True, if the action to submit the form was clicking this element. Otherwise, false.</param>
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
-        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement, bool validate)
         {
-            if (isClickedElement && !Disabled)
+            if (isClickedElement && !this.Disabled)
             {
-                if (string.IsNullOrEmpty(Name))
+                if (string.IsNullOrEmpty(this.Name))
                 {
-                    yield return new UserVariableEntry() { Name = "x", Value = x.ToString() };
-                    yield return new UserVariableEntry() { Name = "y", Value = y.ToString() };
+                    yield return new UserVariableEntry() { Name = "x", Value = this.x.ToString() };
+                    yield return new UserVariableEntry() { Name = "y", Value = this.y.ToString() };
                 }
                 else
                 {
-                    yield return new UserVariableEntry() { Name = string.Format("{0}.x", Name), Value = x.ToString() };
-                    yield return new UserVariableEntry() { Name = string.Format("{0}.y", Name), Value = y.ToString() };
-                    if (!string.IsNullOrEmpty(Value))
+                    yield return new UserVariableEntry() { Name = string.Format("{0}.x", this.Name), Value = this.x.ToString() };
+                    yield return new UserVariableEntry() { Name = string.Format("{0}.y", this.Name), Value = this.y.ToString() };
+                    if (!string.IsNullOrEmpty(this.Value))
                     {
                         yield return new UserVariableEntry() { Name = Name, Value = Value };
                     }
@@ -69,7 +68,7 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click(uint x, uint y)
         {
-            if (Disabled)
+            if (this.Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
@@ -77,7 +76,8 @@ namespace SimpleBrowser.Elements
             this.x = x;
             this.y = y;
 
-            if (SubmitForm(clickedElement: this))
+            base.Click();
+            if (this.SubmitForm(clickedElement: this))
             {
                 return ClickResult.SucceededNavigationComplete;
             }

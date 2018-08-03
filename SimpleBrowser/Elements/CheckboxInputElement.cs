@@ -1,13 +1,11 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="CheckboxInputElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Elements
 {
-    using System;
-    using System.Collections.Generic;
     using System.Xml.Linq;
 
     /// <summary>
@@ -30,23 +28,23 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return GetAttribute("checked") != null;
+                return this.GetAttribute("checked") != null;
             }
 
             set
             {
-                if (Disabled)
+                if (this.Disabled)
                 {
                     return;
                 }
 
                 if (value)
                 {
-                    Element.SetAttributeValue("checked", "checked");
+                    this.Element.SetAttributeValue("checked", "checked");
                 }
                 else
                 {
-                    Element.RemoveAttributeCI("checked");
+                    this.Element.RemoveAttributeCI("checked");
                 }
             }
         }
@@ -57,32 +55,14 @@ namespace SimpleBrowser.Elements
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
         public override ClickResult Click()
         {
-            if (Disabled)
+            if (this.Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
             base.Click();
-            Selected = !Selected;
+            this.Selected = !this.Selected;
             return ClickResult.SucceededNoNavigation;
-        }
-
-        /// <summary>
-        /// Gets the form values to submit for this input
-        /// </summary>
-        /// <param name="isClickedElement">True, if the action to submit the form was clicking this element. Otherwise, false.</param>
-        /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
-        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
-        {
-            if (XElement.HasAttributeCI("checked") && !string.IsNullOrEmpty(Name) && !Disabled)
-            {
-                yield return new UserVariableEntry()
-                {
-                    Name = Name, Value = string.IsNullOrEmpty(Value) ? "on" : Value
-                };
-            }
-
-            yield break;
         }
     }
 }
