@@ -1,59 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
+﻿// -----------------------------------------------------------------------
+// <copyright file="WebResponseWrapper.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Network
 {
+    using System;
+    using System.IO;
+    using System.Net;
+
     internal class WebResponseWrapper : IHttpWebResponse
     {
-        HttpWebResponse _wr;
+        private HttpWebResponse _wr;
 
         public WebResponseWrapper(HttpWebResponse resp)
         {
-            _wr = resp;
+            this._wr = resp;
         }
 
         #region IHttpWebResponse Members
 
         public Stream GetResponseStream()
-            => _wr.GetResponseStream();
+            => this._wr.GetResponseStream();
 
         public string CharacterSet
         {
-            get => _wr.CharacterSet;
+            get => this._wr.CharacterSet;
             set => throw new NotImplementedException();
         }
 
         public string ContentType
         {
-            get => _wr.ContentType;
-            set => _wr.ContentType = value;
+            get => this._wr.ContentType;
+            set => this._wr.ContentType = value;
         }
 
         public WebHeaderCollection Headers
         {
-            get => _wr.Headers;
+            get => this._wr.Headers;
             set => throw new NotImplementedException();
         }
 
         public HttpStatusCode StatusCode
         {
-            get => _wr.StatusCode;
+            get => this._wr.StatusCode;
             set => throw new NotImplementedException();
         }
 
-        #endregion
+        #endregion IHttpWebResponse Members
 
         #region IDisposable Members
 
         public void Dispose()
         {
-            (_wr as IDisposable)?.Dispose();
+            (this._wr as IDisposable)?.Dispose();
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 }

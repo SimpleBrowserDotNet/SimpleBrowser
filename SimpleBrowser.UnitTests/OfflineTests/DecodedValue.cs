@@ -1,11 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿// -----------------------------------------------------------------------
+// <copyright file="DecodedValue.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.UnitTests.OfflineTests
 {
+    using System.Linq;
+    using NUnit.Framework;
+
     [TestFixture]
     public class DecodedValue
     {
@@ -15,10 +19,10 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Browser b = new Browser();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.DecodedValue.htm"));
 
-            var div = b.Select("div");
+            HtmlResult div = b.Select("div");
             Assert.That(div.ToList()[0].DecodedValue, Is.EqualTo("£ sign"));
-			Assert.That(div.ToList()[1].DecodedValue, Is.EqualTo("üü"));
-		}
+            Assert.That(div.ToList()[1].DecodedValue, Is.EqualTo("üü"));
+        }
 
         [Test]
         public void HtmlElement_DecodedValue_MalformedDocument()
@@ -26,7 +30,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Browser b = new Browser();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.DecodedValue-malformed.htm"));
 
-            var div = b.Select("div");
+            HtmlResult div = b.Select("div");
             Assert.That(div.ToList()[0].DecodedValue, Is.EqualTo("Blah £ sign üü"));
             Assert.That(div.ToList()[1].DecodedValue, Is.EqualTo("£ sign"));
             Assert.That(div.ToList()[2].DecodedValue, Is.EqualTo("üü"));

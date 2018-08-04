@@ -1,33 +1,37 @@
-﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Linq;
-using System.Xml.Linq;
+﻿// -----------------------------------------------------------------------
+// <copyright file="AllSelector.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Query.Selectors
 {
-	public class AllSelector : IXQuerySelector
-	{
-		public AllSelector()
-		{
-		}
+    using System.Text.RegularExpressions;
 
-		public bool IsTransposeSelector { get { return false; } }
+    public class AllSelector : IXQuerySelector
+    {
+        public AllSelector()
+        {
+        }
 
-		public void Execute(XQueryResultsContext context)
-		{
-			context.ResultSetInternal = context.ResultSetInternal;
-		}
+        public bool IsTransposeSelector { get { return false; } }
 
-		internal static readonly Regex RxSelector = new Regex(@"^\*");
-	}
+        public void Execute(XQueryResultsContext context)
+        {
+            context.ResultSetInternal = context.ResultSetInternal;
+        }
 
-	public class AllSelectorCreator : XQuerySelectorCreator
-	{
-		public override Regex MatchNext { get { return AllSelector.RxSelector; } }
+        internal static readonly Regex RxSelector = new Regex(@"^\*");
+    }
 
-		public override IXQuerySelector Create(XQueryParserContext context, Match match)
-		{
-			return new AllSelector();
-		}
-	}
+    public class AllSelectorCreator : XQuerySelectorCreator
+    {
+        public override Regex MatchNext { get { return AllSelector.RxSelector; } }
+
+        public override IXQuerySelector Create(XQueryParserContext context, Match match)
+        {
+            return new AllSelector();
+        }
+    }
 }

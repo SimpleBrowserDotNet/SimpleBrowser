@@ -1,6 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="Namespace.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -109,11 +110,11 @@ namespace SimpleBrowser.UnitTests.OfflineTests
                         }
                     case 8:
                         {
-                          Assert.IsFalse(attribute.IsNamespaceDeclaration);
-                          Assert.AreEqual(attribute.Name.LocalName, "xsl_badattribute");
-                          Assert.AreEqual(attribute.Value, "http://www.w3.org");
-                          Assert.That(attribute.Name.Namespace == "");
-                          break;
+                            Assert.IsFalse(attribute.IsNamespaceDeclaration);
+                            Assert.AreEqual(attribute.Name.LocalName, "xsl_badattribute");
+                            Assert.AreEqual(attribute.Value, "http://www.w3.org");
+                            Assert.That(attribute.Name.Namespace == "");
+                            break;
                         }
                 }
             }

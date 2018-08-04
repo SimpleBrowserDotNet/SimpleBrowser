@@ -1,32 +1,34 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
+﻿// -----------------------------------------------------------------------
+// <copyright file="ChildSelector.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Query.Selectors
 {
-	public class ChildSelector : IXQuerySelector
-	{
-		public void Execute(XQueryResultsContext context)
-		{
-			context.PreTranslateResultSet = x => { return x.Elements(); };
-		}
+    using System.Text.RegularExpressions;
+    using System.Xml.Linq;
 
-		public bool IsTransposeSelector { get { return true; } }
+    public class ChildSelector : IXQuerySelector
+    {
+        public void Execute(XQueryResultsContext context)
+        {
+            context.PreTranslateResultSet = x => { return x.Elements(); };
+        }
 
-		internal static readonly Regex RxSelector = new Regex(@"^\s*\>\s*");
-	}
+        public bool IsTransposeSelector { get { return true; } }
 
-	public class ChildSelectorCreator : XQuerySelectorCreator
-	{
-		public override Regex MatchNext { get { return ChildSelector.RxSelector; } }
+        internal static readonly Regex RxSelector = new Regex(@"^\s*\>\s*");
+    }
 
-		public override IXQuerySelector Create(XQueryParserContext context, Match match)
-		{
-			return new ChildSelector();
-		}
-	}
+    public class ChildSelectorCreator : XQuerySelectorCreator
+    {
+        public override Regex MatchNext { get { return ChildSelector.RxSelector; } }
+
+        public override IXQuerySelector Create(XQueryParserContext context, Match match)
+        {
+            return new ChildSelector();
+        }
+    }
 }

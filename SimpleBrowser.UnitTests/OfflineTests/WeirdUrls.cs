@@ -1,20 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿// -----------------------------------------------------------------------
+// <copyright file="WeirdUrls.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.UnitTests.OfflineTests
 {
-	[TestFixture]
-	class WeirdUrls
-	{
-		[Test]
-		public void JavascriptUrl()
-		{
-			Browser b = new Browser(); // does not need network to fail
-			var res = b.Navigate("javascript:'';");
-			Assert.False(res);
-		}
-	}
+    using NUnit.Framework;
+
+    [TestFixture]
+    internal class WeirdUrls
+    {
+        [Test]
+        public void JavascriptUrl()
+        {
+            Browser b = new Browser(); // does not need network to fail
+            bool res = b.Navigate("javascript:'';");
+            Assert.False(res);
+        }
+    }
 }

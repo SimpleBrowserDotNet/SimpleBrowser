@@ -1,26 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
+﻿// -----------------------------------------------------------------------
+// <copyright file="WebRequestWrapper.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Network
 {
+    using System;
+    using System.Linq;
+    using System.Net;
+
     internal class WebRequestWrapper : IHttpWebRequest
     {
         private static int[] _allowedRedirectStatusCodes = { 300, 301, 302, 303, 307, 308 };
-        HttpWebRequest _wr = null;
+        private HttpWebRequest _wr = null;
 
         public WebRequestWrapper(Uri url)
         {
-            _wr = (HttpWebRequest)HttpWebRequest.Create(url);
+            this._wr = (HttpWebRequest)HttpWebRequest.Create(url);
         }
 
         #region IHttpWebRequest Members
 
         public System.IO.Stream GetRequestStream()
         {
-            return _wr.GetRequestStream();
+            return this._wr.GetRequestStream();
         }
 
         public IHttpWebResponse GetResponse()
@@ -31,7 +36,7 @@ namespace SimpleBrowser.Network
             try
             {
 #endif
-                response = (HttpWebResponse)_wr.GetResponse();
+            response = (HttpWebResponse)this._wr.GetResponse();
 #if NETSTANDARD2_0
             }
             // .NET Core throws an exception on the redirect status codes
@@ -49,86 +54,87 @@ namespace SimpleBrowser.Network
 
         public DecompressionMethods AutomaticDecompression
         {
-            get => _wr.AutomaticDecompression;
-            set => _wr.AutomaticDecompression = value;
+            get => this._wr.AutomaticDecompression;
+            set => this._wr.AutomaticDecompression = value;
         }
 
         public long ContentLength
         {
-            get => _wr.ContentLength;
-            set => _wr.ContentLength = value;
+            get => this._wr.ContentLength;
+            set => this._wr.ContentLength = value;
         }
 
         public WebHeaderCollection Headers
         {
-            get => _wr.Headers;
-            set => _wr.Headers = value;
+            get => this._wr.Headers;
+            set => this._wr.Headers = value;
         }
 
         public string ContentType
         {
-            get => _wr.ContentType;
-            set => _wr.ContentType = value;
+            get => this._wr.ContentType;
+            set => this._wr.ContentType = value;
         }
 
         public string Method
         {
-            get => _wr.Method;
-            set => _wr.Method = value;
+            get => this._wr.Method;
+            set => this._wr.Method = value;
         }
 
         public string UserAgent
         {
-            get => _wr.UserAgent;
-            set => _wr.UserAgent = value;
+            get => this._wr.UserAgent;
+            set => this._wr.UserAgent = value;
         }
 
         public string Accept
         {
-            get => _wr.Accept;
-            set => _wr.Accept = value;
+            get => this._wr.Accept;
+            set => this._wr.Accept = value;
         }
 
         public int Timeout
         {
-            get => _wr.Timeout;
-            set => _wr.Timeout = value;
+            get => this._wr.Timeout;
+            set => this._wr.Timeout = value;
         }
 
         public bool AllowAutoRedirect
         {
-            get => _wr.AllowAutoRedirect;
-            set => _wr.AllowAutoRedirect = value;
+            get => this._wr.AllowAutoRedirect;
+            set => this._wr.AllowAutoRedirect = value;
         }
 
         public CookieContainer CookieContainer
         {
-            get => _wr.CookieContainer;
-            set => _wr.CookieContainer = value;
+            get => this._wr.CookieContainer;
+            set => this._wr.CookieContainer = value;
         }
 
         public IWebProxy Proxy
         {
-            get => _wr.Proxy;
-            set => _wr.Proxy = value;
+            get => this._wr.Proxy;
+            set => this._wr.Proxy = value;
         }
 
         public string Referer
         {
-            get => _wr.Referer;
-            set => _wr.Referer = Uri.EscapeUriString(value);
+            get => this._wr.Referer;
+            set => this._wr.Referer = Uri.EscapeUriString(value);
         }
 
         public Uri Address
         {
-            get => _wr.Address;
+            get => this._wr.Address;
         }
 
         public string Host
         {
-            get => _wr.Host;
-            set => _wr.Host = value;
+            get => this._wr.Host;
+            set => this._wr.Host = value;
         }
-#endregion
+
+        #endregion IHttpWebRequest Members
     }
 }
