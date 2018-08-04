@@ -1,6 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="DocumentCleaner.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -21,7 +22,7 @@ namespace SimpleBrowser.Parser
         {
             if (string.Compare(doc.Root.Name.LocalName, "html", true) != 0)
             {
-                var root = new XElement("html");
+                XElement root = new XElement("html");
                 doc.Root.ReplaceWith(root);
             }
         }

@@ -1,30 +1,36 @@
-﻿using System;
-using System.Linq;
-using System.Xml.Linq;
-using System.Text.RegularExpressions;
+﻿// -----------------------------------------------------------------------
+// <copyright file="DescendentSelector.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Query.Selectors
 {
-	public class DescendentSelector : IXQuerySelector
-	{
-		public void Execute(XQueryResultsContext context)
-		{
-			context.PreTranslateResultSet = x => x.Descendants();
-		}
+    using System.Text.RegularExpressions;
+    using System.Xml.Linq;
 
-		public bool IsTransposeSelector { get { return true; } }
+    public class DescendentSelector : IXQuerySelector
+    {
+        public void Execute(XQueryResultsContext context)
+        {
+            context.PreTranslateResultSet = x => x.Descendants();
+        }
 
-		internal static readonly Regex RxSelector = new Regex(@"^\s+");
-	}
+        public bool IsTransposeSelector { get { return true; } }
 
-	public class DescendentSelectorCreator : XQuerySelectorCreator
-	{
-		public override Regex MatchNext { get { return DescendentSelector.RxSelector; } }
+        internal static readonly Regex RxSelector = new Regex(@"^\s+");
+    }
 
-		public override IXQuerySelector Create(XQueryParserContext context, Match match)
-		{
-			return new DescendentSelector();
-		}
-		public override int Priority{get{return -1000;}}
-	}
+    public class DescendentSelectorCreator : XQuerySelectorCreator
+    {
+        public override Regex MatchNext { get { return DescendentSelector.RxSelector; } }
+
+        public override IXQuerySelector Create(XQueryParserContext context, Match match)
+        {
+            return new DescendentSelector();
+        }
+
+        public override int Priority { get { return -1000; } }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="RefererHeader.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -25,12 +26,12 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            var success = b.Navigate(startingUrl);
+            bool success = b.Navigate(startingUrl);
             Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find("test1");
+            HtmlResult link = b.Find("test1");
             Assert.IsNotNull(link);
 
             link.Click();
@@ -50,12 +51,12 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             b.RefererMode = Browser.RefererModes.None;
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.None);
 
-            var success = b.Navigate(startingUrl);
+            bool success = b.Navigate(startingUrl);
             Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find("test1");
+            HtmlResult link = b.Find("test1");
             Assert.IsNotNull(link);
 
             link.Click();
@@ -77,12 +78,12 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            var success = b.Navigate(startingUrl);
+            bool success = b.Navigate(startingUrl);
             Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find("ctl00_AdvertiseLink");
+            HtmlResult link = b.Find("ctl00_AdvertiseLink");
             Assert.IsNotNull(link);
 
             link.Click();
@@ -102,12 +103,12 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             b.RefererMode = Browser.RefererModes.Origin;
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.Origin);
 
-            var success = b.Navigate(startingUrl);
+            bool success = b.Navigate(startingUrl);
             Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find(ElementType.Anchor, "href", "/");
+            HtmlResult link = b.Find(ElementType.Anchor, "href", "/");
             Assert.IsNotNull(link);
 
             link.Click();
@@ -128,12 +129,12 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             b.RefererMode = Browser.RefererModes.UnsafeUrl;
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.UnsafeUrl);
 
-            var success = b.Navigate(startingUrl);
+            bool success = b.Navigate(startingUrl);
             Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find("ctl00_AdvertiseLink");
+            HtmlResult link = b.Find("ctl00_AdvertiseLink");
             Assert.IsNotNull(link);
 
             string targetHref = link.GetAttribute("href");
@@ -162,12 +163,12 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            var success = b.Navigate(startingUrl);
+            bool success = b.Navigate(startingUrl);
             Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find("test1");
+            HtmlResult link = b.Find("test1");
             Assert.IsNotNull(link);
 
             link.Click();
@@ -186,12 +187,12 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
 
-            var success = b.Navigate(startingUrl);
+            bool success = b.Navigate(startingUrl);
             Assert.IsTrue(success);
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            var link = b.Find("test1");
+            HtmlResult link = b.Find("test1");
             Assert.IsNotNull(link);
 
             link.Click();

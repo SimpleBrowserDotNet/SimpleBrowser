@@ -1,16 +1,24 @@
-﻿using System;
-using NUnit.Framework;
-using SimpleBrowser.Internal;
+﻿// -----------------------------------------------------------------------
+// <copyright file="SetCookieHeaderParserTests.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.UnitTests.InternalTests
 {
+    using System;
+    using System.Net;
+    using NUnit.Framework;
+    using SimpleBrowser.Internal;
+
     [TestFixture]
     public class SetCookieHeaderParserTests
     {
         [Test]
         public void KeyValueCookie_ParsesNameValueCorrectly()
         {
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", "theme=light");
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", "theme=light");
             Assert.That(actual.Count, Is.EqualTo(1));
             Assert.That(actual[0].Name, Is.EqualTo("theme"));
             Assert.That(actual[0].Value, Is.EqualTo("light"));
@@ -19,7 +27,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         [Test]
         public void KeyValueCookie_StripsCarriageReturns()
         {
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", "theme=light\r\n");
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", "theme=light\r\n");
             Assert.That(actual.Count, Is.EqualTo(1));
             Assert.That(actual[0].Name, Is.EqualTo("theme"));
             Assert.That(actual[0].Value, Is.EqualTo("light"));
@@ -28,7 +36,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         [Test]
         public void KeyOnlyCookie_ParsesNameValueCorrectly()
         {
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", "theme");
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", "theme");
             Assert.That(actual.Count, Is.EqualTo(1));
             Assert.That(actual[0].Name, Is.EqualTo("theme"));
             Assert.That(actual[0].Value, Is.EqualTo(""));
@@ -39,7 +47,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         {
             const string testDomain = "test.com";
             const string cookieHeader = "theme";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
             Assert.That(actual[0].Domain, Is.EqualTo(testDomain));
         }
 
@@ -48,7 +56,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         {
             const string testDomain = "test.com";
             const string cookieHeader = "sessionToken=abc123; Domain=.cookie-specified.com";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
             Assert.That(actual[0].Domain, Is.EqualTo(".cookie-specified.com"));
         }
 
@@ -57,7 +65,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         {
             const string testDomain = "test.com";
             const string cookieHeader = "sessionToken=abc123";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
             Assert.That(actual[0].Path, Is.EqualTo("/"));
         }
 
@@ -66,7 +74,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         {
             const string testDomain = "test.com";
             const string cookieHeader = "sessionToken=abc123; Path=/test/path";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader(testDomain, cookieHeader);
             Assert.That(actual[0].Path, Is.EqualTo("/test/path"));
         }
 
@@ -74,7 +82,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         public void KeyValueCookieWithExpiresAttribute_DisregardsExpiresValue()
         {
             const string cookieHeader = "sessionToken=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
             Assert.That(actual.Count, Is.EqualTo(1));
             Assert.That(actual[0].Name, Is.EqualTo("sessionToken"));
             Assert.That(actual[0].Value, Is.EqualTo("abc123"));
@@ -85,7 +93,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         public void KeyOnlyCookieWithExpiresAttribute_DisregardsExpiresValue()
         {
             const string cookieHeader = "sessionToken; Expires=Wed, 09 Jun 2021 10:18:14 GMT";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
             Assert.That(actual.Count, Is.EqualTo(1));
             Assert.That(actual[0].Name, Is.EqualTo("sessionToken"));
             Assert.That(actual[0].Value, Is.EqualTo(""));
@@ -96,7 +104,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         public void CommaSeparatedCookies_AreReadAsMultipleCookies()
         {
             const string cookieHeader = "key1=value1; Expires=Test, TestDate, key2=value2";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
             Assert.That(actual.Count, Is.EqualTo(2));
             Assert.That(actual[0].Name, Is.EqualTo("key1"));
             Assert.That(actual[0].Value, Is.EqualTo("value1"));
@@ -108,7 +116,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         public void CookieContainingCommaValue_IsReadAsASingleCookie()
         {
             const string cookieHeader = "key=\"value1, value2\"";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
             Assert.That(actual.Count, Is.EqualTo(1));
             Assert.That(actual[0].Name, Is.EqualTo("key"));
             Assert.That(actual[0].Value, Is.EqualTo("value1, value2"));
@@ -119,7 +127,7 @@ namespace SimpleBrowser.UnitTests.InternalTests
         {
             const string cookieHeader =
                 "datr=80gTVQMaYfPPoOakoxDXhrmQ; expires=Fri, 24-Mar-2017 23:46:59 GMT; Max-Age=63072000; path=/; domain=.facebook.com; httponly,reg_ext_ref=deleted; expires=Thu, 01-Jan-1970 00:00:01 GMT; Max-Age=0; path=/; domain=.facebook.com,reg_fb_ref=https%3A%2F%2Fwww.facebook.com%2F; path=/; domain=.facebook.com; httponly,reg_fb_gate=https%3A%2F%2Fwww.facebook.com%2F; path=/; domain=.facebook.com; httponly";
-            var actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
+            CookieCollection actual = SetCookieHeaderParser.GetAllCookiesFromHeader("test.com", cookieHeader);
         }
     }
 }

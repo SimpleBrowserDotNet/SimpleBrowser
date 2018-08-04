@@ -1,40 +1,47 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Linq;
-using System.Xml.Linq;
+﻿// -----------------------------------------------------------------------
+// <copyright file="ElementSelector.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Query.Selectors
 {
-	public class ElementSelector : IXQuerySelector
-	{
-		private readonly string _name;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Xml.Linq;
 
-		public ElementSelector(string name)
-		{
-			_name = name.ToLower();
-		}
+    public class ElementSelector : IXQuerySelector
+    {
+        private readonly string _name;
 
-		public bool IsTransposeSelector { get { return false; } }
+        public ElementSelector(string name)
+        {
+            this._name = name.ToLower();
+        }
 
-		public void Execute(XQueryResultsContext context)
-		{
-			var set = context.ResultSetInternal;
-			Debug.WriteLine("selecting <" + _name + "> from " + set.Count() + " nodes");
-			context.ResultSetInternal = set
-				.Where(x => string.Compare(x.Name.LocalName, _name, true) == 0);
-		}
+        public bool IsTransposeSelector { get { return false; } }
 
-		internal static readonly Regex RxSelector = new Regex(@"^[A-Za-z][A-Za-z0-9_\-]*");
-	}
+        public void Execute(XQueryResultsContext context)
+        {
+            IEnumerable<XElement> set = context.ResultSetInternal;
+            Debug.WriteLine("selecting <" + this._name + "> from " + set.Count() + " nodes");
+            context.ResultSetInternal = set
+                .Where(x => string.Compare(x.Name.LocalName, this._name, true) == 0);
+        }
 
-	public class ElementSelectorCreator : XQuerySelectorCreator
-	{
-		public override Regex MatchNext { get { return ElementSelector.RxSelector; } }
+        internal static readonly Regex RxSelector = new Regex(@"^[A-Za-z][A-Za-z0-9_\-]*");
+    }
 
-		public override IXQuerySelector Create(XQueryParserContext context, Match match)
-		{
-			return new ElementSelector(match.Value);
-		}
-	}
+    public class ElementSelectorCreator : XQuerySelectorCreator
+    {
+        public override Regex MatchNext { get { return ElementSelector.RxSelector; } }
+
+        public override IXQuerySelector Create(XQueryParserContext context, Match match)
+        {
+            return new ElementSelector(match.Value);
+        }
+    }
 }

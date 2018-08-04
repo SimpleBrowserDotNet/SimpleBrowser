@@ -1,32 +1,33 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
+﻿// -----------------------------------------------------------------------
+// <copyright file="CommaSelector.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Query.Selectors
 {
-	public class CommaSelector : IXQuerySelector
-	{
-		public void Execute(XQueryResultsContext context)
-		{
-			context.NewResultSet();
-		}
+    using System.Text.RegularExpressions;
 
-		public bool IsTransposeSelector { get { return true; } }
+    public class CommaSelector : IXQuerySelector
+    {
+        public void Execute(XQueryResultsContext context)
+        {
+            context.NewResultSet();
+        }
 
-		internal static readonly Regex RxSelector = new Regex(@"^\s*,\s*");
-	}
+        public bool IsTransposeSelector { get { return true; } }
 
-	public class CommaSelectorCreator : XQuerySelectorCreator
-	{
-		public override Regex MatchNext { get { return CommaSelector.RxSelector; } }
+        internal static readonly Regex RxSelector = new Regex(@"^\s*,\s*");
+    }
 
-		public override IXQuerySelector Create(XQueryParserContext context, Match match)
-		{
-			return new CommaSelector();
-		}
-	}
+    public class CommaSelectorCreator : XQuerySelectorCreator
+    {
+        public override Regex MatchNext { get { return CommaSelector.RxSelector; } }
+
+        public override IXQuerySelector Create(XQueryParserContext context, Match match)
+        {
+            return new CommaSelector();
+        }
+    }
 }

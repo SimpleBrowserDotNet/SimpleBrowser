@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿// -----------------------------------------------------------------------
+// <copyright file="Uploading.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.UnitTests.OfflineTests
 {
+    using System;
+    using System.IO;
+    using NUnit.Framework;
+
     [TestFixture]
     public class Uploading
     {
         [Test]
         public void Uploading_A_File_With_Enctype_MultipartMime()
         {
-            var b = new Browser(Helper.GetAllways200RequestMocker());
+            Browser b = new Browser(Helper.GetAllways200RequestMocker());
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.FileUpload.htm"));
 
             HttpRequestLog lastLog = null;
@@ -22,9 +26,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
                     lastLog = l;
                 };
 
-            var form = b.Select("form");
-            var file = b.Select("input[name=theFile]");
-            var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            HtmlResult form = b.Select("form");
+            HtmlResult file = b.Select("input[name=theFile]");
+            DirectoryInfo dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
 
             file.Value = dir.GetFiles()[3].FullName;
             form.SubmitForm();

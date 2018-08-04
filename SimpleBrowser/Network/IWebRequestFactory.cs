@@ -1,23 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// -----------------------------------------------------------------------
+// <copyright file="IWebRequestFactory.cs" company="SimpleBrowser">
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
+// </copyright>
+// -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Network
 {
-    // TODO Review 
+    using System;
+
+    // TODO Review
     //   1) consider adding XML comments (documentation) to all public members
 
     public interface IWebRequestFactory
-	{
-		IHttpWebRequest GetWebRequest(Uri url);
-	}
+    {
+        IHttpWebRequest GetWebRequest(Uri url);
+    }
 
-	public class DefaultRequestFactory : IWebRequestFactory
-	{
-		public IHttpWebRequest GetWebRequest(Uri url)
-		{
-			return new WebRequestWrapper(url);
-		}
-	}
+    public class DefaultRequestFactory : IWebRequestFactory
+    {
+        public IHttpWebRequest GetWebRequest(Uri url)
+        {
+            return new WebRequestWrapper(url);
+        }
+    }
 }

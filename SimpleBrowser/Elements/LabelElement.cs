@@ -1,6 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="LabelElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
