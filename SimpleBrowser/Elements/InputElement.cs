@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="InputElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -22,17 +22,29 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public InputElement(XElement element)
             : base(element)
-        { }
+        {
+        }
 
         /// <summary>
         /// Gets a value indicating whether the element is readonly.
         /// </summary>
         /// <remarks>
-        /// The element is readonly if the element has a readonly attribute set to any value other than empty string.
+        /// The element is readonly if the element has a readonly attribute.
         /// </remarks>
         public bool ReadOnly
         {
-            get => GetAttribute("readonly") != null;
+            get => this.GetAttribute("readonly") != null;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the element is required.
+        /// </summary>
+        /// <remarks>
+        /// The element is required if the element has a required attribute.
+        /// </remarks>
+        public bool Required
+        {
+            get => this.GetAttribute("required") != null;
         }
 
         /// <summary>
@@ -42,52 +54,34 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var attr = GetAttribute("value");
-                if (attr == null)
+                XAttribute attribute = this.GetAttribute("value");
+                if (attribute == null)
                 {
                     return string.Empty; // no value attribute means empty string
                 }
 
-                return attr.Value;
+                return attribute.Value;
             }
 
             set
             {
                 // Don't set the value of a read only or disabled input
-                if (ReadOnly || Disabled)
+                if (this.ReadOnly || this.Disabled)
                 {
                     return;
                 }
 
-                int maxLength = int.MaxValue;
+                int? maxLength = base.ParseNonNegativeIntegerAttribute("maxlength", int.MaxValue);
 
-                // If the input element has a maxlength attribute, verify that the attribute value is valid.
-                if (Element.HasAttributeCI("maxlength"))
-                {
-                    string maxLengthStr = Element.GetAttributeCI("maxlength");
-                    try
-                    {
-                        int length = Convert.ToInt32(maxLengthStr);
-                        if (length >= 0)
-                        {
-                            maxLength = length;
-                        }
-                        //// Do nothing (implicitly) if the value of maxlength is negative, per the HTML5 spec.
-                    }
-                    catch
-                    {
-                        //// Do nothing if the value of the maxlength is not a valid integer value, per the HTML5 spec.
-                    }
-                }
-
+                // Apply maximum length validation
                 // If the length of the value being assigned is too long, truncate it.
                 if (value.Length > maxLength)
                 {
-                    Element.SetAttributeValue("value", value.Substring(0, maxLength));
+                    this.Element.SetAttributeValue("value", value.Substring(0, maxLength.Value));
                 }
                 else
                 {
-                    Element.SetAttributeValue("value", value);
+                    this.Element.SetAttributeValue("value", value);
                 }
             }
         }
@@ -97,7 +91,7 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string InputType
         {
-            get => GetAttributeValue("type");
+            get => this.GetAttributeValue("type");
         }
 
         /// <summary>
@@ -105,17 +99,36 @@ namespace SimpleBrowser.Elements
         /// </summary>
         /// <param name="isClickedElement">True, if the action to submit the form was clicking this element. Otherwise, false.</param>
         /// <returns>A collection of <see cref="UserVariableEntry"/> objects.</returns>
-        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement, bool validate)
         {
-            if (!string.IsNullOrEmpty(Name) && !Disabled)
+            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
             {
-                if (Name.Equals("_charset_") && string.IsNullOrEmpty(Value) && InputType.Equals("hidden", StringComparison.OrdinalIgnoreCase))
+                if (validate)
+                {
+                    try
+                    {
+                        this.ValidateMinimumLength();
+                        this.ValidatePattern();
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+
+                if (this.Name.Equals("_charset_") && string.IsNullOrEmpty(this.Value) && this.InputType.Equals("hidden", StringComparison.OrdinalIgnoreCase))
                 {
                     yield return new UserVariableEntry() { Name = Name, Value = "iso-8859-1" };
                 }
                 else
                 {
                     yield return new UserVariableEntry() { Name = Name, Value = Value };
+
+                    XAttribute dirNameAttribute = this.GetAttribute("dirname");
+                    if (dirNameAttribute != null && this.OwningBrowser.Culture != null && this.OwningBrowser.Culture.TextInfo != null)
+                    {
+                        yield return new UserVariableEntry() { Name = dirNameAttribute.Value, Value = this.OwningBrowser.Culture.TextInfo.IsRightToLeft ? "rtl" : "ltr" };
+                    }
                 }
             }
 

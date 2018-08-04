@@ -1,12 +1,11 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="SelectElement.cs" company="SimpleBrowser">
-// See https://github.com/axefrog/SimpleBrowser/blob/master/readme.md
+// See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace SimpleBrowser.Elements
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
@@ -27,7 +26,8 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public SelectElement(XElement element)
             : base(element)
-        { }
+        {
+        }
 
         /// <summary>
         /// Gets or sets the value of the select element value attribute.
@@ -36,7 +36,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var optionElement = Options.Where(d => d.Selected).FirstOrDefault() ?? Options.FirstOrDefault();
+                OptionElement optionElement = this.Options.Where(d => d.Selected).FirstOrDefault() ?? this.Options.FirstOrDefault();
                 if (optionElement == null)
                 {
                     return null;
@@ -48,15 +48,15 @@ namespace SimpleBrowser.Elements
             set
             {
                 // Don't set the value of a disabled select
-                if (Disabled)
+                if (this.Disabled)
                 {
                     return;
                 }
 
                 // todo: use Options and OptionValue
-                foreach (XElement x in Element.Descendants("option"))
+                foreach (XElement x in this.Element.Descendants("option"))
                 {
-                    var attr = GetAttribute(x, "value");
+                    XAttribute attr = this.GetAttribute(x, "value");
                     string val = attr == null ? x.Value.Trim() : attr.Value.Trim();
                     x.SetAttributeValue("selected", val == value.Trim() ? "selected" : null);
                 }
@@ -70,7 +70,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var attribute = GetAttribute("multiple");
+                XAttribute attribute = this.GetAttribute("multiple");
                 if (attribute == null || string.IsNullOrWhiteSpace(attribute.Value))
                 {
                     return false;
@@ -89,13 +89,13 @@ namespace SimpleBrowser.Elements
             {
                 if (this.options == null)
                 {
-                    var optionElements = Element.Descendants()
+                    IEnumerable<OptionElement> optionElements = this.Element.Descendants()
                         .Where(e => e.Name.LocalName.ToLower() == "option")
-                        .Select(e => OwningBrowser.CreateHtmlElement<OptionElement>(e));
+                        .Select(e => this.OwningBrowser.CreateHtmlElement<OptionElement>(e));
                     this.options = optionElements;
                 }
 
-                return options;
+                return this.options;
             }
         }
 
@@ -104,11 +104,11 @@ namespace SimpleBrowser.Elements
         /// </summary>
         /// <param name="isClickedElement">A value indicating whether the clicking of this element caused the form submission.</param>
         /// <returns>A collection of <see cref="UserVariableEntry"/></returns>
-        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement)
+        public override IEnumerable<UserVariableEntry> ValuesToSubmit(bool isClickedElement, bool validate)
         {
-            if (!string.IsNullOrEmpty(Name) && !Disabled)
+            if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
             {
-                foreach (var item in Options)
+                foreach (OptionElement item in this.Options)
                 {
                     if (item.Selected)
                     {
@@ -127,13 +127,13 @@ namespace SimpleBrowser.Elements
         /// <returns>True if the option is selected, otherwise false.</returns>
         internal bool IsSelected(OptionElement optionElement)
         {
-            if (MultiValued || Options.Any(o => o.GetAttributeValue("selected") != null))
+            if (this.MultiValued || this.Options.Any(o => o.GetAttributeValue("selected") != null))
             {
                 return optionElement.GetAttributeValue("selected") != null;
             }
             else
             {
-                return optionElement.Element == Options.First().Element;
+                return optionElement.Element == this.Options.First().Element;
             }
         }
 
@@ -151,9 +151,9 @@ namespace SimpleBrowser.Elements
             else
             {
                 optionElement.Element.SetAttributeValue(XName.Get("selected"), "selected");
-                if (!MultiValued)
+                if (!this.MultiValued)
                 {
-                    foreach (var option in Options)
+                    foreach (OptionElement option in this.Options)
                     {
                         if (option.Element != optionElement.Element)
                         {

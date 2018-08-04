@@ -16,7 +16,7 @@ namespace SimpleBrowser.Elements
     /// Implements a form HTML element.
     /// </summary>
     /// <remarks>
-    /// HTML5 Specification for the form element: http://www.w3.org/TR/html5/forms.html#the-form-element
+    /// HTML5 Specification for the form element: https://www.w3.org/TR/html52/sec-forms.html#the-form-element
     /// </remarks>
     internal class FormElement : HtmlElement
     {
@@ -31,7 +31,8 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The XElement from the document corresponding to this element.</param>
         public FormElement(XElement element)
             : base(element)
-        { }
+        {
+        }
 
         /// <summary>
         /// Gets an enumeration of child form elements
@@ -46,11 +47,11 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var formElements = OwningBrowser.XDocument.Descendants()
+                IEnumerable<FormElementElement> formElements = this.OwningBrowser.XDocument.Descendants()
                     .Where(e => formInputElementNames.Contains(e.Name.LocalName.ToLower()))
-                    .Select(e => OwningBrowser.CreateHtmlElement<FormElementElement>(e));
+                    .Select(e => this.OwningBrowser.CreateHtmlElement<FormElementElement>(e));
 
-                return formElements.Where(e => e.OwningForm != null && e.OwningForm.XElement == XElement);
+                return formElements.Where(e => e.OwningForm != null && e.OwningForm.XElement == this.XElement);
             }
         }
 
@@ -61,8 +62,8 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var actionAttr = GetAttribute(Element, "action");
-                return actionAttr == null ? OwningBrowser.Url.ToString() : actionAttr.Value;
+                XAttribute actionAttr = this.GetAttribute(this.Element, "action");
+                return actionAttr == null ? this.OwningBrowser.Url.ToString() : actionAttr.Value;
             }
         }
 
@@ -73,7 +74,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                var attr = GetAttribute(Element, "method");
+                XAttribute attr = this.GetAttribute(this.Element, "method");
                 return attr == null ? "GET" : attr.Value.ToUpper();
             }
         }
@@ -85,7 +86,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                string val = GetAttributeValue("enctype");
+                string val = this.GetAttributeValue("enctype");
                 if (string.IsNullOrWhiteSpace(val))
                 {
                     val = FormEncoding.FormUrlencode;
@@ -96,6 +97,22 @@ namespace SimpleBrowser.Elements
         }
 
         /// <summary>
+        /// Gets the form target
+        /// </summary>
+        public string Target
+        {
+            get
+            {
+                return this.GetAttributeValue("target");
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the form should validate.
+        /// </summary>
+        private bool Validate { get; set; }
+
+        /// <summary>
         /// Submits the form
         /// </summary>
         /// <param name="url">Optional. If specified, the url to submit the form. Overrides the form action.</param>
@@ -103,7 +120,7 @@ namespace SimpleBrowser.Elements
         /// <returns>True, if the form submitted successfully, false otherwise.</returns>
         public override bool SubmitForm(string url = null, HtmlElement clickedElement = null)
         {
-            return Submit(url, clickedElement);
+            return this.Submit(url, clickedElement);
         }
 
         /// <summary>
@@ -114,34 +131,82 @@ namespace SimpleBrowser.Elements
         /// <returns>True, if the form submitted successfully, false otherwise.</returns>
         private bool Submit(string url = null, HtmlElement clickedElement = null)
         {
-            var navigation = new NavigationArgs
-            {
-                Uri = url ?? Action,
-                Method = Method,
-                ContentType = FormEncoding.FormUrlencode
-            };
+            string action = this.Action;
+            string method = this.Method;
+            string enctype = this.EncType;
+            string target = this.Target;
+            this.Validate = true;
 
-            foreach (var entry in Elements.SelectMany(e =>
-                    {
-                        bool isClicked = false;
-                        if (clickedElement != null && clickedElement.Element == e.Element)
-                        {
-                            isClicked = true;
-                        }
-
-                        return e.ValuesToSubmit(isClicked);
-                    }))
+            if (clickedElement != null)
             {
-                navigation.UserVariables.Add(entry.Name, entry.Value);
+                string clickedElementAction = clickedElement.GetAttributeValue("formaction");
+                if (!string.IsNullOrWhiteSpace(clickedElementAction))
+                {
+                    action = clickedElementAction;
+                }
+
+                string clickedElementEncType = clickedElement.GetAttributeValue("formenctype");
+                if (!string.IsNullOrWhiteSpace(clickedElementEncType))
+                {
+                    enctype = clickedElementEncType;
+                }
+
+                string clickedElementMethod = clickedElement.GetAttributeValue("formmethod");
+                if (!string.IsNullOrWhiteSpace(clickedElementMethod))
+                {
+                    method = clickedElementMethod;
+                }
+
+                string clickedElementTarget = clickedElement.GetAttributeValue("formtarget");
+                if (!string.IsNullOrWhiteSpace(clickedElementTarget))
+                {
+                    target = clickedElementTarget;
+                }
+
+                if (clickedElement.XElement.HasAttributeCI("formnovalidate"))
+                {
+                    this.Validate = false;
+                }
             }
 
-            if (EncType == FormEncoding.MultipartForm && Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+            NavigationArgs navigation = new NavigationArgs
+            {
+                Uri = url ?? action,
+                Method = method,
+                ContentType = FormEncoding.FormUrlencode,
+                EncodingType = enctype,
+                Target = target
+            };
+
+            try
+            {
+                foreach (UserVariableEntry entry in this.Elements.SelectMany(e =>
+                        {
+                            bool isClicked = false;
+                            if (clickedElement != null && clickedElement.Element == e.Element)
+                            {
+                                isClicked = true;
+                            }
+
+                            return e.ValuesToSubmit(isClicked, this.Validate);
+                        }))
+                {
+                    navigation.UserVariables.Add(entry.Name, entry.Value);
+                }
+            }
+            catch (FormElementValidationException formElementValidationException)
+            {
+                base.OwningBrowser.Log(formElementValidationException.Message, LogMessageType.Error);
+                return false;
+            }
+
+            if (navigation.EncodingType == FormEncoding.MultipartForm && navigation.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
             {
                 // create postdata according to multipart specs
                 Guid token = Guid.NewGuid();
                 navigation.UserVariables = null;
                 StringBuilder post = new StringBuilder();
-                foreach (var element in Elements)
+                foreach (FormElementElement element in this.Elements)
                 {
                     bool isClickedElement = false;
                     if (clickedElement != null)
@@ -149,8 +214,8 @@ namespace SimpleBrowser.Elements
                         isClickedElement = element.Element == clickedElement.Element;
                     }
 
-                    var values = element.ValuesToSubmit(isClickedElement);
-                    foreach (var value in values)
+                    IEnumerable<UserVariableEntry> values = element.ValuesToSubmit(isClickedElement, this.Validate);
+                    foreach (UserVariableEntry value in values)
                     {
                         post.AppendFormat("--{0}\r\n", token);
                         if (element is FileUploadElement)
@@ -176,7 +241,7 @@ namespace SimpleBrowser.Elements
                 navigation.ContentType = FormEncoding.MultipartForm + "; boundary=" + token;
             }
 
-            return RequestNavigation(navigation);
+            return this.RequestNavigation(navigation);
         }
 
         /// <summary>
