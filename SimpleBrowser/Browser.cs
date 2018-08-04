@@ -34,9 +34,9 @@ namespace SimpleBrowser
         private readonly List<Browser> _allWindows;
 
         private HashSet<string> _extraHeaders = new HashSet<string>();
-        private readonly List<HtmlElement> _allActiveElements = new List<HtmlElement>();
-        private List<NavigationState> _history = new List<NavigationState>();
-        private int _historyPosition = -1;
+        private List<NavigationState> navigationHistory = new List<NavigationState>();
+        private int navigationHistoryPosition = -1;
+        private uint navigationHistoryCount = 20;
 
         private IWebProxy _proxy;
         private int _timeoutMilliseconds = 30000;
@@ -88,6 +88,26 @@ namespace SimpleBrowser
         public event Action<Browser, Browser> NewWindowOpened;
 
         #region public properties
+
+        public uint NavigationHistoryCount
+        {
+            get
+            {
+                return this.navigationHistoryCount;
+            }
+
+            set
+            {
+                if (value < 1)
+                {
+                    this.navigationHistoryCount = 1;
+                }
+                else
+                {
+                    this.navigationHistoryCount = value;
+                }
+            }
+        }
 
         public string Accept { get; set; }
 
@@ -189,8 +209,9 @@ namespace SimpleBrowser
             get
             {
                 CheckDisposed();
-                return _history.Select((s, i) => new { Index = i, State = s })
-                    .ToDictionary((i) => i.Index - _historyPosition, (i) => i.State.Url);
+                return navigationHistory
+                    .Select((s, i) => new { Index = i, State = s })
+                    .ToDictionary((i) => i.Index - navigationHistoryPosition, (i) => i.State.Url);
             }
         }
 
@@ -355,12 +376,12 @@ namespace SimpleBrowser
             get
             {
                 CheckDisposed();
-                if (_historyPosition == -1)
+                if (navigationHistoryPosition == -1)
                 {
                     return null;
                 }
 
-                return _history[_historyPosition];
+                return navigationHistory[navigationHistoryPosition];
             }
         }
 
@@ -404,7 +425,7 @@ namespace SimpleBrowser
 
         public void Close()
         {
-            _history = null;
+            navigationHistory = null;
             _allWindows.Remove(this);
         }
 
@@ -627,10 +648,9 @@ namespace SimpleBrowser
         public bool NavigateBack()
         {
             CheckDisposed();
-            if (_historyPosition > 0)
+            if (navigationHistoryPosition > 0)
             {
-                _historyPosition--;
-                InvalidateAllActiveElements();
+                navigationHistoryPosition--;
                 return true;
             }
 
@@ -640,10 +660,9 @@ namespace SimpleBrowser
         public bool NavigateForward()
         {
             CheckDisposed();
-            if (_history.Count > _historyPosition + 1)
+            if (navigationHistory.Count > navigationHistoryPosition + 1)
             {
-                _historyPosition++;
-                InvalidateAllActiveElements();
+                navigationHistoryPosition++;
                 return true;
             }
 
@@ -757,18 +776,17 @@ namespace SimpleBrowser
 
         internal void AddNavigationState(NavigationState state)
         {
-            while (_history.Count > _historyPosition + 1)
+            while (navigationHistory.Count > navigationHistoryPosition + 1)
             {
-                _history.Remove(_history.Last());
+                navigationHistory.Remove(navigationHistory.Last());
             }
 
-            _historyPosition++;
-            _history.Add(state);
-            this.InvalidateAllActiveElements();
-            while (_history.Count > 20)
+            navigationHistoryPosition++;
+            navigationHistory.Add(state);
+            while (navigationHistory.Count > this.NavigationHistoryCount)
             {
-                _history.RemoveAt(0);
-                _historyPosition--;
+                navigationHistory.RemoveAt(0);
+                navigationHistoryPosition--;
             }
         }
 
@@ -787,7 +805,6 @@ namespace SimpleBrowser
             var htmlElement = HtmlElement.CreateFor(element);
             if (htmlElement != null)
             {
-                _allActiveElements.Add(htmlElement);
                 htmlElement.OwningBrowser = this;
                 htmlElement.NavigationRequested += htmlElement_NavigationRequested;
             }
@@ -1104,7 +1121,7 @@ namespace SimpleBrowser
 
         private void CheckDisposed()
         {
-            if (_history == null)
+            if (navigationHistory == null)
             {
                 throw new ObjectDisposedException("This browser has been closed. You cannot access the content or history after closing.");
             }
@@ -1363,14 +1380,6 @@ namespace SimpleBrowser
             this._navigationAttributes = args.NavigationAttributes;
 
             return browserToNav.DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
-        }
-
-        private void InvalidateAllActiveElements()
-        {
-            foreach (var element in _allActiveElements)
-            {
-                element.Invalidate();
-            }
         }
 
         private IHttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
