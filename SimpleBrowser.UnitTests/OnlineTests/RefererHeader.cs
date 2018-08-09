@@ -120,7 +120,6 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         /// Tests the Unsafe URL Referrer Policy State with a secure transition.
         /// </summary>
         [Test]
-        [Ignore("Test fails due to changed external website")]
         public void When_Testing_Referer_Unsafe_Url_Secure_Transition()
         {
             string startingUrl = "https://www.codeproject.com/";
@@ -137,19 +136,14 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             HtmlResult link = b.Find("ctl00_AdvertiseLink");
             Assert.IsNotNull(link);
 
+            link.XElement.SetAttributeValue("href", "http://afn.org/~afn07998/simplebrowser/testmeta.htm");
             string targetHref = link.GetAttribute("href");
-            Assert.AreEqual(targetHref, "http://developermedia.com/");
+            Assert.AreEqual(targetHref, "http://afn.org/~afn07998/simplebrowser/testmeta.htm");
 
             link.Click();
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNotNull(b.Referer);
             Assert.AreEqual(b.Referer.ToString(), startingUrl);
-
-            /* iana.org went HTTPS only. Good for them, but it broke this test for SimpleBrowser.
-            // This explicitly tests that a 300 redirect preserves the original referrer.
-            Assert.AreEqual(b.CurrentState.Url.ToString(), "http://www.iana.org/domains/reserved");
-            Assert.AreNotEqual(b.Referer.ToString(), targetHref);
-            */
         }
 
         /// <summary>
