@@ -176,5 +176,15 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Assert.That(b1.Url.ToString() == "http://localhost/");
             Assert.Throws(typeof(ObjectDisposedException), () => b2.Navigate("http://localhost/"));
         }
+
+        [Test]
+        public void IFrame_Url_ParsesCorrectly()
+        {
+            Browser b = new Browser(Helper.GetFramesMock());
+
+            b.Navigate("http://localhost/");
+            Assert.That(b.Frames.Count() == 2);
+            Assert.That(b.Frames.Last().Url.AbsoluteUri == @"https://www.example.com/BurstingPipe?cn=ot&onetagid=7128&ns=1&activityValues=$$Session=[Session]$$&retargetingValues=$$$$&dynamicRetargetingValues=$$$$&acp=$$$$&");
+        }
     }
 }
