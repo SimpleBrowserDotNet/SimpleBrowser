@@ -11,7 +11,7 @@ namespace SimpleBrowser
     using System.Collections.Generic;
     using System.Linq;
 
-#if NET40
+#if NET45
     using RazorHosting;
 #endif
 
@@ -39,7 +39,7 @@ namespace SimpleBrowser
                 RequestsCount = logs.Count(l => l is HttpRequestLog)
             };
 
-#if NET40
+#if NET45
             RazorEngine<RazorTemplateBase> engine = new RazorEngine<RazorTemplateBase>();
             string html = engine.RenderTemplate(Resources.HtmlLogTemplate, new[] { typeof(Browser).Assembly.Location, "System.Web.dll" }, model);
             return html ?? engine.ErrorMessage;
