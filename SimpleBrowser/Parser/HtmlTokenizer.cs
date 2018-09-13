@@ -290,17 +290,17 @@ namespace SimpleBrowser.Parser
         }
 
         /* READING ATTRIBUTE VALUES
-		 * name - any string of non-whitespace characters
-		 * can't start with ="'<>
-		 * can't contain whitespace or any of <>=
-		 * following whitespace is ignored
-		 * if an equal symbol is found, follow up with attribute value
-		 * if value started with a quote, only that same quote terminates the value
-		 * if value did NOT start with a quote, the value terminates with whitespace or any of <>
-		 */
+         * name - any string of non-whitespace characters
+         * can't start with ="'<>
+         * can't contain whitespace or any of <>=
+         * following whitespace is ignored
+         * if an equal symbol is found, follow up with attribute value
+         * if value started with a quote, only that same quote terminates the value
+         * if value did NOT start with a quote, the value terminates with whitespace or any of <>
+         */
 
         private static Regex RxReadTagName = new Regex(@"[A-Za-z][A-Za-z0-9]*");
-        private static Regex RxReadAttribute = new Regex(@"(?<name>([^\='""\<\>\s/]|/(?=\>))[^\=\<\>\s]*)(?<eq>\s*=\s*(?<quote>'|"")?(?(quote)(?<value>(?(\k<quote>)|.)*)|(?<value>([^\s\<\>]|/(?=\>))*))\k<quote>?)?", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        private static Regex RxReadAttribute = new Regex(@"(?<name>([^\='""\<\>\s/]|/(?=\>))[^\=\<\>\s]*)(?<eq>\s*=\s*(?<quote>'|"")?(?(quote)(?<value>(?(\k<quote>)|.)*)|(?<value>([^ \<\>]|/(?=\>))*))\k<quote>?)?", RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
         private static void ReadElement(ParserContext context)
         {

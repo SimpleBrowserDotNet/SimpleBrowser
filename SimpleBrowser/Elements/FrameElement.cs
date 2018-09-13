@@ -8,13 +8,15 @@
 namespace SimpleBrowser.Elements
 {
     using System;
+    using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
     internal class FrameElement : HtmlElement
     {
         public FrameElement(XElement element)
             : base(element)
-        { }
+        {
+        }
 
         public Browser FrameBrowser { get; private set; }
 
@@ -24,12 +26,16 @@ namespace SimpleBrowser.Elements
             {
                 return this.FrameBrowser.WindowHandle;
             }
+
             return base.GetAttributeValue(name);
         }
 
         public string Src
         {
-            get => this.Element.GetAttributeCI("src");
+            get
+            {
+                return Regex.Replace(this.Element.GetAttributeCI("src"), @"\s+", "");
+            }
         }
 
         public string Name
