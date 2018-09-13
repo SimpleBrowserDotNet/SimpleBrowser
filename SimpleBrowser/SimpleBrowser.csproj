@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios.</Description>
-    <Copyright></Copyright>
+    <Copyright>Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
     <AssemblyTitle>SimpleBrowser</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
     <VersionPrefix>0.5.79</VersionPrefix>
-    <Authors>Nathan Ridley, Teun Duynstee, Kevin Yochum, Joe Feser</Authors>
-    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
+    <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>SimpleBrowser</AssemblyName>
@@ -25,6 +24,8 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <WarningsAsErrors />
+    <RepositoryUrl>https://github.com/SimpleBrowserDotNet/SimpleBrowser.git</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
@@ -39,7 +40,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
   
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="RazorHosting">
       <HintPath>..\Dependencies\RazorHosting.dll</HintPath>
     </Reference>
