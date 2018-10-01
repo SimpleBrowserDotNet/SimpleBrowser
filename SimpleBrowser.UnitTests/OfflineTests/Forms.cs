@@ -407,7 +407,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         {
             Browser b = new Browser();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
-            b.Culture = CultureInfo.CreateSpecificCulture("us-EN");
+            b.Culture = CultureInfo.CreateSpecificCulture("en-US");
 
             // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("textinput");
@@ -436,7 +436,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         {
             Browser b = new Browser();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
-            b.Culture = CultureInfo.CreateSpecificCulture("us-EN");
+            b.Culture = CultureInfo.CreateSpecificCulture("en-US");
 
             // Test that the textarea input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("textareainput");
@@ -1234,16 +1234,25 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase(".5", "-1.2", "5.9", null)]
         [TestCase("-1.1", "-1.6", "2.4", ".5")]
         [TestCase(".3", "-1.2", "5.9", ".5")]
-        [TestCase("3e5", null, null, null)]
+		[TestCase("-.5", null, null, null, "nl-NL")]
+		[TestCase(".5", null, null, null, "nl-NL")]
+		[TestCase("-.5", "-1.1", null, null, "nl-NL")]
+		[TestCase(".5", "-1.2", null, null, "nl-NL")]
+		[TestCase("-.5", "-1.1", "2.4", null, "nl-NL")]
+		[TestCase(".5", "-1.2", "5.9", null, "nl-NL")]
+		[TestCase("-1.1", "-1.6", "2.4", ".5", "nl-NL")]
+		[TestCase(".3", "-1.2", "5.9", ".5", "nl-NL")]
+		[TestCase("3e5", null, null, null)]
         [TestCase("3e5", "1000", null, null)]
         [TestCase("3e5", null, "500000", null)]
         [TestCase("3e5", "1000", "500000", null)]
         [TestCase("3e5", "1000", "500000", "100")]
         [TestCase("notnumber", null, null, null)]
         [TestCase("notnumber", "5", "15", "4")]
-        public void FormsNumberElement_SubmitForm_SubmitSucceeds(string value, string min, string max, string step)
+        public void FormsNumberElement_SubmitForm_SubmitSucceeds(string value, string min, string max, string step, string cultureString = "en-US")
         {
             Browser b = new Browser();
+			b.Culture = CultureInfo.CreateSpecificCulture(cultureString);
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             HtmlResult numberInput = b.Find("number");
@@ -1279,15 +1288,18 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         /// <param name="max">The maximum value allowed to be entered into the input</param>
         /// <param name="step">The step value to apply to the input</param>
         [Test]
-        [TestCase("3e5", "500000", null, null)]
-        [TestCase("3e5", null, "500", null)]
-        [TestCase("3e5", "500000", "50000000", null)]
-        [TestCase("3e5", "500000", "50000000", "117")]
-        [TestCase("-.5", "-1.1", "2.4", ".5")]
-        [TestCase(".5", "-1.2", "5.9", ".5")]
-        public void FormsNumberElement_SubmitForm_SubmitFails(string value, string min, string max, string step)
+        [TestCase("3e5", "500000", null, null, "en-US")]
+        [TestCase("3e5", null, "500", null, "en-US")]
+        [TestCase("3e5", "500000", "50000000", null, "en-US")]
+        [TestCase("3e5", "500000", "50000000", "117", "en-US")]
+        [TestCase("-.5", "-1.1", "2.4", ".5", "en-US")]
+        [TestCase(".5", "-1.2", "5.9", ".5", "en-US")]
+		[TestCase("-,5", "-1,1", "2,4", ",5", "nl-NL")]
+		[TestCase(",5", "-1,2", "5,9", ",5", "nl-NL")]
+		public void FormsNumberElement_SubmitForm_SubmitFails(string value, string min, string max, string step, string cultureString)
         {
             Browser b = new Browser();
+			b.Culture = CultureInfo.CreateSpecificCulture(cultureString);
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             HtmlResult numberInput = b.Find("number");

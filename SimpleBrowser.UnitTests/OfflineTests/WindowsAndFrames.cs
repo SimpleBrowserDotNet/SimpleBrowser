@@ -184,7 +184,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 
             b.Navigate("http://localhost/");
             Assert.That(b.Frames.Count() == 2);
-            Assert.AreEqual(b.Frames.Last().Url.AbsoluteUri, @"https://www.example.com/BurstingPipe?cn=ot&onetagid=7128&ns=1&activityValues=$$Session=[Session]$$&retargetingValues=$$$$&dynamicRetargetingValues=$$$$&acp=$$$$&");
+            Assert.AreEqual(b.Frames.Last().Url.AbsoluteUri, @"https://www.example.com/BurstingPipe?cn=ot&onetagid=7128&ns=1&activityValues=$$Session=-Session-$$&retargetingValues=$$$$&dynamicRetargetingValues=$$$$&acp=$$$$&");
         }
     }
 }
