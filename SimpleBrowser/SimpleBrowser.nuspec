@@ -9,9 +9,9 @@
 		<group>
 			<dependency id="Newtonsoft.Json" version="9.0.1" />
 		</group>
-      <group targetFramework="netstandard2.0">
+      <!-- <group targetFramework="netstandard2.0">
 			<dependency id="RazorLight" version="2.0.0-beta1" />
-      </group>
+      </group> -->
     </dependencies>
     <id>SimpleBrowser</id>
     <title>SimpleBrowser</title>
