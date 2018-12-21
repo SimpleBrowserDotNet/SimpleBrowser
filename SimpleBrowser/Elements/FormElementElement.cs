@@ -9,7 +9,8 @@ namespace SimpleBrowser.Elements
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+	using System.Globalization;
+	using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
@@ -161,7 +162,7 @@ namespace SimpleBrowser.Elements
                 try
                 {
                     // Doing a Convert.ToInt32 is a variation from (i.e., a tremendous simplification of) the HTML5.2 specification.
-                    returnValue = Convert.ToDecimal(valueAsString);
+                    returnValue = Convert.ToDecimal(valueAsString, CultureInfo.InvariantCulture);
                 }
                 catch
                 {
