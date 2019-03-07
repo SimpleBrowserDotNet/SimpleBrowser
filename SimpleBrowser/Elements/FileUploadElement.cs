@@ -41,7 +41,7 @@ namespace SimpleBrowser.Elements
             {
                 // Todo: create a mime type for extensions
                 filename = this.Value;
-                byte[] allBytes = allBytes = File.ReadAllBytes(filename);
+                byte[] allBytes = File.ReadAllBytes(filename);
 
                 FileInfo fileInfo = new FileInfo(filename);
                 extension = fileInfo.Extension;

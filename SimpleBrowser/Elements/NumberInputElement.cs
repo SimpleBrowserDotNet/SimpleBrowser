@@ -47,15 +47,15 @@ namespace SimpleBrowser.Elements
                     return;
                 }
 
-                if ((value.Contains('e') || value.Contains('E')) && decimal.TryParse(value, NumberStyles.AllowExponent, this.OwningBrowser.Culture, out decimal exponentDecimalValue))
+				decimal exponentDecimalValue;
+				decimal decimalValue;
+                if ((value.Contains('e') || value.Contains('E')) && decimal.TryParse(value, NumberStyles.AllowExponent, this.OwningBrowser.Culture, out exponentDecimalValue))
                 {
-                    this.Element.SetAttributeValue("value", exponentDecimalValue.ToString(this.OwningBrowser.Culture));
+                    this.Element.SetAttributeValue("value", exponentDecimalValue.ToString());
                 }
-                else if (decimal.TryParse(value, 
-					NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, 
-					this.OwningBrowser.Culture, out decimal decimalValue))
+                else if (decimal.TryParse(value, out decimalValue))
                 {
-                    this.Element.SetAttributeValue("value", decimalValue.ToString(this.OwningBrowser.Culture));
+                    this.Element.SetAttributeValue("value", decimalValue.ToString());
                 }
 
                 return;
@@ -71,7 +71,8 @@ namespace SimpleBrowser.Elements
         {
             if (validate)
             {
-                if (string.IsNullOrWhiteSpace(this.Value) == false && decimal.TryParse(this.Value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, this.OwningBrowser.Culture, out decimal decimalValue) == false)
+				decimal decimalValue;
+                if (string.IsNullOrWhiteSpace(this.Value) == false && decimal.TryParse(this.Value, out decimalValue) == false)
                 {
                     throw new FormElementValidationException(string.Format("{0} is an invalid number.", this.Value));
                 }
@@ -104,12 +105,14 @@ namespace SimpleBrowser.Elements
         private void ValidateMinimumValue()
         {
             string minimum = this.GetAttributeValue("min");
-            if (string.IsNullOrWhiteSpace(minimum) == true || double.TryParse(minimum, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, this.OwningBrowser.Culture, out double minimumValue) == false)
+			double minimumValue;
+            if (string.IsNullOrWhiteSpace(minimum) == true || double.TryParse(minimum, out minimumValue) == false)
             {
                 return;
             }
 
-            if (double.TryParse(this.Value, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, this.OwningBrowser.Culture, out double decimalValue))
+			double decimalValue;
+            if (double.TryParse(this.Value, out decimalValue))
             {
                 if (minimumValue > decimalValue)
                 {
@@ -121,12 +124,14 @@ namespace SimpleBrowser.Elements
         private void ValidateMaximumValue()
         {
             string maximum = this.GetAttributeValue("max");
-            if (string.IsNullOrWhiteSpace(maximum) == true || decimal.TryParse(maximum, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, this.OwningBrowser.Culture, out decimal maximumValue) == false)
+			decimal maximumValue;
+            if (string.IsNullOrWhiteSpace(maximum) == true || decimal.TryParse(maximum, out maximumValue) == false)
             {
                 return;
             }
 
-            if (decimal.TryParse(this.Value, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, this.OwningBrowser.Culture, out decimal decimalValue))
+			decimal decimalValue;
+            if (decimal.TryParse(this.Value, out decimalValue))
             {
                 if (decimalValue > maximumValue)
                 {
@@ -148,7 +153,8 @@ namespace SimpleBrowser.Elements
                 return;
             }
 
-            if (decimal.TryParse(this.Value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, this.OwningBrowser.Culture, out decimal value) == false)
+			decimal value;
+            if (decimal.TryParse(this.Value, out value) == false)
             {
                 throw new FormElementValidationException("Invalid element value.");
             }
@@ -165,7 +171,8 @@ namespace SimpleBrowser.Elements
 
             decimal stepBase = 1;
             string min = this.GetAttributeValue("min");
-            if (string.IsNullOrWhiteSpace(min) == false && decimal.TryParse(min, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, this.OwningBrowser.Culture, out decimal minimumValue))
+			decimal minimumValue;
+            if (string.IsNullOrWhiteSpace(min) == false && decimal.TryParse(min, out minimumValue))
             {
                 stepBase = minimumValue;
             }

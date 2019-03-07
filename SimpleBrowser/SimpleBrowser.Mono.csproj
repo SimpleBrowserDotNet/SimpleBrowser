@@ -13,28 +13,25 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RazorHosting">
-      <HintPath>..\Dependencies\RazorHosting.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -45,8 +42,16 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b9a188c8922137c6">
+      <Package>monodevelop</Package>
+    </Reference>
     <Reference Include="System.Web.Razor">
-      <HintPath>..\Dependencies\System.Web.Razor.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.7\lib\net45\System.Web.Razor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Westwind.RazorHosting">
+      <HintPath>..\packages\Westwind.RazorHosting.3.3.9\lib\net45\Westwind.RazorHosting.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -111,10 +116,22 @@
     <Compile Include="Query\XQuerySelector.cs" />
     <Compile Include="Query\XQuerySelectorCreator.cs" />
     <Compile Include="Internal\SetCookieHeaderParser.cs" />
+    <Compile Include="Elements\OptionElement.cs" />
+    <Compile Include="Elements\FormElementValidationException.cs" />
+    <Compile Include="Elements\CheckboxInputElement.cs" />
+    <Compile Include="Elements\ColorInputElement.cs" />
+    <Compile Include="Elements\DateTimeInputElement.cs" />
+    <Compile Include="Elements\EmailInputElement.cs" />
+    <Compile Include="Elements\FormElementElementValidator.cs" />
+    <Compile Include="Elements\RadioInputElement.cs" />
+    <Compile Include="Elements\SelectableInputElement.cs" />
+    <Compile Include="Elements\UrlInputElement.cs" />
+    <Compile Include="Elements\NumberInputElement.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Web.config" />
     <None Include="Resources\HtmlLogTemplate.cshtml" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -122,7 +139,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

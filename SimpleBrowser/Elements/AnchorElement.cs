@@ -26,14 +26,18 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public AnchorElement(XElement element)
             : base(element)
-        { }
+        {
+        }
 
         /// <summary>
         /// Gets the value of the $href$ attribute
         /// </summary>
         public string Href
         {
-            get => Element.GetAttributeCI("href");
+            get
+            {
+                return Element.GetAttributeCI ("href");
+            }
         }
 
         /// <summary>
@@ -41,7 +45,10 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string Target
         {
-            get => Element.GetAttributeCI("target");
+            get
+            {
+                return Element.GetAttributeCI ("target");
+            }
         }
 
         /// <summary>
@@ -49,7 +56,10 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string Rel
         {
-            get => Element.GetAttributeCI("rel");
+            get
+            {
+                return Element.GetAttributeCI ("rel");
+            }
         }
 
         /// <summary>

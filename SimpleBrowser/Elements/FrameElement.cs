@@ -40,7 +40,10 @@ namespace SimpleBrowser.Elements
 
         public string Name
         {
-            get => this.Element.GetAttributeCI("name");
+            get
+            {
+                return this.Element.GetAttributeCI ("name");
+            }
         }
 
         internal override Browser OwningBrowser

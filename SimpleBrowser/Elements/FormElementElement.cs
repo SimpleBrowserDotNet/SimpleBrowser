@@ -9,8 +9,7 @@ namespace SimpleBrowser.Elements
 {
     using System;
     using System.Collections.Generic;
-	using System.Globalization;
-	using System.Linq;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
@@ -71,7 +70,10 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string Name
         {
-            get => this.GetAttribute("name")?.Value;
+            get
+            {
+                return this.GetAttribute ("name")?.Value;
+            }
         }
 
         /// <summary>
@@ -82,7 +84,10 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool Disabled
         {
-            get => this.GetAttribute("disabled") != null;
+            get
+            {
+                return this.GetAttribute ("disabled") != null;
+            }
         }
 
         /// <summary>
@@ -90,8 +95,15 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public virtual string Value
         {
-            get => this.Element.Value;
-            set => this.Element.Value = value;
+            get
+            {
+                return this.Element.Value;
+            }
+
+            set
+            {
+                this.Element.Value = value;
+            }
         }
 
         /// <summary>
@@ -162,7 +174,7 @@ namespace SimpleBrowser.Elements
                 try
                 {
                     // Doing a Convert.ToInt32 is a variation from (i.e., a tremendous simplification of) the HTML5.2 specification.
-                    returnValue = Convert.ToDecimal(valueAsString, CultureInfo.InvariantCulture);
+                    returnValue = Convert.ToDecimal(valueAsString);
                 }
                 catch
                 {

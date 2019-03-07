@@ -51,8 +51,15 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public override string Value
         {
-            get => Element.Value.Trim();
-            set => throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
+            get
+            {
+                return Element.Value.Trim();
+            }
+
+            set
+            {
+                throw new InvalidOperationException ("Cannot change the value for an option element. Set the value attibute.");
+            }
         }
 
         /// <summary>

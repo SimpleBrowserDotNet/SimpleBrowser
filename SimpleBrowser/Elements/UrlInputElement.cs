@@ -72,7 +72,7 @@ namespace SimpleBrowser.Elements
 
             try
             {
-                Uri link = new Uri(url);
+                new Uri(url);
                 return true;
             }
             catch

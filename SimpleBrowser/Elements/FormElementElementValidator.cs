@@ -18,8 +18,6 @@ namespace SimpleBrowser.Elements
     /// </remarks>
     internal static class FormElementElementValidator
     {
-        private static DateTime htmlDateTimeMinimumValue = new DateTime(1970, 1, 1);
-
         /// <summary>
         /// An extension method for minimum length validation
         /// </summary>
@@ -60,12 +58,14 @@ namespace SimpleBrowser.Elements
             string minimumValue = element.GetAttributeValue("min");
             if (!string.IsNullOrWhiteSpace(minimumValue))
             {
-                if (DateTime.TryParse(minimumValue, out DateTime minimumDateTime) == false)
+				DateTime minimumDateTime;
+                if (DateTime.TryParse(minimumValue, out minimumDateTime) == false)
                 {
                     return;
                 }
 
-                if (DateTime.TryParse(element.Value, out DateTime elementDateTime) == false)
+				DateTime elementDateTime;
+                if (DateTime.TryParse(element.Value, out elementDateTime) == false)
                 {
                     throw new FormElementValidationException("Invalid element value.");
                 }
@@ -82,12 +82,14 @@ namespace SimpleBrowser.Elements
             string maximumValue = element.GetAttributeValue("max");
             if (!string.IsNullOrWhiteSpace(maximumValue))
             {
-                if (DateTime.TryParse(maximumValue, out DateTime maximumDateTime) == false)
+				DateTime maximumDateTime;
+                if (DateTime.TryParse(maximumValue, out maximumDateTime) == false)
                 {
                     return;
                 }
 
-                if (DateTime.TryParse(element.Value, out DateTime elementDateTime) == false)
+				DateTime elementDateTime;
+                if (DateTime.TryParse(element.Value, out elementDateTime) == false)
                 {
                     throw new FormElementValidationException("Invalid element value.");
                 }
