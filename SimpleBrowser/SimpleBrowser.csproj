@@ -6,7 +6,8 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <VersionPrefix>0.5.79</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <!-- <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks> -->
+    <TargetFramework>net45</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>SimpleBrowser</AssemblyName>
@@ -38,12 +39,10 @@
   
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Westwind.RazorHosting" Version="3.3.9" />
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="RazorHosting">
-      <HintPath>..\Dependencies\RazorHosting.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />

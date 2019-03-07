@@ -12,7 +12,8 @@ namespace SimpleBrowser
     using System.Linq;
 
 #if NET45
-    using RazorHosting;
+    using System.IO;
+    using Westwind.RazorHosting;
 #endif
 
     using SimpleBrowser.Properties;
@@ -41,7 +42,9 @@ namespace SimpleBrowser
 
 #if NET45
             RazorEngine<RazorTemplateBase> engine = new RazorEngine<RazorTemplateBase>();
-            string html = engine.RenderTemplate(Resources.HtmlLogTemplate, new[] { typeof(Browser).Assembly.Location, "System.Web.dll" }, model);
+            engine.AddAssembly("System.Web.dll");
+
+            string html = engine.RenderTemplate(Resources.HtmlLogTemplate, model);
             return html ?? engine.ErrorMessage;
 #else
             var engine = new RazorLight.RazorLightEngineBuilder()
