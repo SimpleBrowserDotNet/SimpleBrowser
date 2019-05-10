@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="RefererHeader.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -73,7 +73,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
 #endif
         public void When_Testing_Referer_NoneWhenDowngrade_Secure_Transition()
         {
-            string startingUrl = "https://www.codeproject.com";
+            string startingUrl = "https://www.greatrace.com/";
 
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
@@ -83,7 +83,8 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             Assert.IsNotNull(b.CurrentState);
             Assert.IsNull(b.Referer);
 
-            HtmlResult link = b.Find("ctl00_AdvertiseLink");
+            HtmlResult link = b.Find(ElementType.Anchor, "href", "http://www.timewise.us/");
+            link.XElement.RemoveAttributeCI("target");
             Assert.IsNotNull(link);
 
             link.Click();
