@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="OptionElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -58,7 +58,7 @@ namespace SimpleBrowser.Elements
 
             set
             {
-                throw new InvalidOperationException ("Cannot change the value for an option element. Set the value attibute.");
+                throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
             }
         }
 

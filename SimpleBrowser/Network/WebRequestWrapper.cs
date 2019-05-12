@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="WebRequestWrapper.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -206,7 +206,7 @@ namespace SimpleBrowser.Network
 
             set
             {
-                this._wr.Referer = Uri.EscapeUriString (value);
+                this._wr.Referer = Uri.EscapeUriString(value);
             }
         }
 

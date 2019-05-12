@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="LabelElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -39,11 +39,15 @@ namespace SimpleBrowser.Elements
                 {
                     string id = Element.GetAttributeCI("for");
                     if (id == null)
+                    {
                         return null;
+                    }
 
                     var element = Element.Document.Descendants().Where(e => e.GetAttributeCI("id") == id).FirstOrDefault();
                     if (element == null)
+                    {
                         return null;
+                    }
 
                     this.associatedElement = OwningBrowser.CreateHtmlElement<HtmlElement>(element);
                 }
@@ -64,9 +68,9 @@ namespace SimpleBrowser.Elements
             }
 
             base.Click();
-            
-                // Click on the associated (For) item or else return success without any operation
-                return For?.Click() ?? ClickResult.SucceededNoOp;
+
+            // Click on the associated (For) item or else return success without any operation
+            return For?.Click() ?? ClickResult.SucceededNoOp;
         }
     }
 }

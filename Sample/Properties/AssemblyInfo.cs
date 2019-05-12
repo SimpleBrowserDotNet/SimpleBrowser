@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="AssemblyInfo.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("SimpleBrowser")]
 [assembly: AssemblyProduct("Sample")]
-[assembly: AssemblyCopyright("Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.")]
+[assembly: AssemblyCopyright("Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

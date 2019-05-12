@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="FormElementElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -72,7 +72,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return this.GetAttribute ("name")?.Value;
+                return this.GetAttribute("name")?.Value;
             }
         }
 
@@ -86,7 +86,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return this.GetAttribute ("disabled") != null;
+                return this.GetAttribute("disabled") != null;
             }
         }
 

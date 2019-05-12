@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="FormElementElementValidator.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -58,13 +58,13 @@ namespace SimpleBrowser.Elements
             string minimumValue = element.GetAttributeValue("min");
             if (!string.IsNullOrWhiteSpace(minimumValue))
             {
-				DateTime minimumDateTime;
+                DateTime minimumDateTime;
                 if (DateTime.TryParse(minimumValue, out minimumDateTime) == false)
                 {
                     return;
                 }
 
-				DateTime elementDateTime;
+                DateTime elementDateTime;
                 if (DateTime.TryParse(element.Value, out elementDateTime) == false)
                 {
                     throw new FormElementValidationException("Invalid element value.");
@@ -82,13 +82,13 @@ namespace SimpleBrowser.Elements
             string maximumValue = element.GetAttributeValue("max");
             if (!string.IsNullOrWhiteSpace(maximumValue))
             {
-				DateTime maximumDateTime;
+                DateTime maximumDateTime;
                 if (DateTime.TryParse(maximumValue, out maximumDateTime) == false)
                 {
                     return;
                 }
 
-				DateTime elementDateTime;
+                DateTime elementDateTime;
                 if (DateTime.TryParse(element.Value, out elementDateTime) == false)
                 {
                     throw new FormElementValidationException("Invalid element value.");

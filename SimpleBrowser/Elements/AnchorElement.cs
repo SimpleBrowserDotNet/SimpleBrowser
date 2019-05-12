@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="AnchorElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -36,7 +36,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return Element.GetAttributeCI ("href");
+                return Element.GetAttributeCI("href");
             }
         }
 
@@ -47,7 +47,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return Element.GetAttributeCI ("target");
+                return Element.GetAttributeCI("target");
             }
         }
 
@@ -58,7 +58,7 @@ namespace SimpleBrowser.Elements
         {
             get
             {
-                return Element.GetAttributeCI ("rel");
+                return Element.GetAttributeCI("rel");
             }
         }
 
