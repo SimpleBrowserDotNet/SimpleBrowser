@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE;NET452</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE;NET452</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -47,10 +49,9 @@
     </Reference>
     <Reference Include="System.Web.Razor">
       <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.7\lib\net452\System.Web.Razor.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Westwind.RazorHosting">
-      <HintPath>..\packages\Westwind.RazorHosting.3.3.9\lib\net452\Westwind.RazorHosting.dll</HintPath>
+      <HintPath>..\packages\Westwind.RazorHosting.3.3.9\lib\net45\Westwind.RazorHosting.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
