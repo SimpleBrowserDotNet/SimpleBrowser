@@ -53,9 +53,9 @@ namespace SimpleBrowser.Elements
                 {
                     this.Element.SetAttributeValue("value", exponentDecimalValue.ToString());
                 }
-                else if (decimal.TryParse(value, out decimalValue))
+                else if (decimal.TryParse(value, NumberStyles.Any, OwningBrowser.Culture, out decimalValue))
                 {
-                    this.Element.SetAttributeValue("value", decimalValue.ToString());
+                    this.Element.SetAttributeValue("value", value);
                 }
 
                 return;

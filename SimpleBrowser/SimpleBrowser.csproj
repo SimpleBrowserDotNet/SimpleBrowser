@@ -7,6 +7,7 @@
     <VersionPrefix>0.5.79</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <!-- <TargetFramework>net452</TargetFramework> -->
     <!-- <TargetFramework>netstandard2.0</TargetFramework> -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>

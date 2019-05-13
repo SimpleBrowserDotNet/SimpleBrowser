@@ -8,6 +8,7 @@
     <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <TargetFrameworks>net452;netcoreapp2.0</TargetFrameworks>
+    <!-- <TargetFramework>net452</TargetFramework> -->
     <!-- <TargetFramework>netcoreapp2.0</TargetFramework> -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
@@ -46,16 +47,17 @@
     <EmbeddedResource Include="SampleDocs\FileUpload.htm" />
     <EmbeddedResource Include="SampleDocs\framecontainer.htm" />
     <EmbeddedResource Include="SampleDocs\HTML5Elements.htm" />
-    <EmbeddedResource Include="SampleDocs\movies1.htm" />
+    <EmbeddedResource Include="SampleDocs\movies1.htm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="SampleDocs\movies2.htm" />
     <EmbeddedResource Include="SampleDocs\SimpleForm.htm" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
-    <PackageReference Include="Moq" Version="4.7.145" />
-    <PackageReference Include="NUnit" Version="3.9.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
+    <PackageReference Include="Moq" Version="4.10.1" />
+    <PackageReference Include="NUnit" Version="3.11.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
