@@ -8,12 +8,17 @@ other values before submission or navigation.
 
 Requirements
 ------------
-* .NET Framework 4.0 or higher
+* .NET Framework 4.5.2 or higher
+
+** OR **
+
 * .NET Standard 2.0 compatible runtime
+
+Note: To build the .NET Standard version of the library, the project files need to be hand-editied to enable the .NET Standard build target. The project files in the repository build to .NET Framework by default.
 
 Features
 --------
-* Multiple ways of locating and interacting with page elements
+* Multiple ways of locating and interacting with page elements. The browser session is completely scriptable.
 * A highly permissive HTML parser that converts any HTML, no matter how badly formed, to a valid XDocument object
 * Automatic cookie/session management
 * Extensive logging support with attractive and comprehensive html log file output to make it easy to identify problems loading and automating browsing sessions
