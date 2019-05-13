@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="TextAreaElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -21,7 +21,8 @@ namespace SimpleBrowser.Elements
         /// <param name="element">The <see cref="XElement"/> associated with this element.</param>
         public TextAreaElement(XElement element)
             : base(element)
-        { }
+        {
+        }
 
         /// <summary>
         /// Gets a value indicating whether the element is readonly.
@@ -31,7 +32,10 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool ReadOnly
         {
-            get => this.GetAttribute("readonly") != null;
+            get
+            {
+                return this.GetAttribute("readonly") != null;
+            }
         }
 
         /// <summary>
@@ -57,7 +61,8 @@ namespace SimpleBrowser.Elements
                 {
                     string maxLengthStr = this.Element.GetAttributeCI("maxlength");
 
-                    if (int.TryParse(maxLengthStr, out int parseMaxLength) && parseMaxLength >= 0)
+                    int parseMaxLength;
+                    if (int.TryParse(maxLengthStr, out parseMaxLength) && parseMaxLength >= 0)
                     {
                         maxLength = parseMaxLength;
                     }

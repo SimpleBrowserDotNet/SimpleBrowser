@@ -19,8 +19,7 @@ obj
 *.bak
 .hg/*
 *.nupkg
-packages/Moq.*
-packages/NUnit.*
 *.ncrunchsolution
 */StyleCop.Cache
 /.vs
+packages/*

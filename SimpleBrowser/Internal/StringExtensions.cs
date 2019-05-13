@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="StringExtensions.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -34,7 +34,8 @@ namespace SimpleBrowser
 
         public static int ToInt(this string s)
         {
-            if (!int.TryParse(s, out int n))
+            int n;
+            if (!int.TryParse(s, out n))
             {
                 return 0;
             }
@@ -44,7 +45,8 @@ namespace SimpleBrowser
 
         public static long ToLong(this string s)
         {
-            if (!long.TryParse(s, out long n))
+            long n;
+            if (!long.TryParse(s, out n))
             {
                 return 0;
             }
@@ -54,7 +56,8 @@ namespace SimpleBrowser
 
         public static double ToDouble(this string s)
         {
-            if (!double.TryParse(s, out double n))
+            double n;
+            if (!double.TryParse(s, out n))
             {
                 return 0;
             }
@@ -64,7 +67,8 @@ namespace SimpleBrowser
 
         public static double ToDecimal(this string s)
         {
-            if (!double.TryParse(s, out double n))
+            double n;
+            if (!double.TryParse(s, out n))
             {
                 return 0;
             }

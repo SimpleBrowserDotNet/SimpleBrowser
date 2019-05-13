@@ -6,7 +6,7 @@
 <!doctype html>
 <html>
 	<head>
-		<title>@Context.Title</title>
+		<title>@Model.Title</title>
 		<style type="text/css">
 			body { font-family: Verdana, Sans-Serif; font-size: 11px; margin: 30px; color: #333; }
 			h1, h2, h3, p { margin: 0 0 15px 0; }
@@ -106,27 +106,27 @@ document.getElementsByTagName(&quot;code&quot;),document.getElementsByTagName(&q
 PR_TAG:&quot;tag&quot;,PR_TYPE:S}})()
 		</div>
 
-		<h1>@Context.Title</h1>
-		<p>This browser automation log was captured on <b>@Context.CaptureDate</b> and ran for a duration of <b>@Context.TotalDuration</b>, making a total of <b>@Context.RequestsCount</b> request(s).</p>
+		<h1>@Model.Title</h1>
+		<p>This browser automation log was captured on <b>@Model.CaptureDate</b> and ran for a duration of <b>@Model.TotalDuration</b>, making a total of <b>@Model.RequestsCount</b> request(s).</p>
 		
 		<h2>Details</h2>
-		@for(var i=0; i<Context.Logs.Count; i++) {
-			var entry = Context.Logs[i];
+		@for(var i=0; i<Model.Logs.Count; i++) {
+			var entry = Model.Logs[i];
 			<!-- LOG ENTRY #@i : @entry -->
 			if(!lastItemIsLogMessage && entry is LogMessage) {
 				lastItemIsLogMessage = true;
 		<div class="messages">
-				@for(; i<Context.Logs.Count && Context.Logs[i] is LogMessage; i++) {
-					var log = Context.Logs[i] as LogMessage;
+				@for(; i<Model.Logs.Count && Model.Logs[i] is LogMessage; i++) {
+					var log = Model.Logs[i] as LogMessage;
 			<div class="logmessage message-@log.Type.ToString().ToLower()">
 				<span class="servertime">@log.ServerTime.ToString("dd-MMM-yyyy h:mm.fff tt")</span>
 				<span class="message">@log.Message</span>
 			</div>
 				}
 		</div>
-				if(i >= Context.Logs.Count) { break; }
+				if(i >= Model.Logs.Count) { break; }
 			}
-			entry = Context.Logs[i];
+			entry = Model.Logs[i];
 			if(entry is HttpRequestLog) {
 				lastItemIsLogMessage = false;
 				var log = entry as HttpRequestLog;

@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="OptionElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -51,8 +51,15 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public override string Value
         {
-            get => Element.Value.Trim();
-            set => throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
+            get
+            {
+                return Element.Value.Trim();
+            }
+
+            set
+            {
+                throw new InvalidOperationException("Cannot change the value for an option element. Set the value attibute.");
+            }
         }
 
         /// <summary>

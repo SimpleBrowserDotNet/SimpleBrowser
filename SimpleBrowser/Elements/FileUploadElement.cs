@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="FileUploadElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -41,7 +41,7 @@ namespace SimpleBrowser.Elements
             {
                 // Todo: create a mime type for extensions
                 filename = this.Value;
-                byte[] allBytes = allBytes = File.ReadAllBytes(filename);
+                byte[] allBytes = File.ReadAllBytes(filename);
 
                 FileInfo fileInfo = new FileInfo(filename);
                 extension = fileInfo.Extension;

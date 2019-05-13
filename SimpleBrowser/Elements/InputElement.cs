@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="InputElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -34,7 +34,10 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool ReadOnly
         {
-            get => this.GetAttribute("readonly") != null;
+            get
+            {
+                return this.GetAttribute("readonly") != null;
+            }
         }
 
         /// <summary>
@@ -45,7 +48,10 @@ namespace SimpleBrowser.Elements
         /// </remarks>
         public bool Required
         {
-            get => this.GetAttribute("required") != null;
+            get
+            {
+                return this.GetAttribute("required") != null;
+            }
         }
 
         /// <summary>
@@ -92,7 +98,10 @@ namespace SimpleBrowser.Elements
         /// </summary>
         public string InputType
         {
-            get => this.GetAttributeValue("type");
+            get
+            {
+                return this.GetAttributeValue("type");
+            }
         }
 
         /// <summary>

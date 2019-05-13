@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="DateTimeInputElement.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.\
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -64,7 +64,8 @@ namespace SimpleBrowser.Elements
                     return;
                 }
 
-                if (DateTime.TryParse(value, out DateTime datetime))
+                DateTime datetime;
+                if (DateTime.TryParse(value, out datetime))
                 {
                     this.Element.SetAttributeValue("value", value);
                 }
@@ -141,7 +142,8 @@ namespace SimpleBrowser.Elements
 
             if (!string.IsNullOrEmpty(this.Name) && !this.Disabled)
             {
-                DateTime.TryParse(this.Value, out DateTime dateTime);
+                DateTime dateTime;
+                DateTime.TryParse(this.Value, out dateTime);
                 if (this.InputType.ToLowerInvariant() == "week")
                 {
                     pattern = string.Format(pattern, this.GetWeekOfYear(dateTime));
@@ -174,7 +176,8 @@ namespace SimpleBrowser.Elements
 
             try
             {
-                return DateTime.TryParse(value, out DateTime dateTime);
+                DateTime dateTime;
+                return DateTime.TryParse(value, out dateTime);
             }
             catch
             {
@@ -267,14 +270,16 @@ namespace SimpleBrowser.Elements
                 };
             }
 
-            if (DateTime.TryParse(this.Value, out DateTime value) == false)
+            DateTime value;
+            if (DateTime.TryParse(this.Value, out value) == false)
             {
                 throw new FormElementValidationException("Invalid element value.");
             }
 
             TimeSpan span;
             string min = this.GetAttributeValue("min");
-            if (string.IsNullOrWhiteSpace(min) == false && DateTime.TryParse(min, out DateTime minDate))
+            DateTime minDate;
+            if (string.IsNullOrWhiteSpace(min) == false && DateTime.TryParse(min, out minDate))
             {
                 span = value - minDate;
             }
@@ -356,7 +361,8 @@ namespace SimpleBrowser.Elements
             // The allowed value step is step value multiplied by the step scale factor.
             long allowedStepValue = (long)(stepValue * stepScaleFactor);
 
-            if (DateTime.TryParse(this.Value, out DateTime value) == false)
+            DateTime value;
+            if (DateTime.TryParse(this.Value, out value) == false)
             {
                 throw new FormElementValidationException("Invalid element value.");
             }
@@ -364,7 +370,8 @@ namespace SimpleBrowser.Elements
             DateTime valueDateTime = new DateTime(value.Year, value.Month, 1);
 
             string min = this.GetAttributeValue("min");
-            if (string.IsNullOrWhiteSpace(min) == true || DateTime.TryParse(min, out DateTime minimumDate) == false)
+            DateTime minimumDate;
+            if (string.IsNullOrWhiteSpace(min) == true || DateTime.TryParse(min, out minimumDate) == false)
             {
                 minimumDate = htmlDateTimeMinimumValue;
             }
@@ -400,13 +407,15 @@ namespace SimpleBrowser.Elements
             // The allowed value step is step value multiplied by the step scale factor.
             long allowedStepValue = (long)(stepValue * stepScaleFactor);
 
-            if (DateTime.TryParse(this.Value, out DateTime value) == false)
+            DateTime value;
+            if (DateTime.TryParse(this.Value, out value) == false)
             {
                 throw new FormElementValidationException("Invalid element value.");
             }
 
             string min = this.GetAttributeValue("min");
-            if (string.IsNullOrWhiteSpace(min) == true || DateTime.TryParse(min, out DateTime minimumDate) == false)
+            DateTime minimumDate;
+            if (string.IsNullOrWhiteSpace(min) == true || DateTime.TryParse(min, out minimumDate) == false)
             {
                 minimumDate = htmlDateTimeMinimumValue;
             }

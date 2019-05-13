@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="HtmlLogFormatter.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -11,8 +11,8 @@ namespace SimpleBrowser
     using System.Collections.Generic;
     using System.Linq;
 
-#if NET45
-    using RazorHosting;
+#if NET452
+    using Westwind.RazorHosting;
 #endif
 
     using SimpleBrowser.Properties;
@@ -39,9 +39,11 @@ namespace SimpleBrowser
                 RequestsCount = logs.Count(l => l is HttpRequestLog)
             };
 
-#if NET45
+#if NET452
             RazorEngine<RazorTemplateBase> engine = new RazorEngine<RazorTemplateBase>();
-            string html = engine.RenderTemplate(Resources.HtmlLogTemplate, new[] { typeof(Browser).Assembly.Location, "System.Web.dll" }, model);
+            engine.AddAssembly("System.Web.dll");
+
+            string html = engine.RenderTemplate(Resources.HtmlLogTemplate, model);
             return html ?? engine.ErrorMessage;
 #else
             var engine = new RazorLight.RazorLightEngineBuilder()

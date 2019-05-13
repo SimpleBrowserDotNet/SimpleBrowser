@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="WebResponseWrapper.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -27,26 +27,54 @@ namespace SimpleBrowser.Network
 
         public string CharacterSet
         {
-            get => this._wr.CharacterSet;
-            set => throw new NotImplementedException();
+            get
+            {
+                return this._wr.CharacterSet;
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public string ContentType
         {
-            get => this._wr.ContentType;
-            set => this._wr.ContentType = value;
+            get
+            {
+                return this._wr.ContentType;
+            }
+
+            set
+            {
+                this._wr.ContentType = value;
+            }
         }
 
         public WebHeaderCollection Headers
         {
-            get => this._wr.Headers;
-            set => throw new NotImplementedException();
+            get
+            {
+                return this._wr.Headers;
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public HttpStatusCode StatusCode
         {
-            get => this._wr.StatusCode;
-            set => throw new NotImplementedException();
+            get
+            {
+                return this._wr.StatusCode;
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
 
         #endregion IHttpWebResponse Members

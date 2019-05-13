@@ -14,7 +14,7 @@
         <PackagesDir Condition=" '$(OS)' != 'Windows_NT'">$(SolutionDir)packages</PackagesDir>
         
         <!-- NuGet command -->
-        <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+        <NuGetExePath>$(NuGetToolsPath)\NuGet.exe</NuGetExePath>
         <NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
         <NuGetCommand Condition=" '$(OS)' != 'Windows_NT' ">mono --runtime=v4.0.30319 $(NuGetExePath)</NuGetCommand>
 

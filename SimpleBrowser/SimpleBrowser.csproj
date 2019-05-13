@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios.</Description>
-    <Copyright>Copyright © 2010 - 2018, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
+    <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
     <AssemblyTitle>SimpleBrowser</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
     <VersionPrefix>0.5.79</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <!-- <TargetFrameworks>net452;netstandard2.0</TargetFrameworks> -->
+    <TargetFramework>net452</TargetFramework>
+    <!-- <TargetFramework>netstandard2.0</TargetFramework> -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>SimpleBrowser</AssemblyName>
@@ -26,9 +28,10 @@
     <WarningsAsErrors />
     <RepositoryUrl>https://github.com/SimpleBrowserDotNet/SimpleBrowser.git</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+	<PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
     <!--
     This is needed for the RazorLight library.
     Otherwise the HtmlRendering will throw an exception.
@@ -38,21 +41,16 @@
   
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Westwind.RazorHosting" Version="3.3.9" Condition="'$(TargetFramework)' == 'net452'" />
+    <PackageReference Include="RazorLight" Version="2.0.0-beta1" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
   </ItemGroup>
   
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="RazorHosting">
-      <HintPath>..\Dependencies\RazorHosting.dll</HintPath>
-    </Reference>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
     <Reference Include="System" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="RazorLight" Version="2.0.0-beta1" />
   </ItemGroup>
 
   <ItemGroup>
