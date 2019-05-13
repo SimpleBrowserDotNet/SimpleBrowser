@@ -7,8 +7,8 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
-    <TargetFrameworks>net452;netcoreapp2.0</TargetFrameworks>
-    <!-- <TargetFramework>net452</TargetFramework> -->
+    <!-- <TargetFrameworks>net452;netcoreapp2.0</TargetFrameworks> -->
+    <TargetFramework>net452</TargetFramework>
     <!-- <TargetFramework>netcoreapp2.0</TargetFramework> -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>

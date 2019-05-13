@@ -5,8 +5,8 @@
     <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <AssemblyTitle>Sample</AssemblyTitle>
-    <TargetFrameworks>net452;netcoreapp2.0</TargetFrameworks>
-    <!-- <TargetFramework>net452</TargetFramework> -->
+    <!-- <TargetFrameworks>net452;netcoreapp2.0</TargetFrameworks> -->
+    <TargetFramework>net452</TargetFramework>
     <!-- <TargetFramework>netcoreapp2.0</TargetFramework> -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
