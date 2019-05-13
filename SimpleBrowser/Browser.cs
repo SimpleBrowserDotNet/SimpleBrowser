@@ -52,6 +52,12 @@ namespace SimpleBrowser
 
         static Browser()
         {
+            // Chrome (v72) no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
+            // At the time of this writing, .NET Framework suppsrts SSL and all TLS versions up to 1.2.
+            // This sets the default SimpleBrowser security protocol to TLS
+            // https://www.ssllabs.com/ssltest/viewMyClient.html
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
             if (ServicePointManager.Expect100Continue)
             {
                 ServicePointManager.Expect100Continue = false;
@@ -79,6 +85,12 @@ namespace SimpleBrowser
             this.Register(this);
             this.RefererMode = RefererModes.NoneWhenDowngrade;
             this.Culture = CultureInfo.CurrentCulture;
+
+            // Chrome (v72) no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
+            // At the time of this writing, .NET Framework 4.5 suppsrts SSL and all TLS versions up to 1.2.
+            // This sets the default SimpleBrowser security protocol to TLS
+            // This site shows what security protocols are supported by any given browser: https://www.ssllabs.com/ssltest/viewMyClient.html
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
         }
 
         public event Action<Browser, string> MessageLogged;
@@ -88,6 +100,19 @@ namespace SimpleBrowser
         public event Action<Browser, Browser> NewWindowOpened;
 
         #region public properties
+
+        public SecurityProtocolType SecurityProtocol
+        {
+            get
+            {
+                return ServicePointManager.SecurityProtocol;
+            }
+
+            set
+            {
+                ServicePointManager.SecurityProtocol = value;
+            }
+        }
 
         public string Accept { get; set; }
 
