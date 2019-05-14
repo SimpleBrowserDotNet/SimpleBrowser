@@ -714,15 +714,16 @@ namespace SimpleBrowser
         /// <param name="content">A string containing a</param>
         public void SetContent(string content)
         {
-            if (CurrentState == null)
-            {
-                AddNavigationState(new NavigationState());
-            }
 
-            CurrentState.Html = content;
-            CurrentState.ContentType = "image/html";
+            AddNavigationState(new NavigationState()
+            {
+                Html = content,
+                ContentType = "text/html",
+                Url = new Uri("about:blank"),
+                Referer = null,
+            });
+
             CurrentState.XDocument = CurrentHtml.ParseHtml();
-            CurrentState.Url = new Uri("http://dummy-url-to-use.with/relative/urls/in.the.page");
         }
 
         public void SetHeader(string header)
