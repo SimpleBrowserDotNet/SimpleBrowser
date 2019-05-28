@@ -20,21 +20,19 @@ namespace SimpleBrowser.UnitTests.OfflineTests
     [TestFixture]
     public class CommentElements
     {
-        /*
-		/// <summary>
-		/// Tests the HTML doctype element. Note: Unable to test. While the HTML parser is capable of parsing the
-		/// doctype, it does not expose it to the browser. This is an issue that should be resolved. When it is,
-		/// this test can be un-commented.
-		/// </summary>
-		[Test]
-		public void HtmlElement_Doctype()
-		{
-			Browser b = new Browser();
-			b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.CommentElements.htm"));
-			b.Find("link1");
-			Assert.That(b.XDocument.DocumentType.ToString(), Is.EqualTo("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"));
-		}
-		*/
+        /// <summary>
+        /// Tests the HTML doctype element. Note: Unable to test. While the HTML parser is capable of parsing the
+        /// doctype, it does not expose it to the browser. This is an issue that should be resolved. When it is,
+        /// this test can be un-commented.
+        /// </summary>
+        [Test]
+        public void HtmlElement_Doctype()
+        {
+            Browser b = new Browser();
+            b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.CommentElements.htm"));
+            b.Find("link1");
+            Assert.That(b.XDocument.DocumentType.ToString(), Is.EqualTo("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"));
+        }
 
         /// <summary>
         /// Tests HTML comments (well-formed and malformed) as well as those elements that become comments (Microsoft's downlevel revealed condition comments).
@@ -44,7 +42,6 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         {
             Browser b = new Browser();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.CommentElements.htm"));
-            b.Find("link1");
 
             IEnumerable<XComment> comments = from node in b.XDocument.Elements().DescendantNodesAndSelf()
                                              where node.NodeType == XmlNodeType.Comment
