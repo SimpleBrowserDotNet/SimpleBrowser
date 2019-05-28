@@ -719,7 +719,7 @@ namespace SimpleBrowser
             {
                 Html = content,
                 ContentType = "text/html",
-                Url = new Uri("about:blank"),
+                Url = new Uri("app://simplebrowser/setcontent"),
                 Referer = null,
             });
 
