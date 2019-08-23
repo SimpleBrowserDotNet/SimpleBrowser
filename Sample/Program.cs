@@ -30,12 +30,13 @@ namespace Sample
                 browser.Navigate("http://github.com/");
                 if (LastRequestFailed(browser))
                 {
-                    return; // always check the last request in case the page failed to load
+                    // always check the last request in case the page failed to load
+                    return;
                 }
 
                 // click the login link and click it
                 browser.Log("First we need to log in, so browse to the login page, fill in the login details and submit the form.");
-                HtmlResult loginLink = browser.Find("a", FindBy.Text, "Sign in");
+                HtmlResult loginLink = browser.Find("a", FindBy.Text, "Sign&nbsp;in");
                 if (!loginLink.Exists)
                 {
                     browser.Log("Can't find the login link! Perhaps the site is down for maintenance?");
@@ -90,13 +91,13 @@ namespace Sample
             {
                 string path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile("SimpleBrowser Sample - Request Log"));
 
-#if NETCOREAPP2_0
-                // dotnet core doesn't seem to be able to start process with path to html file
                 Console.WriteLine("Log file published to:");
                 Console.WriteLine(path);
-#else
-                Process.Start(path);
-#endif
+
+                var process = new Process();
+                process.StartInfo.FileName = path;
+                process.StartInfo.UseShellExecute = true;
+                process.Start();
             }
         }
 

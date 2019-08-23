@@ -10,11 +10,6 @@ namespace SimpleBrowser
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
-#if NET452
-    using Westwind.RazorHosting;
-#endif
-
     using SimpleBrowser.Properties;
 
     public class HtmlLogFormatter
@@ -39,19 +34,11 @@ namespace SimpleBrowser
                 RequestsCount = logs.Count(l => l is HttpRequestLog)
             };
 
-#if NET452
-            RazorEngine<RazorTemplateBase> engine = new RazorEngine<RazorTemplateBase>();
-            engine.AddAssembly("System.Web.dll");
-
-            string html = engine.RenderTemplate(Resources.HtmlLogTemplate, model);
-            return html ?? engine.ErrorMessage;
-#else
             var engine = new RazorLight.RazorLightEngineBuilder()
                 .UseMemoryCachingProvider()
                 .Build();
 
-            return engine.CompileRenderAsync("HtmlLog", Resources.HtmlLogTemplateNetStandard, model).Result;
-#endif
+            return engine.CompileRenderAsync("HtmlLog", Resources.HtmlLogTemplate, model).Result;
         }
     }
 }

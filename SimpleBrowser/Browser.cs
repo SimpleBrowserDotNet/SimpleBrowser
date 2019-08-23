@@ -52,10 +52,9 @@ namespace SimpleBrowser
 
         static Browser()
         {
-            // Chrome (v72) no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
-            // At the time of this writing, .NET Framework suppsrts SSL and all TLS versions up to 1.2.
-            // This sets the default SimpleBrowser security protocol to TLS
-            // https://www.ssllabs.com/ssltest/viewMyClient.html
+            // Chrome no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
+            // This sets the default SimpleBrowser security protocol to TLS. .NET Core 2.2 does not support TLS 1.3.
+            // This site shows what security protocols are supported by any given browser: https://www.ssllabs.com/ssltest/viewMyClient.html
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
             if (ServicePointManager.Expect100Continue)
@@ -86,9 +85,8 @@ namespace SimpleBrowser
             this.RefererMode = RefererModes.NoneWhenDowngrade;
             this.Culture = CultureInfo.CurrentCulture;
 
-            // Chrome (v72) no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
-            // At the time of this writing, .NET Framework 4.5 suppsrts SSL and all TLS versions up to 1.2.
-            // This sets the default SimpleBrowser security protocol to TLS
+            // Chrome no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
+            // This sets the default SimpleBrowser security protocol to TLS. .NET Core 2.2 does not support TLS 1.3.
             // This site shows what security protocols are supported by any given browser: https://www.ssllabs.com/ssltest/viewMyClient.html
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
         }
@@ -289,7 +287,7 @@ namespace SimpleBrowser
         {
             get
             {
-                return CurrentState == null ? null : CurrentState.Referer;
+                return CurrentState?.Referer;
             }
         }
 
@@ -318,7 +316,7 @@ namespace SimpleBrowser
         {
             get
             {
-                return CurrentState == null ? null : CurrentState.Url;
+                return CurrentState?.Url;
             }
         }
 
@@ -588,10 +586,7 @@ namespace SimpleBrowser
                 _logs.Add(new LogMessage(message, type));
             }
 
-            if (MessageLogged != null)
-            {
-                MessageLogged(this, message);
-            }
+            MessageLogged?.Invoke(this, message);
         }
 
         public void LogRequestData()
@@ -612,10 +607,7 @@ namespace SimpleBrowser
 
         internal void RaiseNewWindowOpened(Browser newWindow)
         {
-            if (this.NewWindowOpened != null)
-            {
-                this.NewWindowOpened(this, newWindow);
-            }
+            this.NewWindowOpened?.Invoke(this, newWindow);
         }
 
         public bool Navigate(string url)
@@ -714,7 +706,6 @@ namespace SimpleBrowser
         /// <param name="content">A string containing a</param>
         public void SetContent(string content)
         {
-
             AddNavigationState(new NavigationState()
             {
                 Html = content,
@@ -800,8 +791,10 @@ namespace SimpleBrowser
 
         internal Browser CreateChildBrowser(string name = null)
         {
-            Browser child = new Browser(_reqFactory, name, _allWindows);
-            child.ParentWindow = this;
+            Browser child = new Browser(_reqFactory, name, _allWindows)
+            {
+                ParentWindow = this
+            };
 
             // no RaiseNewWindowOpened here, because it is not really a new window. It can be navigated to using
             // the frames collection of the parent
@@ -815,7 +808,7 @@ namespace SimpleBrowser
             {
                 _allActiveElements.Add(htmlElement);
                 htmlElement.OwningBrowser = this;
-                htmlElement.NavigationRequested += htmlElement_NavigationRequested;
+                htmlElement.NavigationRequested += HtmlElement_NavigationRequested;
             }
 
             return htmlElement;
@@ -1145,7 +1138,7 @@ namespace SimpleBrowser
                 .ToList();
         }
 
-        private static string[] knownInputTypes = new string[] { "submit", "image", "checkbox", "radio", "button" };
+        private static readonly string[] knownInputTypes = new string[] { "submit", "image", "checkbox", "radio", "button" };
 
         private List<XElement> FindElements(ElementType elementType)
         {
@@ -1296,12 +1289,16 @@ namespace SimpleBrowser
             {
                 case FindBy.Text:
                     return FilterElementsByInnerText(elements, null, value, false);
+
                 case FindBy.Class:
                     return FilterElementsByAttributeNameToken(elements, "class", value, false);
+
                 case FindBy.Id:
                     return FilterElementsByAttribute(elements, "id", value, false);
+
                 case FindBy.Name:
                     return FilterElementsByAttribute(elements, "name", value, false);
+
                 case FindBy.Value:
                     {
                         var newlist = FilterElementsByAttribute(elements, "value", value, false);
@@ -1312,12 +1309,16 @@ namespace SimpleBrowser
 
                 case FindBy.PartialText:
                     return FilterElementsByInnerText(elements, null, value, true);
+
                 case FindBy.PartialClass:
                     return FilterElementsByAttributeNameToken(elements, "class", value, true);
+
                 case FindBy.PartialId:
                     return FilterElementsByAttribute(elements, "id", value, true);
+
                 case FindBy.PartialName:
                     return FilterElementsByAttribute(elements, "name", value, true);
+
                 case FindBy.PartialValue:
                     {
                         var newlist = FilterElementsByAttribute(elements, "value", value, true);
@@ -1358,7 +1359,7 @@ namespace SimpleBrowser
             return new HtmlResult(CreateHtmlElement(e), this);
         }
 
-        private bool htmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
+        private bool HtmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
         {
             Uri fullUri = new Uri(this.Url, args.Uri);
             if (args.TimeoutMilliseconds == 0)
@@ -1547,7 +1548,7 @@ namespace SimpleBrowser
             }
         }
 
-        private static List<List<Browser>> _allContexts = new List<List<Browser>>();
+        private static readonly List<List<Browser>> _allContexts = new List<List<Browser>>();
 
         #endregion private methods
     }
