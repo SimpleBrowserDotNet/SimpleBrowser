@@ -4,7 +4,7 @@
     <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
     <AssemblyTitle>SimpleBrowser</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <VersionPrefix>0.5.79</VersionPrefix>
+    <VersionPrefix>0.6.0</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
