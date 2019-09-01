@@ -108,7 +108,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Page_With_IFrames()
         {
-            Browser b = new Browser(Helper.GetFramesMock());
+            Browser b = new Browser(Helper.GetIFramesMock());
             HttpRequestLog lastRequest = null;
             b.RequestLogged += (br, l) =>
             {
@@ -124,9 +124,23 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         }
 
         [Test]
+        public void Navigate_LinkWithParentTarget_OpensPageInParentWindow()
+        {
+            // Arrange
+            Browser b = new Browser(Helper.GetFramesetMock());
+
+            // Act
+            b.Navigate("http://localhost/");
+            b.Frames.First().Find("parentFrameLink").Click();
+
+            // Assert
+            Assert.True(b.Find("parentFrameLink").Exists);
+        }
+
+        [Test]
         public void GetAttribute_Backdoor_FrameHandle()
         {
-            Browser b = new Browser(Helper.GetFramesMock());
+            Browser b = new Browser(Helper.GetIFramesMock());
             HttpRequestLog lastRequest = null;
             b.RequestLogged += (br, l) =>
             {
@@ -141,7 +155,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Navigating_IFrames_Using_Target()
         {
-            Browser b = new Browser(Helper.GetFramesMock());
+            Browser b = new Browser(Helper.GetIFramesMock());
             HttpRequestLog lastRequest = null;
             b.RequestLogged += (br, l) =>
             {
@@ -160,8 +174,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Static_scoped_clear_works()
         {
-            Browser b1 = new Browser(Helper.GetFramesMock());
-            Browser b2 = new Browser(Helper.GetFramesMock());
+            Browser b1 = new Browser(Helper.GetIFramesMock());
+            Browser b2 = new Browser(Helper.GetIFramesMock());
             Browser.ClearWindows();
             Assert.Throws(typeof(ObjectDisposedException), () => b1.Navigate("http://localhost/"));
         }
@@ -169,8 +183,8 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Instance_scoped_clear_works()
         {
-            Browser b1 = new Browser(Helper.GetFramesMock());
-            Browser b2 = new Browser(Helper.GetFramesMock());
+            Browser b1 = new Browser(Helper.GetIFramesMock());
+            Browser b2 = new Browser(Helper.GetIFramesMock());
             b2.ClearWindowsInContext();
             b1.Navigate("http://localhost/");
             Assert.That(b1.Url.ToString() == "http://localhost/");
@@ -180,7 +194,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void IFrame_Url_ParsesCorrectly()
         {
-            Browser b = new Browser(Helper.GetFramesMock());
+            Browser b = new Browser(Helper.GetIFramesMock());
 
             b.Navigate("http://localhost/");
             Assert.That(b.Frames.Count() == 2);

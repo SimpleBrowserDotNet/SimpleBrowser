@@ -29,7 +29,7 @@ namespace SimpleBrowser
     {
         private const string TARGET_SELF = "_self";
         internal const string TARGET_BLANK = "_blank";
-        private const string TARGET_TOP = "_top";
+        private const string TARGET_PARENT = "_parent";
 
         private readonly List<Browser> _allWindows;
 
@@ -53,7 +53,8 @@ namespace SimpleBrowser
         static Browser()
         {
             // Chrome no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
-            // This sets the default SimpleBrowser security protocol to TLS. .NET Core 2.2 does not support TLS 1.3.
+            // .NET Standard 2.1 does not support TLS 1.3.
+            // This sets the default SimpleBrowser security protocol to TLS 1.0, 1.1, or 1.2. 
             // This site shows what security protocols are supported by any given browser: https://www.ssllabs.com/ssltest/viewMyClient.html
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
@@ -86,7 +87,8 @@ namespace SimpleBrowser
             this.Culture = CultureInfo.CurrentCulture;
 
             // Chrome no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
-            // This sets the default SimpleBrowser security protocol to TLS. .NET Core 2.2 does not support TLS 1.3.
+            // .NET Standard 2.1 does not support TLS 1.3.
+            // This sets the default SimpleBrowser security protocol to TLS 1.0, 1.1, or 1.2. 
             // This site shows what security protocols are supported by any given browser: https://www.ssllabs.com/ssltest/viewMyClient.html
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
         }
@@ -358,10 +360,16 @@ namespace SimpleBrowser
                         CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
                     }
 
-                    // check if we need to create sub-browsers for frames
+                    // check if we need to create sub-browsers for iframes
                     foreach (var frame in this.FindAll("iframe"))
                     {
                         Log("found iframe +" + frame.CurrentElement.GetAttributeValue("name"));
+                    }
+
+                    // check if we need to create sub-browsers for frames
+                    foreach (var frame in this.FindAll("frame"))
+                    {
+                        Log("found frame +" + frame.CurrentElement.GetAttributeValue("name"));
                     }
                 }
 
@@ -1362,7 +1370,7 @@ namespace SimpleBrowser
         private bool HtmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
         {
             Uri fullUri = new Uri(this.Url, args.Uri);
-            if (args.TimeoutMilliseconds == 0)
+            if (args.TimeoutMilliseconds <= 0)
             {
                 args.TimeoutMilliseconds = _timeoutMilliseconds;
             }
@@ -1376,6 +1384,10 @@ namespace SimpleBrowser
             {
                 browserToNav = new Browser(_reqFactory, context: _allWindows);
                 RaiseNewWindowOpened(browserToNav);
+            }
+            else if (args.Target == TARGET_PARENT)
+            {
+                browserToNav = this.ParentWindow ?? (this);
             }
             else
             {

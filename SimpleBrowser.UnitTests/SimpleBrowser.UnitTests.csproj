@@ -30,7 +30,9 @@
     <None Remove="SampleDocs\Elements.htm" />
     <None Remove="SampleDocs\FileUpload.htm" />
     <None Remove="SampleDocs\framecontainer.htm" />
+    <None Remove="SampleDocs\framecontent.htm" />
     <None Remove="SampleDocs\HTML5Elements.htm" />
+    <None Remove="SampleDocs\iframecontainer.htm" />
     <None Remove="SampleDocs\movies1.htm" />
     <None Remove="SampleDocs\movies2.htm" />
     <None Remove="SampleDocs\SimpleForm.htm" />
@@ -44,6 +46,8 @@
     <EmbeddedResource Include="SampleDocs\Elements.htm" />
     <EmbeddedResource Include="SampleDocs\FileUpload.htm" />
     <EmbeddedResource Include="SampleDocs\framecontainer.htm" />
+    <EmbeddedResource Include="SampleDocs\framecontent.htm" />
+    <EmbeddedResource Include="SampleDocs\iframecontainer.htm" />
     <EmbeddedResource Include="SampleDocs\HTML5Elements.htm" />
     <EmbeddedResource Include="SampleDocs\movies1.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
