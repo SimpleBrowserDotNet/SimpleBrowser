@@ -29,6 +29,7 @@ namespace SimpleBrowser
     {
         private const string TARGET_SELF = "_self";
         internal const string TARGET_BLANK = "_blank";
+        private const string TARGET_PARENT = "_parent";
 
         private readonly List<Browser> _allWindows;
 
@@ -359,10 +360,16 @@ namespace SimpleBrowser
                         CurrentState.XDocument = HtmlParser.CreateBlankHtmlDocument();
                     }
 
-                    // check if we need to create sub-browsers for frames
+                    // check if we need to create sub-browsers for iframes
                     foreach (var frame in this.FindAll("iframe"))
                     {
                         Log("found iframe +" + frame.CurrentElement.GetAttributeValue("name"));
+                    }
+
+                    // check if we need to create sub-browsers for frames
+                    foreach (var frame in this.FindAll("frame"))
+                    {
+                        Log("found frame +" + frame.CurrentElement.GetAttributeValue("name"));
                     }
                 }
 
@@ -1363,7 +1370,7 @@ namespace SimpleBrowser
         private bool HtmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
         {
             Uri fullUri = new Uri(this.Url, args.Uri);
-            if (args.TimeoutMilliseconds == 0)
+            if (args.TimeoutMilliseconds <= 0)
             {
                 args.TimeoutMilliseconds = _timeoutMilliseconds;
             }
@@ -1377,6 +1384,10 @@ namespace SimpleBrowser
             {
                 browserToNav = new Browser(_reqFactory, context: _allWindows);
                 RaiseNewWindowOpened(browserToNav);
+            }
+            else if (args.Target == TARGET_PARENT)
+            {
+                browserToNav = this.ParentWindow ?? (this);
             }
             else
             {
