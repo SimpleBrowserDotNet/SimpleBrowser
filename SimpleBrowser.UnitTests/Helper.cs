@@ -120,12 +120,51 @@ namespace SimpleBrowser.UnitTests
             #endregion IWebRequestFactory Members
         }
 
-        internal static IWebRequestFactory GetFramesMock()
+        internal static IWebRequestFactory GetIFramesMock()
         {
-            return new FramesRequestMocker();
+            return new IFramesRequestMocker();
         }
 
-        private class FramesRequestMocker : IWebRequestFactory
+        private class IFramesRequestMocker : IWebRequestFactory
+        {
+            public IHttpWebRequest GetWebRequest(Uri url)
+            {
+                Mock<IHttpWebRequest> mock = new Mock<IHttpWebRequest>();
+                mock.SetupAllProperties();
+                mock.Setup(m => m.GetResponse())
+                    .Returns(() =>
+                    {
+                        Mock<IHttpWebResponse> mockResponse = new Mock<IHttpWebResponse>();
+                        mockResponse.SetupAllProperties();
+                        mockResponse.SetupProperty(m => m.Headers, new WebHeaderCollection());
+
+                        byte[] responseContent = new byte[0];
+                        if (mock.Object.Method == "GET")
+                        {
+                            if (url.AbsolutePath == "/")
+                            {
+                                responseContent = Encoding.UTF8.GetBytes(GetFromResources("SimpleBrowser.UnitTests.SampleDocs.iframecontainer.htm"));
+                            }
+                            else
+                            {
+                                responseContent = Encoding.UTF8.GetBytes(GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
+                            }
+                        }
+                        mockResponse.Setup(r => r.GetResponseStream()).Returns(new MemoryStream(responseContent));
+                        return mockResponse.Object;
+                    });
+                mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
+                mock.Setup(m => m.GetRequestStream()).Returns(new MemoryStream(new byte[20000]));
+                return mock.Object;
+            }
+        }
+
+        internal static IWebRequestFactory GetFramesetMock()
+        {
+            return new FramesetRequestMocker();
+        }
+
+        private class FramesetRequestMocker : IWebRequestFactory
         {
             public IHttpWebRequest GetWebRequest(Uri url)
             {
@@ -147,7 +186,7 @@ namespace SimpleBrowser.UnitTests
                             }
                             else
                             {
-                                responseContent = Encoding.UTF8.GetBytes(GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
+                                responseContent = Encoding.UTF8.GetBytes(GetFromResources("SimpleBrowser.UnitTests.SampleDocs.framecontent.htm"));
                             }
                         }
                         mockResponse.Setup(r => r.GetResponseStream()).Returns(new MemoryStream(responseContent));

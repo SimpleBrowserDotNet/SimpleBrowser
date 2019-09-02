@@ -8,13 +8,7 @@ other values before submission or navigation.
 
 Requirements
 ------------
-* .NET Framework 4.5.2 or higher
-
-** OR **
-
 * .NET Standard 2.0 compatible runtime
-
-Note: To build the .NET Standard version of the library, the project files need to be hand-editied to enable the .NET Standard build target. The project files in the repository build to .NET Framework by default.
 
 Features
 --------

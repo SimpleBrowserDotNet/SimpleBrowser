@@ -7,6 +7,7 @@
 
 namespace SimpleBrowser.UnitTests.OfflineTests
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml;
@@ -62,7 +63,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Assert.That(comment.ToString(), Is.EqualTo("<!--[endif]-->"));
 
             comment = comments.Skip(5).First();
-            Assert.That(comment.ToString(), Is.EqualTo("<!--[if gt IE 10]>\r\n<a id=\"link2\" href=\"http://www.microsoft.com\">Downlevel-hidden conditional comment test</a>\r\n<![endif]-->"));
+            Assert.That(comment.ToString(), Is.EqualTo("<!--[if gt IE 10]>" + Environment.NewLine + "<a id=\"link2\" href=\"http://www.microsoft.com\">Downlevel-hidden conditional comment test</a>" + Environment.NewLine + "<![endif]-->"));
         }
 
         /// <summary>

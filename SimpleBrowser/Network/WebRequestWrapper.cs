@@ -8,48 +8,44 @@
 namespace SimpleBrowser.Network
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Net;
 
     internal class WebRequestWrapper : IHttpWebRequest
     {
-#if NETSTANDARD2_0
-        private static int[] _allowedRedirectStatusCodes = { 300, 301, 302, 303, 307, 308 };
-#endif
-        private HttpWebRequest _wr = null;
+        private static int[] allowedRedirectStatusCodes = { 300, 301, 302, 303, 307, 308 };
+
+        private readonly HttpWebRequest webRequest = null;
 
         public WebRequestWrapper(Uri url)
         {
-            this._wr = (HttpWebRequest)HttpWebRequest.Create(url);
+            this.webRequest = (HttpWebRequest)HttpWebRequest.Create(url);
         }
 
         #region IHttpWebRequest Members
 
-        public System.IO.Stream GetRequestStream()
+        public Stream GetRequestStream()
         {
-            return this._wr.GetRequestStream();
+            return this.webRequest.GetRequestStream();
         }
 
         public IHttpWebResponse GetResponse()
         {
             HttpWebResponse response;
 
-#if NETSTANDARD2_0
             try
             {
-#endif
-            response = (HttpWebResponse)this._wr.GetResponse();
-#if NETSTANDARD2_0
+                response = (HttpWebResponse)this.webRequest.GetResponse();
             }
             // .NET Core throws an exception on the redirect status codes
             // thus we need to handle the exception and inspect the actual
             // response to determine if we need to redirect.
             catch (WebException ex)
-                when (_allowedRedirectStatusCodes.Contains(((int?)(ex.Response as HttpWebResponse)?.StatusCode) ?? -1))
+                when (allowedRedirectStatusCodes.Contains(((int?)(ex.Response as HttpWebResponse)?.StatusCode) ?? -1))
             {
                 response = (HttpWebResponse)ex.Response;
             }
-#endif
 
             return new WebResponseWrapper(response);
         }
@@ -58,12 +54,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.AutomaticDecompression;
+                return this.webRequest.AutomaticDecompression;
             }
 
             set
             {
-                this._wr.AutomaticDecompression = value;
+                this.webRequest.AutomaticDecompression = value;
             }
         }
 
@@ -71,12 +67,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.ContentLength;
+                return this.webRequest.ContentLength;
             }
 
             set
             {
-                this._wr.ContentLength = value;
+                this.webRequest.ContentLength = value;
             }
         }
 
@@ -84,12 +80,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Headers;
+                return this.webRequest.Headers;
             }
 
             set
             {
-                this._wr.Headers = value;
+                this.webRequest.Headers = value;
             }
         }
 
@@ -97,12 +93,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.ContentType;
+                return this.webRequest.ContentType;
             }
 
             set
             {
-                this._wr.ContentType = value;
+                this.webRequest.ContentType = value;
             }
         }
 
@@ -110,12 +106,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Method;
+                return this.webRequest.Method;
             }
 
             set
             {
-                this._wr.Method = value;
+                this.webRequest.Method = value;
             }
         }
 
@@ -123,12 +119,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.UserAgent;
+                return this.webRequest.UserAgent;
             }
 
             set
             {
-                this._wr.UserAgent = value;
+                this.webRequest.UserAgent = value;
             }
         }
 
@@ -136,12 +132,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Accept;
+                return this.webRequest.Accept;
             }
 
             set
             {
-                this._wr.Accept = value;
+                this.webRequest.Accept = value;
             }
         }
 
@@ -149,12 +145,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Timeout;
+                return this.webRequest.Timeout;
             }
 
             set
             {
-                this._wr.Timeout = value;
+                this.webRequest.Timeout = value;
             }
         }
 
@@ -162,12 +158,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.AllowAutoRedirect;
+                return this.webRequest.AllowAutoRedirect;
             }
 
             set
             {
-                this._wr.AllowAutoRedirect = value;
+                this.webRequest.AllowAutoRedirect = value;
             }
         }
 
@@ -175,12 +171,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.CookieContainer;
+                return this.webRequest.CookieContainer;
             }
 
             set
             {
-                this._wr.CookieContainer = value;
+                this.webRequest.CookieContainer = value;
             }
         }
 
@@ -188,12 +184,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Proxy;
+                return this.webRequest.Proxy;
             }
 
             set
             {
-                this._wr.Proxy = value;
+                this.webRequest.Proxy = value;
             }
         }
 
@@ -201,12 +197,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Referer;
+                return this.webRequest.Referer;
             }
 
             set
             {
-                this._wr.Referer = Uri.EscapeUriString(value);
+                this.webRequest.Referer = Uri.EscapeUriString(value);
             }
         }
 
@@ -214,7 +210,7 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Address;
+                return this.webRequest.Address;
             }
         }
 
@@ -222,12 +218,12 @@ namespace SimpleBrowser.Network
         {
             get
             {
-                return this._wr.Host;
+                return this.webRequest.Host;
             }
 
             set
             {
-                this._wr.Host = value;
+                this.webRequest.Host = value;
             }
         }
 

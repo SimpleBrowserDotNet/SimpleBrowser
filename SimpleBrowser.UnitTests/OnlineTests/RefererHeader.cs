@@ -21,7 +21,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         [Test]
         public void When_Testing_Referer_NoneWhenDowngrade_Typical()
         {
-            string startingUrl = "http://afn.org/~afn07998/simplebrowser/test1.htm";
+            string startingUrl = "http://yenc-post.org/simplebrowser/test1.htm";
 
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
@@ -45,7 +45,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         [Test]
         public void When_Testing_Referer_None_Typical()
         {
-            string startingUrl = "http://afn.org/~afn07998/simplebrowser/test1.htm";
+            string startingUrl = "http://yenc-post.org/simplebrowser/test1.htm";
 
             Browser b = new Browser();
             b.RefererMode = Browser.RefererModes.None;
@@ -137,9 +137,9 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             HtmlResult link = b.Find("ctl00_AdvertiseLink");
             Assert.IsNotNull(link);
 
-            link.XElement.SetAttributeValue("href", "http://afn.org/~afn07998/simplebrowser/testmeta.htm");
+            link.XElement.SetAttributeValue("href", "http://yenc-post.org/simplebrowser/testmeta.htm");
             string targetHref = link.GetAttribute("href");
-            Assert.AreEqual(targetHref, "http://afn.org/~afn07998/simplebrowser/testmeta.htm");
+            Assert.AreEqual(targetHref, "http://yenc-post.org/simplebrowser/testmeta.htm");
 
             link.Click();
             Assert.IsNotNull(b.CurrentState);
@@ -153,7 +153,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         [Test]
         public void When_Testing_Referer_MetaReferrer()
         {
-            string startingUrl = "http://afn.org/~afn07998/simplebrowser/testmeta.htm";
+            string startingUrl = "http://yenc-post.org/simplebrowser/testmeta.htm";
 
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);
@@ -177,7 +177,7 @@ namespace SimpleBrowser.UnitTests.OnlineTests
         [Test]
         public void When_Testing_Referer_RelNoReferrer()
         {
-            string startingUrl = "http://afn.org/~afn07998/simplebrowser/testrel.htm";
+            string startingUrl = "http://yenc-post.org/simplebrowser/testrel.htm";
 
             Browser b = new Browser();
             Assert.AreEqual(b.RefererMode, Browser.RefererModes.NoneWhenDowngrade);

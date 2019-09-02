@@ -4,11 +4,9 @@
     <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
     <AssemblyTitle>SimpleBrowser</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <VersionPrefix>0.5.79</VersionPrefix>
+    <VersionPrefix>0.6.0</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
-    <!-- <TargetFrameworks>net452;netstandard2.0</TargetFrameworks> -->
-    <TargetFramework>net452</TargetFramework>
-    <!-- <TargetFramework>netstandard2.0</TargetFramework> -->
+    <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>SimpleBrowser</AssemblyName>
@@ -31,11 +29,7 @@
 	<PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
-    <!--
-    This is needed for the RazorLight library.
-    Otherwise the HtmlRendering will throw an exception.
-    -->
+  <PropertyGroup>
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
   
@@ -45,14 +39,6 @@
     <PackageReference Include="RazorLight" Version="2.0.0-beta1" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
-    <Reference Include="System" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>

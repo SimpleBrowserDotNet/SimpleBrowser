@@ -29,6 +29,7 @@ namespace SimpleBrowser.Internal
             {
                 index = ParseCookie(header, index, cc, defaultHost);
             }
+
             return cc;
         }
 
@@ -42,12 +43,14 @@ namespace SimpleBrowser.Internal
             {
                 index = ParseCookieAttribute(header, index + 1, cookie);
             }
+
             index++;
 
             if (cookie.Domain == string.Empty)
             {
                 cookie.Domain = defaultHost;
             }
+
             if (cookie.Path == string.Empty)
             {
                 cookie.Path = "/";
@@ -80,6 +83,7 @@ namespace SimpleBrowser.Internal
 
                 index++;
             }
+
             cookie.Name = header.Substring(beginIndex);
             return index;
         }
@@ -99,8 +103,7 @@ namespace SimpleBrowser.Internal
                         }
                         else
                         {
-                            string value;
-                            index = ParseValue(header, index + 1, out value);
+                            index = ParseValue(header, index + 1, out string value);
                             if (attributeName.ToLower() == "domain")
                             {
                                 cookie.Domain = value;
@@ -109,6 +112,7 @@ namespace SimpleBrowser.Internal
                             {
                                 cookie.Path = value;
                             }
+
                             return index;
                         }
                     case ',':
@@ -138,6 +142,7 @@ namespace SimpleBrowser.Internal
                             value = value.TrimStart('"').TrimEnd('"');
                             return index;
                         }
+
                         break;
 
                     case '"':
@@ -146,6 +151,7 @@ namespace SimpleBrowser.Internal
                 }
                 index++;
             }
+
             value = header.Substring(beginIndex, index - beginIndex);
             value = value.TrimStart('"').TrimEnd('"');
             return index;
@@ -168,13 +174,16 @@ namespace SimpleBrowser.Internal
                         {
                             return index;
                         }
+
                         break;
 
                     case ';':
                         return index;
                 }
+
                 index++;
             }
+
             return index;
         }
 
@@ -184,7 +193,7 @@ namespace SimpleBrowser.Internal
         /// <param name="name">The name to encode</param>
         /// <remarks>
         /// This method is essentially URL encoding, but only encodes the characters that are invalid
-        /// for a cookie name, as defined by the .NET Framework 4 documentation of the System.Net.Cookie.Name
+        /// for a cookie name, as defined by the .NET Core 2.2 documentation of the System.Net.Cookie.Name
         /// property, specifically:
         ///
         /// "The following characters must not be used inside the Name property: equal sign, semicolon,

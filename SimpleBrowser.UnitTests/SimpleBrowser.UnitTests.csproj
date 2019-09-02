@@ -7,9 +7,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
-    <!-- <TargetFrameworks>net452;netcoreapp2.0</TargetFrameworks> -->
-    <TargetFramework>net452</TargetFramework>
-    <!-- <TargetFramework>netcoreapp2.0</TargetFramework> -->
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>SimpleBrowser.UnitTests</AssemblyName>
@@ -32,7 +30,9 @@
     <None Remove="SampleDocs\Elements.htm" />
     <None Remove="SampleDocs\FileUpload.htm" />
     <None Remove="SampleDocs\framecontainer.htm" />
+    <None Remove="SampleDocs\framecontent.htm" />
     <None Remove="SampleDocs\HTML5Elements.htm" />
+    <None Remove="SampleDocs\iframecontainer.htm" />
     <None Remove="SampleDocs\movies1.htm" />
     <None Remove="SampleDocs\movies2.htm" />
     <None Remove="SampleDocs\SimpleForm.htm" />
@@ -46,6 +46,8 @@
     <EmbeddedResource Include="SampleDocs\Elements.htm" />
     <EmbeddedResource Include="SampleDocs\FileUpload.htm" />
     <EmbeddedResource Include="SampleDocs\framecontainer.htm" />
+    <EmbeddedResource Include="SampleDocs\framecontent.htm" />
+    <EmbeddedResource Include="SampleDocs\iframecontainer.htm" />
     <EmbeddedResource Include="SampleDocs\HTML5Elements.htm" />
     <EmbeddedResource Include="SampleDocs\movies1.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -55,18 +57,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
-    <PackageReference Include="Moq" Version="4.10.1" />
-    <PackageReference Include="NUnit" Version="3.11.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+    <PackageReference Include="Moq" Version="4.12.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.15.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+  <ItemGroup>
     <ProjectReference Include="..\SimpleBrowser\SimpleBrowser.csproj" AdditionalProperties="TargetFramework='netstandard2.0'" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <ProjectReference Include="..\SimpleBrowser\SimpleBrowser.csproj" AdditionalProperties="TargetFramework='net452'" />
-    <Reference Include="System" />
   </ItemGroup>
 
   <ItemGroup>

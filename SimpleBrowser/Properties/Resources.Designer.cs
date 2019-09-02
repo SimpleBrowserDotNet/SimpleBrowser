@@ -19,7 +19,7 @@ namespace SimpleBrowser.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -76,35 +76,11 @@ namespace SimpleBrowser.Properties {
         ///			h1, h2, h3, h4 { font-family: Arial; color: black; }
         ///			h1 { font-size: 32px; color: #468966; letter-spacing: -1px; }
         ///			h2 { font-size: 24px; color: #8E2800; letter-spacing: -1px; }
-        ///			h3 { fon [rest of string was truncated]&quot;;.
+        ///			h3 { font-size: 18px; } [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string HtmlLogTemplate {
             get {
                 return ResourceManager.GetString("HtmlLogTemplate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to @using SimpleBrowser;
-        ///@using System.Web;
-        ///@{
-        ///	bool lastItemIsLogMessage = false;
-        ///}
-        ///&lt;!doctype html&gt;
-        ///&lt;html&gt;
-        ///	&lt;head&gt;
-        ///		&lt;title&gt;@Model.Title&lt;/title&gt;
-        ///		&lt;style type=&quot;text/css&quot;&gt;
-        ///			body { font-family: Verdana, Sans-Serif; font-size: 11px; margin: 30px; color: #333; }
-        ///			h1, h2, h3, p { margin: 0 0 15px 0; }
-        ///			h1, h2, h3, h4 { font-family: Arial; color: black; }
-        ///			h1 { font-size: 32px; color: #468966; letter-spacing: -1px; }
-        ///			h2 { font-size: 24px; color: #8E2800; letter-spacing: -1px; }
-        ///			h3 { font-size: 18px; } [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string HtmlLogTemplateNetStandard {
-            get {
-                return ResourceManager.GetString("HtmlLogTemplateNetStandard", resourceCulture);
             }
         }
     }
