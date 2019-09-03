@@ -23,22 +23,9 @@ steps:
     projects: '**/*Tests/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
-- task: ArchiveFiles@2
-  displayName: 'archive build output'
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)' 
-    includeRootFolder: true 
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip' 
-    replaceExistingArchive: true 
-    verbose: true
-
-- task: DownloadBuildArtifacts@0
-  displayName: 'download build output archive'
-  inputs:
-    buildType: 'current'
-    buildVersionToDownload: 'latest'
-    allowPartiallySucceededBuilds: false
-    artifactName: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip' 
-    itemPattern: '**'
-    downloadPath: '$(System.ArtifactsDirectory)'
+    PathtoPublish: '$(build.binariesdirectory)/$(BuildConfiguration)'
+    artifactName: drop
+  condition: succeededOrFailed()
