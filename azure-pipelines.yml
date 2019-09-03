@@ -28,8 +28,8 @@ steps:
   inputs:
     SourceFolder: '$(agent.builddirectory)'
     Contents: |
-     **/bin/SimpleBrowser.dll
-     **/bin/SimpleBrowser.pdb
+     **/bin/**/SimpleBrowser.dll
+     **/bin/**/SimpleBrowser.pdb
     TargetFolder: '$(build.artifactstagingdirectory)'
   condition: succeededOrFailed()
 
