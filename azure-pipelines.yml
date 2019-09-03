@@ -24,6 +24,7 @@ steps:
     arguments: '--configuration $(buildConfiguration)'
 
 - task: ArchiveFiles@2
+  displayName: 'archive build output'
   inputs:
     rootFolderOrFile: '$(Build.BinariesDirectory)' 
     includeRootFolder: true 
@@ -31,3 +32,12 @@ steps:
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip' 
     replaceExistingArchive: true 
     verbose: true
+
+- task: DownloadBuildArtifacts@0
+  displayName: 'download build output archive'
+  inputs:
+    buildType: 'current'
+    buildVersionToDownload: 'latest'
+    allowPartiallySucceededBuilds: false
+    itemPattern: '**'
+    downloadPath: '$(System.ArtifactsDirectory)'
