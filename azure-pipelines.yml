@@ -39,5 +39,6 @@ steps:
     buildType: 'current'
     buildVersionToDownload: 'latest'
     allowPartiallySucceededBuilds: false
+    artifactName: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip' 
     itemPattern: '**'
     downloadPath: '$(System.ArtifactsDirectory)'
