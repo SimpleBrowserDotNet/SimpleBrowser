@@ -6,7 +6,6 @@
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <AssemblyTitle>Sample</AssemblyTitle>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-	<RuntimeIdentifiers>win10-64</RuntimeIdentifiers>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>Sample</AssemblyName>
