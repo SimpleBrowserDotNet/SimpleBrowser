@@ -34,5 +34,6 @@ namespace SimpleBrowser.Network
         string Referer { get; set; }
         Uri Address { get; }
         string Host { get; set; }
+        System.Security.Cryptography.X509Certificates.X509CertificateCollection ClientCertificates { get; set; }
     }
 }
