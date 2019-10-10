@@ -226,6 +226,18 @@ namespace SimpleBrowser.Network
                 this.webRequest.Host = value;
             }
         }
+        public System.Security.Cryptography.X509Certificates.X509CertificateCollection ClientCertificates
+        {
+            get
+            {
+                return this.webRequest.ClientCertificates;
+            }
+            set
+            {
+                this.webRequest.ClientCertificates = value;
+            }
+        }
+
 
         #endregion IHttpWebRequest Members
     }
