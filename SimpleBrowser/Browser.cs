@@ -47,7 +47,8 @@ namespace SimpleBrowser
         private readonly IWebRequestFactory _reqFactory;
         private readonly Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens;
         private NameValueCollection _navigationAttributes = null;
-
+        private System.Security.Cryptography.X509Certificates.X509CertificateCollection _clientCertificates;
+        
         public Encoding ResponseEncoding { get; set; }
 
         static Browser()
@@ -765,7 +766,12 @@ namespace SimpleBrowser
 
             _basicAuthenticationTokens[domain] = new BasicAuthenticationToken(domain, username, password);
         }
-
+        
+        public void SetCertificate(System.Security.Cryptography.X509Certificates.X509CertificateCollection clientCertificates)
+        {
+            _clientCertificates = clientCertificates;
+        }
+        
         public void BasicAuthenticationLogout(string domain)
         {
             if (string.IsNullOrWhiteSpace(domain))
@@ -990,7 +996,11 @@ namespace SimpleBrowser
                         Address = req.Address,
                         Host = req.Host
                     };
-
+                    if (_clientCertificates != null)
+                    {
+                        req.ClientCertificates = _clientCertificates;
+                    }
+                    
                     try
                     {
                         using (IHttpWebResponse response = req.GetResponse())
