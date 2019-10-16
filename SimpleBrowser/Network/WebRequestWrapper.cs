@@ -11,7 +11,8 @@ namespace SimpleBrowser.Network
     using System.IO;
     using System.Linq;
     using System.Net;
-
+    using System.Security.Cryptography.X509Certificates;
+    
     internal class WebRequestWrapper : IHttpWebRequest
     {
         private static int[] allowedRedirectStatusCodes = { 300, 301, 302, 303, 307, 308 };
@@ -226,6 +227,18 @@ namespace SimpleBrowser.Network
                 this.webRequest.Host = value;
             }
         }
+        public X509CertificateCollection ClientCertificates
+        {
+            get
+            {
+                return this.webRequest.ClientCertificates;
+            }
+            set
+            {
+                this.webRequest.ClientCertificates = value;
+            }
+        }
+
 
         #endregion IHttpWebRequest Members
     }

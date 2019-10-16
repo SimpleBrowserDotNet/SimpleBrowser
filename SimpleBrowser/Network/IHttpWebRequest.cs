@@ -10,7 +10,7 @@ namespace SimpleBrowser.Network
     using System;
     using System.IO;
     using System.Net;
-
+    using System.Security.Cryptography.X509Certificates;
     // TODO Review
     //   1) consider adding XML comments (documentation) to all public members
 
@@ -34,5 +34,6 @@ namespace SimpleBrowser.Network
         string Referer { get; set; }
         Uri Address { get; }
         string Host { get; set; }
+        X509CertificateCollection ClientCertificates { get; set; }
     }
 }
