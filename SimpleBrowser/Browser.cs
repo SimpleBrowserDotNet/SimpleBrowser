@@ -24,6 +24,7 @@ namespace SimpleBrowser
     using SimpleBrowser.Network;
     using SimpleBrowser.Parser;
     using SimpleBrowser.Query;
+    using System.Security.Cryptography.X509Certificates;
 
     public class Browser
     {
@@ -47,7 +48,7 @@ namespace SimpleBrowser
         private readonly IWebRequestFactory _reqFactory;
         private readonly Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens;
         private NameValueCollection _navigationAttributes = null;
-        private System.Security.Cryptography.X509Certificates.X509CertificateCollection _clientCertificates;
+        private X509CertificateCollection _clientCertificates;
         
         public Encoding ResponseEncoding { get; set; }
 
