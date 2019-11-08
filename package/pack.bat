@@ -1,1 +1,0 @@
-"c:\Program Files\NuGet 1.6\nuget" Pack SimpleBrowser.nuspec
