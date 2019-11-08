@@ -39,3 +39,14 @@ steps:
     PathtoPublish: '$(build.artifactstagingdirectory)'
     artifactName: drop
   condition: succeededOrFailed()
+
+- task: NuGetToolInstaller@1
+  displayName: 'Use NuGet '
+
+- task: NuGetCommand@2
+  displayName: 'NuGet pack'
+  inputs:
+    command: pack
+    packagesToPack: '**/SimpleBrowser.csproj'
+    includeReferencedProjects: true
+    buildProperties: 'version=0.6.$(Rev:.r)'
