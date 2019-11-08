@@ -30,8 +30,8 @@ steps:
   inputs:
     command: 'pack'
     packagesToPack: '**/SimpleBrowser.nuspec'
-    versioningScheme: 'byBuildNumber'
-    buildProperties: 'version=0.6.$(BUILD_BUILDNUMBER)'
+    versioningScheme: 'off'
+    buildProperties: 'version=0.6.0'
 
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
