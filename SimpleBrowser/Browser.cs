@@ -34,9 +34,31 @@ namespace SimpleBrowser
         private readonly List<Browser> _allWindows;
 
         private HashSet<string> _extraHeaders = new HashSet<string>();
-        private readonly List<HtmlElement> _allActiveElements = new List<HtmlElement>();
-        private List<NavigationState> _history = new List<NavigationState>();
-        private int _historyPosition = -1;
+        private List<NavigationState> navigationHistory = new List<NavigationState>();
+        private int navigationHistoryPosition = -1;
+        private int maximumNavigationHistoryCount = 20;
+        public int MaximumNavigationHistoryCount
+        {
+            get
+            {
+                return maximumNavigationHistoryCount;
+            }
+
+            set
+            {
+                if (value < 1)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+
+                maximumNavigationHistoryCount = value;
+
+                while (navigationHistory.Count > this.maximumNavigationHistoryCount)
+                {
+                    navigationHistory.RemoveAt(navigationHistory.Count - 1);
+                }
+            }
+        }
 
         private IWebProxy _proxy;
         private int _timeoutMilliseconds = 30000;
@@ -52,9 +74,9 @@ namespace SimpleBrowser
 
         static Browser()
         {
-            // Chrome no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3 (Experimental).
+            // Chrome no longer supports SSL. Chrome supports TLS 1.0, 1.1, 1.2, and 1.3.
             // .NET Standard 2.1 does not support TLS 1.3.
-            // This sets the default SimpleBrowser security protocol to TLS 1.0, 1.1, or 1.2. 
+            // This sets the default SimpleBrowser security protocol to TLS 1.0, 1.1, or 1.2 by default. 
             // This site shows what security protocols are supported by any given browser: https://www.ssllabs.com/ssltest/viewMyClient.html
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
@@ -214,8 +236,8 @@ namespace SimpleBrowser
             get
             {
                 CheckDisposed();
-                return _history.Select((s, i) => new { Index = i, State = s })
-                    .ToDictionary((i) => i.Index - _historyPosition, (i) => i.State.Url);
+                return navigationHistory.Select((s, i) => new { Index = i, State = s })
+                    .ToDictionary((i) => i.Index - navigationHistoryPosition, (i) => i.State.Uri);
             }
         }
 
@@ -318,7 +340,7 @@ namespace SimpleBrowser
         {
             get
             {
-                return CurrentState?.Url;
+                return CurrentState?.Uri;
             }
         }
 
@@ -386,12 +408,12 @@ namespace SimpleBrowser
             get
             {
                 CheckDisposed();
-                if (_historyPosition == -1)
+                if (navigationHistoryPosition == -1)
                 {
                     return null;
                 }
 
-                return _history[_historyPosition];
+                return navigationHistory[navigationHistoryPosition];
             }
         }
 
@@ -435,7 +457,7 @@ namespace SimpleBrowser
 
         public void Close()
         {
-            _history = null;
+            navigationHistory = null;
             _allWindows.Remove(this);
         }
 
@@ -652,9 +674,9 @@ namespace SimpleBrowser
         public bool NavigateBack()
         {
             CheckDisposed();
-            if (_historyPosition > 0)
+            if (navigationHistoryPosition > 0)
             {
-                _historyPosition--;
+                navigationHistoryPosition--;
                 InvalidateAllActiveElements();
                 return true;
             }
@@ -665,9 +687,9 @@ namespace SimpleBrowser
         public bool NavigateForward()
         {
             CheckDisposed();
-            if (_history.Count > _historyPosition + 1)
+            if (navigationHistory.Count > navigationHistoryPosition + 1)
             {
-                _historyPosition++;
+                navigationHistoryPosition++;
                 InvalidateAllActiveElements();
                 return true;
             }
@@ -718,7 +740,7 @@ namespace SimpleBrowser
             {
                 Html = content,
                 ContentType = "text/html",
-                Url = new Uri("app://simplebrowser/setcontent"),
+                Uri = new Uri("app://simplebrowser/setcontent"),
                 Referer = null,
             });
 
@@ -782,18 +804,18 @@ namespace SimpleBrowser
 
         internal void AddNavigationState(NavigationState state)
         {
-            while (_history.Count > _historyPosition + 1)
+            while (navigationHistory.Count > navigationHistoryPosition + 1)
             {
-                _history.Remove(_history.Last());
+                navigationHistory.Remove(navigationHistory.Last());
             }
 
-            _historyPosition++;
-            _history.Add(state);
+            navigationHistoryPosition++;
+            navigationHistory.Add(state);
             this.InvalidateAllActiveElements();
-            while (_history.Count > 20)
+            while (navigationHistory.Count > maximumNavigationHistoryCount)
             {
-                _history.RemoveAt(0);
-                _historyPosition--;
+                navigationHistory.RemoveAt(0);
+                navigationHistoryPosition--;
             }
         }
 
@@ -814,7 +836,7 @@ namespace SimpleBrowser
             var htmlElement = HtmlElement.CreateFor(element);
             if (htmlElement != null)
             {
-                _allActiveElements.Add(htmlElement);
+                this.CurrentState.Elements.Add(htmlElement);
                 htmlElement.OwningBrowser = this;
                 htmlElement.NavigationRequested += HtmlElement_NavigationRequested;
             }
@@ -1112,7 +1134,7 @@ namespace SimpleBrowser
                 new NavigationState()
                 {
                     Html = html,
-                    Url = uri,
+                    Uri = uri,
                     ContentType = contentType,
                     Referer = string.IsNullOrEmpty(referer) ? null : new Uri(Uri.UnescapeDataString(referer))
                 });
@@ -1131,7 +1153,7 @@ namespace SimpleBrowser
 
         private void CheckDisposed()
         {
-            if (_history == null)
+            if (navigationHistory == null)
             {
                 throw new ObjectDisposedException("This browser has been closed. You cannot access the content or history after closing.");
             }
@@ -1406,10 +1428,7 @@ namespace SimpleBrowser
 
         private void InvalidateAllActiveElements()
         {
-            foreach (var element in _allActiveElements)
-            {
-                element.Invalidate();
-            }
+            navigationHistory.ForEach(h => h.Invalidate());
         }
 
         private IHttpWebRequest PrepareRequestObject(Uri url, string method, string contentType, int timeoutMilliseconds)
@@ -1489,9 +1508,9 @@ namespace SimpleBrowser
 
                 case RefererModes.Origin:
                     {
-                        if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+                        if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Uri.ToString()))
                         {
-                            req.Referer = string.Format("{0}://{1}", this.CurrentState.Url.Scheme, this.CurrentState.Url.Host);
+                            req.Referer = string.Format("{0}://{1}", this.CurrentState.Uri.Scheme, this.CurrentState.Uri.Host);
                         }
 
                         break;
@@ -1499,15 +1518,15 @@ namespace SimpleBrowser
 
                 case RefererModes.OriginWhenCrossOrigin:
                     {
-                        if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+                        if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Uri.ToString()))
                         {
-                            if (this.CurrentState.Url.Host.Equals(url.Host, StringComparison.InvariantCultureIgnoreCase))
+                            if (this.CurrentState.Uri.Host.Equals(url.Host, StringComparison.InvariantCultureIgnoreCase))
                             {
-                                req.Referer = this.CurrentState.Url.ToString();
+                                req.Referer = this.CurrentState.Uri.ToString();
                             }
                             else
                             {
-                                req.Referer = string.Format("{0}://{1}", this.CurrentState.Url.Scheme, this.CurrentState.Url.Host);
+                                req.Referer = string.Format("{0}://{1}", this.CurrentState.Uri.Scheme, this.CurrentState.Uri.Host);
                             }
                         }
 
@@ -1516,9 +1535,9 @@ namespace SimpleBrowser
 
                 case RefererModes.UnsafeUrl:
                     {
-                        if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+                        if (this.CurrentState != null && !string.IsNullOrEmpty(this.CurrentState.Uri.ToString()))
                         {
-                            req.Referer = this.CurrentState.Url.ToString();
+                            req.Referer = this.CurrentState.Uri.ToString();
                         }
 
                         break;
@@ -1527,15 +1546,15 @@ namespace SimpleBrowser
                 case RefererModes.NoneWhenDowngrade:
                     {
                         if (this.CurrentState != null &&
-                            !string.IsNullOrEmpty(this.CurrentState.Url.ToString()))
+                            !string.IsNullOrEmpty(this.CurrentState.Uri.ToString()))
                         {
-                            if (this.CurrentState.Url.Scheme == "https" && url.Scheme == "http")
+                            if (this.CurrentState.Uri.Scheme == "https" && url.Scheme == "http")
                             {
                                 req.Referer = string.Empty;
                             }
                             else
                             {
-                                req.Referer = this.CurrentState.Url.ToString();
+                                req.Referer = this.CurrentState.Uri.ToString();
                             }
                         }
 

@@ -8,14 +8,22 @@
 namespace SimpleBrowser
 {
     using System;
+    using System.Collections.Generic;
     using System.Xml.Linq;
 
     internal class NavigationState
     {
-        public Uri Url;
+        public Uri Uri;
         public string ContentType;
         public string Html;
         internal XDocument XDocument;
         public Uri Referer { get; set; }
+
+        public readonly List<HtmlElement> Elements = new List<HtmlElement>();
+
+        public void Invalidate()
+        {
+            this.Elements.ForEach(e => e.Invalidate());
+        }
     }
 }
