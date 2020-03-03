@@ -52,6 +52,7 @@ namespace SimpleBrowser
                 }
 
                 maximumNavigationHistoryCount = value;
+                navigationHistoryPosition = value - 1;
 
                 while (navigationHistory.Count > this.maximumNavigationHistoryCount)
                 {

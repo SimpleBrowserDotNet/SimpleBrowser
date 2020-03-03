@@ -100,5 +100,98 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Assert.AreEqual(new Uri("http://localhost/movies/Movies/Create"), b.Url);
             Assert.Throws(typeof(InvalidOperationException), () => link.Click(), "Clicking the link should now throw an exception");
         }
+
+        [Test]
+        public void Browser_GetMaximumNavigationHistory_ReturnsPositiveValue()
+        {
+            // Arrange
+            Browser b = new Browser();
+
+            // Act
+            int value = b.MaximumNavigationHistoryCount;
+
+            // Assert
+            Assert.Greater(value, 0);
+        }
+
+        [Test]
+        public void Browser_SetMaximumNavigationHistoryToNegativeValue_ThrowsOutOfRangeException()
+        {
+            // Arrange
+            Browser b = new Browser();
+
+            // Act
+
+            // Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                b.MaximumNavigationHistoryCount = -2;
+            });
+        }
+
+        [Test]
+        public void Browser_SetMaximumNavigationHistoryToLargerSize_SetsValue()
+        {
+            // Arrange
+            Browser b = new Browser();
+            int before = b.MaximumNavigationHistoryCount;
+
+            // Act
+            b.MaximumNavigationHistoryCount = 50;
+
+            // Assert
+            Assert.Greater(b.MaximumNavigationHistoryCount, before);
+        }
+
+        [Test]
+        public void Browser_SetMaximumNavigationHistoryToSameSize_SetsValue()
+        {
+            // Arrange
+            Browser b = new Browser();
+            int before = b.MaximumNavigationHistoryCount;
+
+            // Act
+            b.MaximumNavigationHistoryCount = before;
+
+            // Assert
+            Assert.AreEqual(b.MaximumNavigationHistoryCount, before);
+        }
+
+        [Test]
+        public void Browser_SetMaximumNavigationHistoryToSmallerSize_SetsValue()
+        {
+            // Arrange
+            Browser b = new Browser();
+            int before = b.MaximumNavigationHistoryCount;
+            b.Navigate("http://www.ms.com");
+            b.Navigate("http://www.microsoft.com");
+            b.Navigate("http://www.github.com");
+            b.Navigate("http://www.bytewerx.com");
+            b.Navigate("http://www.yenc.org");
+
+            b.Navigate("http://www.ms.com");
+            b.Navigate("http://www.microsoft.com");
+            b.Navigate("http://www.github.com");
+            b.Navigate("http://www.bytewerx.com");
+            b.Navigate("http://www.yenc.org");
+
+            b.Navigate("http://www.ms.com");
+            b.Navigate("http://www.microsoft.com");
+            b.Navigate("http://www.github.com");
+            b.Navigate("http://www.bytewerx.com");
+            b.Navigate("http://www.yenc.org");
+
+            b.Navigate("http://www.ms.com");
+            b.Navigate("http://www.microsoft.com");
+            b.Navigate("http://www.github.com");
+            b.Navigate("http://www.bytewerx.com");
+            b.Navigate("http://www.yenc.org");
+
+            // Act
+            b.MaximumNavigationHistoryCount = 10;
+
+            // Assert
+            Assert.Less(b.MaximumNavigationHistoryCount, before);
+        }
     }
 }
