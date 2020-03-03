@@ -79,8 +79,7 @@ namespace SimpleBrowser
         /// <returns>The value requested, null if the attribute was not found.</returns>
         protected string GetAttributeValue(XElement element, string name)
         {
-            var attr = GetAttribute(element, name);
-            return attr == null ? null : attr.Value;
+            return GetAttribute(element, name)?.Value;
         }
 
         /// <summary>
@@ -91,14 +90,11 @@ namespace SimpleBrowser
             get { return Element.Name.LocalName; }
         }
 
-        private bool _valid = true;
-        public bool Valid
-        {
-            get { return _valid; }
-        }
+        public bool Valid { get; private set; } = true;
+
         public void Invalidate()
         {
-            _valid = false;
+            this.Valid = false;
         }
 
         public class NavigationArgs
@@ -107,6 +103,7 @@ namespace SimpleBrowser
             /// This can be a full Url, but also a relative url that can be combined with the current url of the Browser object
             /// </summary>
             public string Uri;
+
             public string Target;
             public string Method = "GET";
             public NameValueCollection UserVariables = new NameValueCollection();
@@ -141,12 +138,13 @@ namespace SimpleBrowser
 
         internal static HtmlElement CreateFor(XElement element)
         {
-            HtmlElement result = null;
+            HtmlElement result;
             switch (element.Name.LocalName.ToLower())
             {
                 case "form":
                     result = new FormElement(element);
                     break;
+
                 case "input":
                     string type = element.GetAttribute("type") ?? "";
                     switch (type.ToLower())
@@ -154,25 +152,32 @@ namespace SimpleBrowser
                         case "radio":
                             result = new RadioInputElement(element);
                             break;
+
                         case "checkbox":
                             result = new CheckboxInputElement(element);
                             break;
+
                         case "image":
                             result = new ImageInputElement(element);
                             break;
+
                         case "submit":
                         case "button":
                             result = new ButtonInputElement(element);
                             break;
+
                         case "file":
                             result = new FileUploadElement(element);
                             break;
+
                         case "email":
                             result = new EmailInputElement(element);
                             break;
+
                         case "url":
                             result = new UrlInputElement(element);
                             break;
+
                         case "datetime-local":
                         case "date":
                         case "month":
@@ -180,27 +185,34 @@ namespace SimpleBrowser
                         case "time":
                             result = new DateTimeInputElement(element);
                             break;
+
                         case "number":
                         case "range":
                             result = new NumberInputElement(element);
                             break;
+
                         case "color":
                             result = new ColorInputElement(element);
                             break;
+
                         default:
                             result = new InputElement(element);
                             break;
                     }
                     break;
+
                 case "textarea":
                     result = new TextAreaElement(element);
                     break;
+
                 case "select":
                     result = new SelectElement(element);
                     break;
+
                 case "option":
                     result = new OptionElement(element);
                     break;
+
                 case "iframe":
                 case "frame":
                     var src = element.GetAttributeCI("src");
@@ -210,18 +222,22 @@ namespace SimpleBrowser
                     }
                     else
                     {
-                        result = default(HtmlElement);
+                        result = default;
                     }
                     break;
+
                 case "a":
                     result = new AnchorElement(element);
                     break;
+
                 case "label":
                     result = new LabelElement(element);
                     break;
+
                 case "button":
                     result = new ButtonInputElement(element);
                     break;
+
                 default:
                     result = new HtmlElement(element);
                     break;
@@ -270,9 +286,7 @@ namespace SimpleBrowser
         {
             get { return correspondingElement; }
         }
-        internal virtual Browser OwningBrowser { get; set; }
 
+        internal virtual Browser OwningBrowser { get; set; }
     }
 }
-
-
