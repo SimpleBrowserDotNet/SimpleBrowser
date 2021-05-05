@@ -10,6 +10,7 @@ namespace SimpleBrowser
     using System;
     using System.Collections.Specialized;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
     using SimpleBrowser.Elements;
 
@@ -124,17 +125,34 @@ namespace SimpleBrowser
             public string Value;
         }
 
-        public event Func<NavigationArgs, bool> NavigationRequested;
+        public event Func<NavigationArgs, Task<bool>> NavigationRequested;
 
+
+        [Obsolete("Use ClickAsync instead")]
         public virtual ClickResult Click()
         {
             return ClickResult.SucceededNoOp;
         }
 
+        [Obsolete("Use ClickAsync instead")]
         public virtual ClickResult Click(uint x, uint y)
         {
             return Click();
         }
+
+        public virtual async Task<ClickResult> ClickAsync(uint x, uint y)
+        {
+            await Task.Delay(1);
+            return ClickResult.SucceededNoOp;
+        }
+
+        public virtual async Task<ClickResult> ClickAsync()
+        {
+            await Task.Delay(1);
+            return ClickResult.SucceededNoOp;
+        }
+
+       
 
         internal static HtmlElement CreateFor(XElement element)
         {
@@ -245,15 +263,21 @@ namespace SimpleBrowser
             return result;
         }
 
-        protected virtual bool RequestNavigation(NavigationArgs args)
+        protected virtual async Task<bool> RequestNavigation(NavigationArgs args)
         {
             if (NavigationRequested != null)
-                return NavigationRequested(args);
+                return await NavigationRequested(args);
             else
                 return false;
         }
 
+
+        [Obsolete("Use Async version instead")]
         public virtual bool SubmitForm(string url = null, HtmlElement clickedElement = null)
+        {
+            return SubmitFormAsync(url, clickedElement).GetAwaiter().GetResult();
+        }
+        public virtual async Task<bool> SubmitFormAsync(string url = null, HtmlElement clickedElement = null)
         {
             XElement formElement = null;
             if (this.Element.HasAttributeCI("form"))
@@ -268,16 +292,23 @@ namespace SimpleBrowser
             if (formElement != null)
             {
                 FormElement form = this.OwningBrowser.CreateHtmlElement<FormElement>(formElement);
-                return form.SubmitForm(url, clickedElement);
+                return await form.SubmitFormAsync(url, clickedElement);
             }
             return false;
         }
 
+
+        [Obsolete("Use Async version instead")]
         public ClickResult DoAspNetLinkPostBack()
+        {
+            return DoAspNetLinkPostBackAsync().GetAwaiter().GetResult();
+        }
+
+        public async Task<ClickResult> DoAspNetLinkPostBackAsync()
         {
             if (this is AnchorElement)
             {
-                return this.Click();
+                return await this.ClickAsync();
             }
             throw new InvalidOperationException("This method must only be called on <a> elements having a __doPostBack javascript call in the href attribute");
         }

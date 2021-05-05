@@ -5,9 +5,10 @@
     <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <AssemblyTitle>Sample</AssemblyTitle>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
+	<LangVersion>8.0</LangVersion>
     <AssemblyName>Sample</AssemblyName>
     <OutputType>Exe</OutputType>
     <StartupObject>Sample.Program</StartupObject>
@@ -21,6 +22,10 @@
     <WarningsAsErrors />
 	<PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RazorEngine.NetCore" Version="3.1.0" />
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\SimpleBrowser\SimpleBrowser.csproj" />

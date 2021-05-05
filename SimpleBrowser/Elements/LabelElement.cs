@@ -7,7 +7,9 @@
 
 namespace SimpleBrowser.Elements
 {
+    using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
 
     /// <summary>
@@ -56,21 +58,31 @@ namespace SimpleBrowser.Elements
             }
         }
 
+        [Obsolete("Use Async version instead")]
+        public override ClickResult Click()
+        {
+            return ClickAsync().GetAwaiter().GetResult();
+        }
+
+
         /// <summary>
         /// Perform a click action on the label element.
         /// </summary>
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
-        public override ClickResult Click()
+        public override async Task<ClickResult> ClickAsync()
         {
             if (Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
-            base.Click();
+            await base.ClickAsync();
 
             // Click on the associated (For) item or else return success without any operation
-            return For?.Click() ?? ClickResult.SucceededNoOp;
+            if (For != null)
+                return await For.ClickAsync();
+
+            return ClickResult.SucceededNoOp;
         }
     }
 }

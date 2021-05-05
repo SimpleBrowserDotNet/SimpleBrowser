@@ -10,13 +10,15 @@ namespace Sample
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Threading.Tasks;
+    using RazorEngine.Templating;
     using SimpleBrowser;
 
     internal class Program
     {
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            Browser browser = new Browser();
+            using Browser browser = new Browser();
             try
             {
                 // log the browser request/response data to files so we can interrogate them in case of an issue with our scraping
@@ -27,7 +29,7 @@ namespace Sample
                 browser.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.10 (KHTML, like Gecko) Chrome/8.0.552.224 Safari/534.10";
 
                 // browse to GitHub
-                browser.Navigate("http://github.com/");
+                await browser.NavigateAsync("http://github.com/");
                 if (LastRequestFailed(browser))
                 {
                     // always check the last request in case the page failed to load
@@ -43,7 +45,7 @@ namespace Sample
                 }
                 else
                 {
-                    loginLink.Click();
+                    await loginLink.ClickAsync();
                     if (LastRequestFailed(browser))
                     {
                         return;
@@ -52,7 +54,7 @@ namespace Sample
                     // fill in the form and click the login button - the fields are easy to locate because they have ID attributes
                     browser.Find("login_field").Value = "youremail@domain.com";
                     browser.Find("password").Value = "yourpassword";
-                    browser.Find(ElementType.Button, "name", "commit").Click();
+                    await browser.Find(ElementType.Button, "name", "commit").ClickAsync();
                     if (LastRequestFailed(browser))
                     {
                         return;
@@ -89,7 +91,9 @@ namespace Sample
             }
             finally
             {
-                string path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile("SimpleBrowser Sample - Request Log"));
+                RenderService rsvc = new RenderService();
+
+                string path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile( rsvc, "SimpleBrowser Sample - Request Log"));
 
                 Console.WriteLine("Log file published to:");
                 Console.WriteLine(path);
@@ -133,6 +137,15 @@ namespace Sample
             string path = Path.Combine(dir.FullName, filename);
             File.WriteAllText(path, text);
             return path;
+        }
+    }
+
+    public class RenderService : HtmlLogFormatter.IViewRenderService
+    {
+        public string RenderToString<TModel>(string template, string title, TModel model)
+        {
+            
+            return RazorEngine.Engine.Razor.RunCompile(template, title, model.GetType(), model);
         }
     }
 }
