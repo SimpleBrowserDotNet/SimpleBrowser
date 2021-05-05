@@ -11,14 +11,16 @@ namespace SimpleBrowser.Network
     using System.IO;
     using System.Net;
     using System.Security.Cryptography.X509Certificates;
+    using System.Threading.Tasks;
+
     // TODO Review
     //   1) consider adding XML comments (documentation) to all public members
 
     public interface IHttpWebRequest
     {
-        Stream GetRequestStream();
+        Task<Stream> GetRequestStreamAsync();
 
-        IHttpWebResponse GetResponse();
+        Task<IHttpWebResponse> GetResponseAsync();
 
         long ContentLength { get; set; }
         WebHeaderCollection Headers { get; set; }

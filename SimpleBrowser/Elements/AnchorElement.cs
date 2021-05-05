@@ -7,7 +7,9 @@
 
 namespace SimpleBrowser.Elements
 {
+    using System;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
 
     /// <summary>
@@ -62,13 +64,19 @@ namespace SimpleBrowser.Elements
             }
         }
 
+        [Obsolete("Use ClickAsync instead")]
+        public override ClickResult Click()
+        {
+            return ClickAsync().GetAwaiter().GetResult();
+        }
+
         /// <summary>
         /// Perform a click action on the anchor element.
         /// </summary>
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
-        public override ClickResult Click()
+        public override async Task<ClickResult> ClickAsync()
         {
-            base.Click();
+            await base.ClickAsync();
             var match = postbackRecognizer.Match(Href);
             if (match.Success)
             {
@@ -98,7 +106,7 @@ namespace SimpleBrowser.Elements
 
                 eventTarget.Value = name;
 
-                if (SubmitForm())
+                if (await SubmitFormAsync())
                 {
                     return ClickResult.SucceededNavigationComplete;
                 }
@@ -138,7 +146,7 @@ namespace SimpleBrowser.Elements
                 navArgs.NavigationAttributes.Add("rel", "noreferrer");
             }
 
-            if (RequestNavigation(navArgs))
+            if (await RequestNavigation(navArgs))
             {
                 return ClickResult.SucceededNavigationComplete;
             }

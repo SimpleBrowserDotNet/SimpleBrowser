@@ -12,6 +12,7 @@ namespace SimpleBrowser.UnitTests
     using System.Net;
     using System.Reflection;
     using System.Text;
+    using System.Threading.Tasks;
     using Moq;
     using SimpleBrowser.Network;
 
@@ -49,7 +50,7 @@ namespace SimpleBrowser.UnitTests
             {
                 Mock<IHttpWebRequest> mock = new Mock<IHttpWebRequest>();
                 mock.SetupAllProperties();
-                mock.Setup(m => m.GetResponse())
+                mock.Setup(m => m.GetResponseAsync())
                     .Returns(() =>
                     {
                         Mock<IHttpWebResponse> mockResponse = new Mock<IHttpWebResponse>();
@@ -58,10 +59,10 @@ namespace SimpleBrowser.UnitTests
 
                         byte[] responseContent = Encoding.UTF8.GetBytes(this.ResponseContent);
                         mockResponse.Setup(r => r.GetResponseStream()).Returns(new MemoryStream(responseContent));
-                        return mockResponse.Object;
+                        return Task.FromResult(mockResponse.Object);
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStream()).Returns(new MemoryStream(new byte[2000000]));
+                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[2000000]));
                 return mock.Object;
             }
 
@@ -81,7 +82,7 @@ namespace SimpleBrowser.UnitTests
             {
                 Mock<IHttpWebRequest> mock = new Mock<IHttpWebRequest>();
                 mock.SetupAllProperties();
-                mock.Setup(m => m.GetResponse())
+                mock.Setup(m => m.GetResponseAsync())
                     .Returns(() =>
                     {
                         Mock<IHttpWebResponse> mockResponse = new Mock<IHttpWebResponse>();
@@ -110,10 +111,10 @@ namespace SimpleBrowser.UnitTests
                             }
                         }
                         mockResponse.Setup(r => r.GetResponseStream()).Returns(new MemoryStream(responseContent));
-                        return mockResponse.Object;
+                        return Task.FromResult(mockResponse.Object);
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStream()).Returns(new MemoryStream(new byte[20000]));
+                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[20000]));
                 return mock.Object;
             }
 
@@ -131,7 +132,7 @@ namespace SimpleBrowser.UnitTests
             {
                 Mock<IHttpWebRequest> mock = new Mock<IHttpWebRequest>();
                 mock.SetupAllProperties();
-                mock.Setup(m => m.GetResponse())
+                mock.Setup(m => m.GetResponseAsync())
                     .Returns(() =>
                     {
                         Mock<IHttpWebResponse> mockResponse = new Mock<IHttpWebResponse>();
@@ -151,10 +152,10 @@ namespace SimpleBrowser.UnitTests
                             }
                         }
                         mockResponse.Setup(r => r.GetResponseStream()).Returns(new MemoryStream(responseContent));
-                        return mockResponse.Object;
+                        return Task.FromResult(mockResponse.Object);
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStream()).Returns(new MemoryStream(new byte[20000]));
+                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[20000]));
                 return mock.Object;
             }
         }
@@ -170,7 +171,7 @@ namespace SimpleBrowser.UnitTests
             {
                 Mock<IHttpWebRequest> mock = new Mock<IHttpWebRequest>();
                 mock.SetupAllProperties();
-                mock.Setup(m => m.GetResponse())
+                mock.Setup(m => m.GetResponseAsync())
                     .Returns(() =>
                     {
                         Mock<IHttpWebResponse> mockResponse = new Mock<IHttpWebResponse>();
@@ -190,10 +191,10 @@ namespace SimpleBrowser.UnitTests
                             }
                         }
                         mockResponse.Setup(r => r.GetResponseStream()).Returns(new MemoryStream(responseContent));
-                        return mockResponse.Object;
+                        return Task.FromResult( mockResponse.Object );
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStream()).Returns(new MemoryStream(new byte[20000]));
+                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[20000]));
                 return mock.Object;
             }
         }

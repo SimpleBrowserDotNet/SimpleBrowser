@@ -7,8 +7,10 @@
 
 namespace SimpleBrowser.Elements
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
 
     /// <summary>
@@ -73,18 +75,25 @@ namespace SimpleBrowser.Elements
             }
         }
 
+
+        [Obsolete("Use Async version instead")]
+        public override ClickResult Click()
+        {
+            return ClickAsync().GetAwaiter().GetResult();
+        }
+
         /// <summary>
         /// Perform a click action on the radio input element.
         /// </summary>
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
-        public override ClickResult Click()
+        public override async Task<ClickResult> ClickAsync()
         {
             if (this.Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
-            base.Click();
+            await base.ClickAsync();
             if (!this.Selected)
             {
                 this.Selected = true;

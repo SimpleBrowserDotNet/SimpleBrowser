@@ -11,6 +11,7 @@ namespace SimpleBrowser.Elements
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
 
     /// <summary>
@@ -113,15 +114,10 @@ namespace SimpleBrowser.Elements
         /// </summary>
         private bool Validate { get; set; }
 
-        /// <summary>
-        /// Submits the form
-        /// </summary>
-        /// <param name="url">Optional. If specified, the url to submit the form. Overrides the form action.</param>
-        /// <param name="clickedElement">Optional. The element clicked, resulting in form submission.</param>
-        /// <returns>True, if the form submitted successfully, false otherwise.</returns>
+        [Obsolete("Use async version instead")]
         public override bool SubmitForm(string url = null, HtmlElement clickedElement = null)
         {
-            return this.Submit(url, clickedElement);
+            return this.Submit(url, clickedElement).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -130,7 +126,18 @@ namespace SimpleBrowser.Elements
         /// <param name="url">Optional. If specified, the url to submit the form. Overrides the form action.</param>
         /// <param name="clickedElement">Optional. The element clicked, resulting in form submission.</param>
         /// <returns>True, if the form submitted successfully, false otherwise.</returns>
-        private bool Submit(string url = null, HtmlElement clickedElement = null)
+        public override async Task<bool> SubmitFormAsync(string url = null, HtmlElement clickedElement = null)
+        {
+            return await this.Submit(url, clickedElement);
+        }
+
+        /// <summary>
+        /// Submits the form
+        /// </summary>
+        /// <param name="url">Optional. If specified, the url to submit the form. Overrides the form action.</param>
+        /// <param name="clickedElement">Optional. The element clicked, resulting in form submission.</param>
+        /// <returns>True, if the form submitted successfully, false otherwise.</returns>
+        private async Task<bool> Submit(string url = null, HtmlElement clickedElement = null)
         {
             string action = this.Action;
             string method = this.Method;
@@ -242,7 +249,7 @@ namespace SimpleBrowser.Elements
                 navigation.ContentType = FormEncoding.MultipartForm + "; boundary=" + token;
             }
 
-            return this.RequestNavigation(navigation);
+            return await this.RequestNavigation(navigation);
         }
 
         /// <summary>
