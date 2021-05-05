@@ -82,7 +82,9 @@ class Program
 		}
 		finally
 		{
-			var path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile("SimpleBrowser Sample - Request Log"));
+		 	RenderService rsvc = new RenderService();
+
+                	string path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile( rsvc, "SimpleBrowser Sample - Request Log"));
 			Process.Start(path);
 		}
 	}
@@ -116,5 +118,16 @@ class Program
 		File.WriteAllText(path, text);
 		return path;
 	}
+	
 }
+
+ public class RenderService : HtmlLogFormatter.IViewRenderService
+    {
+        public string RenderToString<TModel>(string template, string title, TModel model)
+        {
+            
+            return RazorEngine.Engine.Razor.RunCompile(template, title, model.GetType(), model);
+        }
+    }
+
 ```
