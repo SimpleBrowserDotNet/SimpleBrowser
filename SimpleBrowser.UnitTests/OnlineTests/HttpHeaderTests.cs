@@ -8,17 +8,18 @@
 namespace SimpleBrowser.UnitTests.OnlineTests
 {
     using System;
+    using System.Threading.Tasks;
     using NUnit.Framework;
 
     [TestFixture]
     public class HttpHeaderTests
     {
         [Test]
-        public void CustomHostHeaderIsSent()
+        public async Task CustomHostHeaderIsSent()
         {
             Browser browser = new Browser();
 
-            browser.Navigate("http://204.144.122.42");
+            await browser.NavigateAsync("http://204.144.122.42");
             Assert.That(browser.RequestData().Host, Is.EqualTo("204.144.122.42"), "Expected host header to be default from url.");
 
             // I happen to know that this domain name is not in dns (my company owns it)
@@ -26,21 +27,21 @@ namespace SimpleBrowser.UnitTests.OnlineTests
             // Is there another way to confirm the overriden header is sent that does
             // not depend on some random internet server?
             browser.SetHeader("host:uscloud.asldkfhjawoeif.com");
-            browser.Navigate("http://204.144.122.42");
+            await browser.NavigateAsync("http://204.144.122.42");
 
             Assert.That(browser.RequestData().Address, Is.EqualTo(new Uri("http://204.144.122.42")), "Expected the address to be the website url.");
             Assert.That(browser.RequestData().Host, Is.EqualTo("uscloud.asldkfhjawoeif.com"), "Expected the manually set host.");
         }
 
         [Test]
-        public void CustomHeaderIsSent()
+        public async Task CustomHeaderIsSent()
         {
             const string headername = "X-MyCustomHeader";
             const string headervalue = "hello.world";
 
             Browser browser = new Browser();
             browser.SetHeader($"{headername}:{headervalue}");
-            browser.Navigate("http://localhost.me");
+            await browser.NavigateAsync("http://localhost.me");
 
             Assert.That(
                 browser.RequestData()?.RequestHeaders?[headername],

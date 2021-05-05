@@ -9,13 +9,14 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 {
     using System;
     using System.IO;
+    using System.Threading.Tasks;
     using NUnit.Framework;
 
     [TestFixture]
     public class Uploading
     {
         [Test]
-        public void Uploading_A_File_With_Enctype_MultipartMime()
+        public async Task Uploading_A_File_With_Enctype_MultipartMime()
         {
             Browser b = new Browser(Helper.GetAllways200RequestMocker());
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.FileUpload.htm"));
@@ -31,7 +32,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             DirectoryInfo dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
 
             file.Value = dir.GetFiles()[3].FullName;
-            form.SubmitForm();
+            await form.SubmitFormAsync();
 
             Assert.NotNull(lastLog);
             Assert.That(lastLog.Method == "POST");
