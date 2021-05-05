@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios.</Description>
+    <Description>SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios. This fork removes Logging and dependency on RazorLight</Description>
     <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
-    <AssemblyTitle>SimpleBrowser</AssemblyTitle>
+    <AssemblyTitle>SimpleBrowser.NoLog</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
     <VersionPrefix>0.6.0</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
@@ -15,7 +15,7 @@
     <PackageTags>headless browser http cookies browserautomation automation</PackageTags>
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/SimpleBrowserDotNet/SimpleBrowser</PackageProjectUrl>
-    <PackageLicenseUrl>https://opensource.org/licenses/BSD-3-Clause</PackageLicenseUrl>
+	  <PackageLicenseUrl>https://opensource.org/licenses/BSD-3-Clause</PackageLicenseUrl>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
@@ -31,16 +31,21 @@
 
   <PropertyGroup>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  <AssemblyVersion>0.6.0.0</AssemblyVersion>
+	  <FileVersion>0.6.0.0</FileVersion>
+	  <Version>0.6.1-alpha</Version>
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  <IncludeSymbols>true</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="Westwind.RazorHosting" Version="3.3.9" Condition="'$(TargetFramework)' == 'net452'" />
-    <PackageReference Include="RazorLight" Version="2.0.0-beta1" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+	  <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.4">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
   
   <ItemGroup>

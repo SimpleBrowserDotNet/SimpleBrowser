@@ -243,7 +243,6 @@ namespace SimpleBrowser
                     .ToDictionary((i) => i.Index - navigationHistoryPosition, (i) => i.State.Uri);
             }
         }
-
         /// <summary>
         /// An enumeration of the defined Referrer Policy States.
         /// </summary>
@@ -648,6 +647,11 @@ namespace SimpleBrowser
             return Navigate(new Uri(url));
         }
 
+        public bool Navigate(string url, string Method)
+        {
+            return DoRequest(new Uri(url), Method, null, null, null, null, _timeoutMilliseconds);
+        }
+
         public bool Navigate(string url, int timeoutMilliseconds)
         {
             return Navigate(new Uri(url), timeoutMilliseconds);
@@ -705,11 +709,11 @@ namespace SimpleBrowser
             _extraHeaders.Remove(header);
         }
 
-        public string RenderHtmlLogFile(string title = "SimpleBrowser Session Log")
-        {
-            var formatter = new HtmlLogFormatter();
-            return formatter.Render(_logs, title);
-        }
+        //public string RenderHtmlLogFile(string title = "SimpleBrowser Session Log")
+        //{
+        //    var formatter = new HtmlLogFormatter();
+        //    return formatter.Render(_logs, title);
+        //}
 
         /// <summary>
         /// Return the information related to the last request
@@ -863,7 +867,7 @@ namespace SimpleBrowser
             throw new InvalidOperationException("The element was not of the corresponding type");
         }
 
-        internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
+        public bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
         {
             string html;
             string referer = null;
@@ -884,7 +888,7 @@ namespace SimpleBrowser
             else
             {
                 bool handle3xxRedirect = false;
-                int maxRedirects = 5; // Per RFC2068, Section 10.3
+                int maxRedirects = 10; // Per RFC2068, Section 10.3
                 string postBody = string.Empty;
                 do
                 {
@@ -920,7 +924,7 @@ namespace SimpleBrowser
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(encodingType))
+                    if (!string.IsNullOrEmpty(encodingType) && method != "GET")
                     {
                         req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
                     }
@@ -962,7 +966,7 @@ namespace SimpleBrowser
 
                     if (userVariables != null)
                     {
-                        if (method == "POST")
+                        if (method == "POST" || method == "PUT")
                         {
                             postBody = StringUtil.MakeQueryString(userVariables);
                             byte[] data = Encoding.GetEncoding(28591).GetBytes(postBody);
@@ -1027,6 +1031,8 @@ namespace SimpleBrowser
                     
                     try
                     {
+                        System.Threading.Thread.Sleep(100);
+
                         using (IHttpWebResponse response = req.GetResponse())
                         {
                             Encoding responseEncoding = ResponseEncoding ?? Encoding.UTF8; //default
