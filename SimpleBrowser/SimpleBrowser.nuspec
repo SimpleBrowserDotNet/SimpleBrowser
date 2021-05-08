@@ -4,11 +4,10 @@
     <version>$version$</version>
     <authors>Nathan Ridley, Teun Duynstee, Kevin Yochum, Joe Feser</authors>
     <owners>Nathan Ridley</owners>
-    <projectUrl>https://github.com/axefrog/SimpleBrowser</projectUrl>
+    <projectUrl>https://github.com/SimpleBrowserDotNet/SimpleBrowser</projectUrl>
     <dependencies>
 		<group>
-			<dependency id="Newtonsoft.Json" version="12.0.2" />
-			<dependency id="RazorLight" version="2.0.0-beta1" />
+			<dependency id="Newtonsoft.Json" version="12.0.3" />
       </group>
     </dependencies>
     <id>SimpleBrowser</id>

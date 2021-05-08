@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios. This fork removes Logging and dependency on RazorLight</Description>
+    <Description>SimpleBrowser is a lightweight, yet highly capable browser automation engine designed for automation and testing scenarios.</Description>
     <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
-    <AssemblyTitle>SimpleBrowser.NoLog</AssemblyTitle>
+    <AssemblyTitle>SimpleBrowser</AssemblyTitle>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <VersionPrefix>0.6.0</VersionPrefix>
+    <VersionPrefix>0.7.0</VersionPrefix>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
 	  <LangVersion>8.0</LangVersion>
@@ -32,13 +32,6 @@
 
   <PropertyGroup>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <AssemblyVersion>0.6.0.0</AssemblyVersion>
-	  <FileVersion>0.6.0.0</FileVersion>
-	  <Version>0.6.1-alpha</Version>
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <IncludeSymbols>true</IncludeSymbols>
-	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   
   <ItemGroup>
