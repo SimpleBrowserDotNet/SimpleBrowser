@@ -62,7 +62,8 @@ namespace SimpleBrowser.UnitTests
                         return Task.FromResult(mockResponse.Object);
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[2000000]));
+                mock.Setup(m => m.GetRequestStreamAsync()).Returns(Task.FromResult((System.IO.Stream)new MemoryStream(new byte[60000])));
+                
                 return mock.Object;
             }
 
@@ -114,7 +115,8 @@ namespace SimpleBrowser.UnitTests
                         return Task.FromResult(mockResponse.Object);
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[20000]));
+                mock.Setup(m => m.GetRequestStreamAsync()).Returns(Task.FromResult((System.IO.Stream)new MemoryStream(new byte[60000])));
+                
                 return mock.Object;
             }
 
@@ -155,7 +157,7 @@ namespace SimpleBrowser.UnitTests
                         return Task.FromResult(mockResponse.Object);
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[20000]));
+                mock.Setup(m => m.GetRequestStreamAsync()).Returns(Task.FromResult((System.IO.Stream)new MemoryStream(new byte[60000]) ));
                 return mock.Object;
             }
         }
@@ -194,7 +196,8 @@ namespace SimpleBrowser.UnitTests
                         return Task.FromResult( mockResponse.Object );
                     });
                 mock.SetupProperty(m => m.Headers, new WebHeaderCollection());
-                mock.Setup(m => m.GetRequestStreamAsync().GetAwaiter().GetResult()).Returns(new MemoryStream(new byte[20000]));
+                mock.Setup(m => m.GetRequestStreamAsync()).Returns(Task.FromResult((System.IO.Stream)new MemoryStream(new byte[60000])));
+                
                 return mock.Object;
             }
         }

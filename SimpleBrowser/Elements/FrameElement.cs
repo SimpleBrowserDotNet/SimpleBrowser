@@ -52,12 +52,12 @@ namespace SimpleBrowser.Elements
             {
                 return base.OwningBrowser;
             }
-            //set
-            //{
-            //    base.OwningBrowser = value;
-            //    this.FrameBrowser = this.OwningBrowser.CreateChildBrowser(this.Name);
-            //    this.FrameBrowser.Navigate(new Uri(this.OwningBrowser.Url, this.Src));
-            //}
+            set
+            {
+                base.OwningBrowser = value;
+                this.FrameBrowser = this.OwningBrowser.CreateChildBrowser(this.Name);
+                this.FrameBrowser.NavigateAsync(new Uri(this.OwningBrowser.Url, this.Src)).GetAwaiter().GetResult();
+            }
         }
     }
 }

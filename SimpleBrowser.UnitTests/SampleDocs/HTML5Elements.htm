@@ -7,7 +7,7 @@
     <!-- A rogue input (technically, malformed HTML). When submitted, it should not submit with any form. -->
     <input type="text" name="orphan1" id="orphan1" />
 
-    <form action="http://jkorpela.fi/cgi-bin/echo.cgi" method="post">
+    <form action="https://jkorpela.fi/cgi-bin/echo.cgi" method="post">
         <fieldset>
             <legend>Typical</legend>
             <label for="textinput">Text Input</label><input name="textinput" id="textinput" type="text" value="initial" /><br />
@@ -53,14 +53,14 @@
     </form>
 
     <!-- A form with an element outside the form -->
-    <form action="http://jkorpela.fi/cgi-bin/echo.cgi" id="form1" method="post">
+    <form action="https://jkorpela.fi/cgi-bin/echo.cgi" id="form1" method="post">
         <input type="text" name="field1" id="field1" />
         <input type="text" name="field1a" id="field1a" form="form1" />
     </form>
     <input type="submit" name="Submit1" value="Submit1" id="submit1" form="form1">
 
     <!-- A form with an element of another form -->
-    <form action="http://jkorpela.fi/cgi-bin/echo.cgi" id="form2" method="post">
+    <form action="https://jkorpela.fi/cgi-bin/echo.cgi" id="form2" method="post">
         <input type="text" name="field2" id="field2" form="form1"/>
         <input type="text" name="field2a" id="field2a" form="form2" />
         <input type="submit" name="Submit2" value="Submit2" id="submit2">
