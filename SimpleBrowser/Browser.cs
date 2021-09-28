@@ -85,7 +85,8 @@ namespace SimpleBrowser
         private readonly Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens;
         private NameValueCollection _navigationAttributes = null;
         private X509CertificateCollection _clientCertificates;
-        
+
+        public int MaxRedirects { get; set; } = 5;
         public Encoding ResponseEncoding { get; set; }
 
         static Browser()
@@ -956,7 +957,7 @@ namespace SimpleBrowser
             else
             {
                 bool handle3xxRedirect = false;
-                int maxRedirects = 10; // Per RFC2068, Section 10.3 it should be 5. However some sites have abused this 
+                int maxRedirects = MaxRedirects; // Per RFC2068, Section 10.3 it should be 5. However some sites have abused this 
                 string postBody = string.Empty;
                 do
                 {
@@ -1099,8 +1100,6 @@ namespace SimpleBrowser
                     
                     try
                     {
-                        System.Threading.Thread.Sleep(100);
-
                         using (IHttpWebResponse response = await req.GetResponseAsync())
                         {
                             Encoding responseEncoding = ResponseEncoding ?? Encoding.UTF8; //default

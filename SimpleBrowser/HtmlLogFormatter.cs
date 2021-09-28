@@ -35,10 +35,6 @@ namespace SimpleBrowser
                 RequestsCount = logs.Count(l => l is HttpRequestLog)
             };
 
-            //var engine = new RazorLight.RazorLightEngineBuilder()
-            //    .UseMemoryCachingProvider()
-            //    .Build();
-
             return renderservice.RenderToString(Resources.HtmlLogTemplate, model.Title, model);
 
         }
