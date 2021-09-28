@@ -11,6 +11,7 @@ namespace SimpleBrowser
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Web;
     using System.Xml.Linq;
     using SimpleBrowser.Elements;
@@ -262,6 +263,13 @@ namespace SimpleBrowser
             return false;
         }
 
+
+        [Obsolete("Use ClickAsync instead")]
+        public ClickResult Click()
+        {
+            return ClickAsync().GetAwaiter().GetResult();
+        }
+
         /// <summary>
         /// Simulates a click on an element, which has differing effects depending on the element type. If the element
         /// is a BUTTON or INPUT TYPE=SUBMIT or INPUT TYPE=IMAGE element, the current form (if any) will be submitted,
@@ -273,11 +281,18 @@ namespace SimpleBrowser
         /// element had focus and the space bar or enter key was pressed to activate the element, performing the click.
         /// </summary>
         /// <returns>A <see cref="ClickResult"/> indicating the results of the click.</returns>
-        public ClickResult Click()
+        public async Task<ClickResult> ClickAsync()
         {
             this.AssertElementExists();
             this.browser.Log("Clicking element: " + HttpUtility.HtmlEncode(this.XElement.ToString()), LogMessageType.Internal);
-            return this.currentElement.Click();
+            return await this.currentElement.ClickAsync();
+        }
+
+
+        [Obsolete("Use async version instead")]
+        public ClickResult Click(uint x, uint y)
+        {
+            return ClickAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -290,26 +305,39 @@ namespace SimpleBrowser
         /// <param name="x">The x-coordinate of the click location</param>
         /// <param name="y">The y-coordinate of the click location</param>
         /// <returns>A <see cref="ClickResult"/> indicating the results of the click.</returns>
-        public ClickResult Click(uint x, uint y)
+        public async Task<ClickResult> ClickAsync(uint x, uint y)
         {
             this.AssertElementExists();
             this.browser.Log("Clicking element: " + HttpUtility.HtmlEncode(this.XElement.ToString()), LogMessageType.Internal);
-            return this.currentElement.Click(x, y);
+            return await this.currentElement.ClickAsync(x, y);
         }
 
-        /// <summary>
-        /// This method can be used on any element contained within a form, or the form element itself. The form will be 
-        /// serialized and submitted as close as possible to the way it would be in a normal browser request. In
-        /// addition, any values currently in the ExtraFormValues property of the Browser object will be submitted as
-        /// well.
-        /// </summary>
-        /// <param name="url">Optional. If specified, the form will be submitted to this URL instead.</param>
-        /// <returns>True if the form was successfully submitted. Otherwise, false.</returns>
+
+        [Obsolete("Use SubmitFormAsync instead")]
         public bool SubmitForm(string url = null)
+        {
+            return SubmitFormAsync(url).GetAwaiter().GetResult();
+        }
+
+            /// <summary>
+            /// This method can be used on any element contained within a form, or the form element itself. The form will be 
+            /// serialized and submitted as close as possible to the way it would be in a normal browser request. In
+            /// addition, any values currently in the ExtraFormValues property of the Browser object will be submitted as
+            /// well.
+            /// </summary>
+            /// <param name="url">Optional. If specified, the form will be submitted to this URL instead.</param>
+            /// <returns>True if the form was successfully submitted. Otherwise, false.</returns>
+            public async Task<bool> SubmitFormAsync(string url = null)
         {
             this.AssertElementExists();
             this.browser.Log("Submitting parent/ancestor form of: " + HttpUtility.HtmlEncode(this.XElement.ToString()), LogMessageType.Internal);
-            return this.currentElement.SubmitForm(url);
+            return await this.currentElement.SubmitFormAsync(url);
+        }
+
+        [Obsolete("Use Async version instead")]
+        public ClickResult DoAspNetLinkPostBack()
+        {
+            return DoAspNetLinkPostBackAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -317,11 +345,11 @@ namespace SimpleBrowser
         /// JavaScript function as its method of navigating to the next page.
         /// </summary>
         /// <returns>A <see cref="ClickResult"/> indicating the results of the click.</returns>
-        public ClickResult DoAspNetLinkPostBack()
+        public async Task<ClickResult> DoAspNetLinkPostBackAsync()
         {
             this.AssertElementExists();
             this.browser.Log("Performing ASP.Net postback click for : " + HttpUtility.HtmlEncode(this.XElement.ToString()), LogMessageType.Internal);
-            return this.currentElement.DoAspNetLinkPostBack();
+            return await this.currentElement.DoAspNetLinkPostBackAsync();
         }
 
         /// <summary>

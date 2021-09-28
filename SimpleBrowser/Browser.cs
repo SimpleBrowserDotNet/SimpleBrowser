@@ -25,14 +25,27 @@ namespace SimpleBrowser
     using SimpleBrowser.Parser;
     using SimpleBrowser.Query;
     using System.Security.Cryptography.X509Certificates;
+    using System.Threading.Tasks;
 
-    public class Browser
+    public class Browser : IDisposable
     {
         private const string TARGET_SELF = "_self";
         internal const string TARGET_BLANK = "_blank";
         private const string TARGET_PARENT = "_parent";
 
         private readonly List<Browser> _allWindows;
+
+
+        public void Dispose()
+        {
+            foreach(var frame in Frames)
+            {
+                frame.Dispose();
+            }
+            this.Close();
+            
+        }
+
 
         private HashSet<string> _extraHeaders = new HashSet<string>();
         private List<NavigationState> navigationHistory = new List<NavigationState>();
@@ -72,7 +85,8 @@ namespace SimpleBrowser
         private readonly Dictionary<string, BasicAuthenticationToken> _basicAuthenticationTokens;
         private NameValueCollection _navigationAttributes = null;
         private X509CertificateCollection _clientCertificates;
-        
+
+        public int MaxRedirects { get; set; } = 5;
         public Encoding ResponseEncoding { get; set; }
 
         static Browser()
@@ -243,7 +257,6 @@ namespace SimpleBrowser
                     .ToDictionary((i) => i.Index - navigationHistoryPosition, (i) => i.State.Uri);
             }
         }
-
         /// <summary>
         /// An enumeration of the defined Referrer Policy States.
         /// </summary>
@@ -461,7 +474,9 @@ namespace SimpleBrowser
         public void Close()
         {
             navigationHistory = null;
-            _allWindows.Remove(this);
+
+            if (_allWindows.Contains(this))
+                _allWindows.Remove(this);
         }
 
         /// <summary>
@@ -643,36 +658,86 @@ namespace SimpleBrowser
             this.NewWindowOpened?.Invoke(this, newWindow);
         }
 
+        [Obsolete("Use Async version instead")]
         public bool Navigate(string url)
         {
             return Navigate(new Uri(url));
         }
 
+        public async Task<bool> NavigateAsync(string url)
+        {
+            return await NavigateAsync(new Uri(url));
+        }
+
+        [Obsolete("Use Async version instead")]
+        public bool Navigate(string url, string Method)
+        {
+            return DoRequest(new Uri(url), Method, null, null, null, null, _timeoutMilliseconds);
+        }
+
+        public async Task<bool> NavigateAsync(string url, string Method)
+        {
+            return await DoRequestAsync(new Uri(url), Method, null, null, null, null, _timeoutMilliseconds);
+        }
+
+        [Obsolete("Use Async version instead")]
         public bool Navigate(string url, int timeoutMilliseconds)
         {
             return Navigate(new Uri(url), timeoutMilliseconds);
         }
 
+        public async Task<bool> NavigateAsync(string url, int timeoutMilliseconds)
+        {
+            return await NavigateAsync(new Uri(url), timeoutMilliseconds);
+        }
+
+        [Obsolete("Use Async version instead")]
         public bool Navigate(Uri url)
         {
             return DoRequest(url, "GET", null, null, null, null, _timeoutMilliseconds);
         }
 
+        public async Task<bool> NavigateAsync(Uri url)
+        {
+            return await DoRequestAsync(url, "GET", null, null, null, null, _timeoutMilliseconds);
+        }
+
+        [Obsolete("Use Async version instead")]
         public bool Navigate(Uri url, string postData, string contentType)
         {
             return DoRequest(url, "POST", null, postData, contentType, null, _timeoutMilliseconds);
         }
 
+        public async Task<bool> NavigateAsync(Uri url, string postData, string contentType)
+        {
+            return await DoRequestAsync(url, "POST", null, postData, contentType, null, _timeoutMilliseconds);
+        }
+
+        [Obsolete("Use Async version instead")]
         public bool Navigate(Uri url, NameValueCollection postData, string contentType = null, string encodingType = null)
         {
             return DoRequest(url, "POST", postData, null, contentType, encodingType, _timeoutMilliseconds);
         }
 
+        public async Task<bool> NavigateAsync(Uri url, NameValueCollection postData, string contentType = null, string encodingType = null)
+        {
+            return await DoRequestAsync(url, "POST", postData, null, contentType, encodingType, _timeoutMilliseconds);
+        }
+
+
+        [Obsolete("Use Async version instead")]
         public bool Navigate(Uri url, int timeoutMilliseconds)
         {
             _timeoutMilliseconds = timeoutMilliseconds;
             return Navigate(url);
         }
+
+        public async Task<bool> NavigateAsync(Uri url, int timeoutMilliseconds)
+        {
+            _timeoutMilliseconds = timeoutMilliseconds;
+            return await NavigateAsync(url);
+        }
+
 
         public bool NavigateBack()
         {
@@ -705,10 +770,10 @@ namespace SimpleBrowser
             _extraHeaders.Remove(header);
         }
 
-        public string RenderHtmlLogFile(string title = "SimpleBrowser Session Log")
+        public string RenderHtmlLogFile(HtmlLogFormatter.IViewRenderService renderservice, string title = "SimpleBrowser Session Log")
         {
             var formatter = new HtmlLogFormatter();
-            return formatter.Render(_logs, title);
+            return formatter.Render(_logs, title, renderservice);
         }
 
         /// <summary>
@@ -863,16 +928,24 @@ namespace SimpleBrowser
             throw new InvalidOperationException("The element was not of the corresponding type");
         }
 
-        internal bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
+        [Obsolete("This methods execute sync over async and should be avoided")]
+        public bool DoRequest(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
+        {
+            return DoRequestAsync(uri, method, userVariables, postData, contentType, encodingType, timeoutMilliseconds).GetAwaiter().GetResult();
+        }
+
+        public async Task<bool> DoRequestAsync(Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds)
         {
             string html;
             string referer = null;
 
             if (uri.IsFile)
             {
-                StreamReader reader = new StreamReader(uri.AbsolutePath);
-                html = reader.ReadToEnd();
-                reader.Close();
+                using (var reader = new StreamReader(uri.AbsolutePath))
+                {
+                    html = await reader.ReadToEndAsync();
+                    reader.Close();
+                }
 
                 _lastRequestLog = new HttpRequestLog
                 {
@@ -884,7 +957,7 @@ namespace SimpleBrowser
             else
             {
                 bool handle3xxRedirect = false;
-                int maxRedirects = 5; // Per RFC2068, Section 10.3
+                int maxRedirects = MaxRedirects; // Per RFC2068, Section 10.3 it should be 5. However some sites have abused this 
                 string postBody = string.Empty;
                 do
                 {
@@ -920,7 +993,7 @@ namespace SimpleBrowser
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(encodingType))
+                    if (!string.IsNullOrEmpty(encodingType) && method != "GET")
                     {
                         req.Headers.Add(HttpRequestHeader.ContentEncoding, encodingType);
                     }
@@ -962,14 +1035,14 @@ namespace SimpleBrowser
 
                     if (userVariables != null)
                     {
-                        if (method == "POST")
+                        if (method == "POST" || method == "PUT")
                         {
                             postBody = StringUtil.MakeQueryString(userVariables);
                             byte[] data = Encoding.GetEncoding(28591).GetBytes(postBody);
                             req.ContentLength = data.Length;
-                            using (Stream stream = req.GetRequestStream())
+                            using (Stream stream = await req.GetRequestStreamAsync())
                             {
-                                stream.Write(data, 0, data.Length);
+                                await stream.WriteAsync(data, 0, data.Length);
                             }
                         }
                         else
@@ -997,9 +1070,9 @@ namespace SimpleBrowser
                         // in InputElement.cs.
                         byte[] data = Encoding.GetEncoding(28591).GetBytes(postData);
                         req.ContentLength = data.Length;
-                        using (Stream stream = req.GetRequestStream())
+                        using (Stream stream = await req.GetRequestStreamAsync())
                         {
-                            stream.Write(data, 0, data.Length);
+                            await stream.WriteAsync(data, 0, data.Length);
                         }
                     }
 
@@ -1027,7 +1100,7 @@ namespace SimpleBrowser
                     
                     try
                     {
-                        using (IHttpWebResponse response = req.GetResponse())
+                        using (IHttpWebResponse response = await req.GetResponseAsync())
                         {
                             Encoding responseEncoding = ResponseEncoding ?? Encoding.UTF8; //default
                             if (ResponseEncoding == null &&
@@ -1401,7 +1474,7 @@ namespace SimpleBrowser
             return new HtmlResult(CreateHtmlElement(e), this);
         }
 
-        private bool HtmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
+        private async Task<bool> HtmlElement_NavigationRequested(HtmlElement.NavigationArgs args)
         {
             Uri fullUri = new Uri(this.Url, args.Uri);
             if (args.TimeoutMilliseconds <= 0)
@@ -1435,7 +1508,7 @@ namespace SimpleBrowser
 
             this._navigationAttributes = args.NavigationAttributes;
 
-            return browserToNav.DoRequest(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
+            return await browserToNav.DoRequestAsync(fullUri, args.Method, args.UserVariables, args.PostData, args.ContentType, args.EncodingType, args.TimeoutMilliseconds);
         }
 
         private void InvalidateAllActiveElements()

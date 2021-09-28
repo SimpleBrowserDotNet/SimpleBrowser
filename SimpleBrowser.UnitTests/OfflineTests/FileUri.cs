@@ -10,13 +10,14 @@ namespace SimpleBrowser.UnitTests.OfflineTests
     using System;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using NUnit.Framework;
 
     [TestFixture]
     public class FileUri
     {
         [Test]
-        public void CanLoadHtmlFromFile()
+        public async Task CanLoadHtmlFromFile()
         {
             FileInfo f = null;
             string uri = string.Empty;
@@ -37,12 +38,12 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             }
 
             Browser b = new Browser();
-            b.Navigate(uri);
+            await b.NavigateAsync(uri);
             Assert.AreEqual(b.Select("ul#menu>li").Count(), 3, "Not loaded");
         }
 
         [Test]
-        public void CanLoadHtmlFromFilesWithAbsolutePath()
+        public async Task CanLoadHtmlFromFilesWithAbsolutePath()
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT &&
                 Directory.Exists("C:\\Windows\\Temp"))
@@ -52,16 +53,16 @@ namespace SimpleBrowser.UnitTests.OfflineTests
                     @"C:\Windows\Temp\movies1.htm", true);
 
                 Browser b = new Browser();
-                b.Navigate("file:///c:/Windows/Temp/movies1.htm");
+                await b.NavigateAsync("file:///c:/Windows/Temp/movies1.htm");
                 Assert.AreEqual(b.Select("ul#menu>li").Count(), 3);
 
-                b.Navigate("file:///c|/Windows/Temp/movies1.htm");
+                await b.NavigateAsync("file:///c|/Windows/Temp/movies1.htm");
                 Assert.AreEqual(b.Select("ul#menu>li").Count(), 3);
 
-                b.Navigate("file:///c|\\Windows\\Temp\\movies1.htm");
+                await b.NavigateAsync("file:///c|\\Windows\\Temp\\movies1.htm");
                 Assert.AreEqual(b.Select("ul#menu>li").Count(), 3);
 
-                b.Navigate("file://\\c|\\Windows\\Temp\\movies1.htm");
+                await b.NavigateAsync("file://\\c|\\Windows\\Temp\\movies1.htm");
                 Assert.AreEqual(b.Select("ul#menu>li").Count(), 3);
 
                 File.Delete(@"C:\Windows\Temp\movies1.htm");
@@ -74,7 +75,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
                     @"/tmp/movies1.htm", true);
 
                 Browser b = new Browser();
-                b.Navigate("file:///tmp/movies1.htm");
+                await b.NavigateAsync("file:///tmp/movies1.htm");
                 Assert.AreEqual(b.Select("ul#menu>li").Count(), 3);
 
                 File.Delete(@"/tmp/movies1.htm");

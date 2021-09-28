@@ -8,15 +8,16 @@
 namespace SimpleBrowser.UnitTests.OfflineTests
 {
     using NUnit.Framework;
+    using System.Threading.Tasks;
 
     [TestFixture]
     internal class WeirdUrls
     {
         [Test]
-        public void JavascriptUrl()
+        public async Task JavascriptUrl()
         {
             Browser b = new Browser(); // does not need network to fail
-            bool res = b.Navigate("javascript:'';");
+            bool res = await b.NavigateAsync("javascript:'';");
             Assert.False(res);
         }
     }

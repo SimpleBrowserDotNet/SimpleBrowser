@@ -56,7 +56,7 @@ namespace SimpleBrowser.Elements
             {
                 base.OwningBrowser = value;
                 this.FrameBrowser = this.OwningBrowser.CreateChildBrowser(this.Name);
-                this.FrameBrowser.Navigate(new Uri(this.OwningBrowser.Url, this.Src));
+                this.FrameBrowser.NavigateAsync(new Uri(this.OwningBrowser.Url, this.Src)).GetAwaiter().GetResult();
             }
         }
     }

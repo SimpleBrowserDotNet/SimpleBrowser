@@ -9,13 +9,14 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using NUnit.Framework;
 
     [TestFixture]
     public class History
     {
         [Test]
-        public void When_Navigate_Back_Current_Url_Should_Change()
+        public async Task When_Navigate_Back_Current_Url_Should_Change()
         {
             Browser b = new Browser(Helper.GetMoviesRequestMocker());
             HttpRequestLog lastRequest = null;
@@ -23,9 +24,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/movies/");
+            await b.NavigateAsync("http://localhost/movies/");
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
-            b.Navigate("http://localhost/movies2/");
+            await b.NavigateAsync("http://localhost/movies2/");
             Assert.That(b.Url == new Uri("http://localhost/movies2/"));
             b.NavigateBack();
             Assert.AreEqual(new Uri("http://localhost/movies/"), b.Url);
@@ -38,7 +39,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         }
 
         [Test]
-        public void History_Should_Be_Limited_To_20_States()
+        public async Task History_Should_Be_Limited_To_20_States()
         {
             Browser b = new Browser(Helper.GetAllways200RequestMocker());
             HttpRequestLog lastRequest = null;
@@ -48,7 +49,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             };
             for (int i = 0; i < 25; i++)
             {
-                b.Navigate(string.Format("http://localhost/movies{0}/", i));
+                await b.NavigateAsync(string.Format("http://localhost/movies{0}/", i));
             }
             IDictionary<int, Uri> history = b.NavigationHistory;
             Assert.LessOrEqual(history.Keys.Count, 20, "The history shouldn't grow beyond 20");
@@ -59,7 +60,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         }
 
         [Test]
-        public void Navigating_Beyond_History_Boundaries_Should_Return_False()
+        public async Task Navigating_Beyond_History_Boundaries_Should_Return_False()
         {
             Browser b = new Browser(Helper.GetAllways200RequestMocker());
             HttpRequestLog lastRequest = null;
@@ -67,25 +68,25 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/movies1/");
-            b.Navigate("http://localhost/movies2/");
+            await b.NavigateAsync("http://localhost/movies1/");
+            await b.NavigateAsync("http://localhost/movies2/");
             Assert.False(b.NavigateForward());
             Assert.True(b.NavigateBack());
             Assert.False(b.NavigateBack());
         }
 
         [Test]
-        public void Navigating_To_A_Url_With_Querystring_Parameters_Retains_Parameters()
+        public async Task Navigating_To_A_Url_With_Querystring_Parameters_Retains_Parameters()
         {
             Browser b = new Browser(Helper.GetMoviesRequestMocker());
-            b.Navigate("http://localhost/movies/");
+            await b.NavigateAsync("http://localhost/movies/");
             HtmlResult link = b.Find(ElementType.Anchor, FindBy.Text, "Rio Bravo");
-            link.Click();
+            await link.ClickAsync();
             Assert.AreEqual(new Uri("http://www.example.com/movie.html?id=4"), b.Url);
         }
 
         [Test]
-        public void After_Navigating_Away_HtmlResult_Should_Throw_Exception()
+        public async Task After_Navigating_Away_HtmlResult_Should_Throw_Exception()
         {
             Browser b = new Browser(Helper.GetMoviesRequestMocker());
             HttpRequestLog lastRequest = null;
@@ -93,12 +94,12 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/movies/");
+            await b.NavigateAsync("http://localhost/movies/");
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
             HtmlResult link = b.Find(ElementType.Anchor, FindBy.Text, "Create New");
-            link.Click();
+            await link.ClickAsync();
             Assert.AreEqual(new Uri("http://localhost/movies/Movies/Create"), b.Url);
-            Assert.Throws(typeof(InvalidOperationException), () => link.Click(), "Clicking the link should now throw an exception");
+            Assert.Throws(typeof(InvalidOperationException), () => link.ClickAsync().GetAwaiter().GetResult(), "Clicking the link should now throw an exception");
         }
 
         [Test]
@@ -158,34 +159,34 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         }
 
         [Test]
-        public void Browser_SetMaximumNavigationHistoryToSmallerSize_SetsValue()
+        public async Task Browser_SetMaximumNavigationHistoryToSmallerSize_SetsValue()
         {
             // Arrange
             Browser b = new Browser();
             int before = b.MaximumNavigationHistoryCount;
-            b.Navigate("http://www.ms.com");
-            b.Navigate("http://www.microsoft.com");
-            b.Navigate("http://www.github.com");
-            b.Navigate("http://www.bytewerx.com");
-            b.Navigate("http://www.yenc.org");
+            await b.NavigateAsync("http://www.ms.com");
+            await b.NavigateAsync("http://www.microsoft.com");
+            await b.NavigateAsync("http://www.github.com");
+            await b.NavigateAsync("http://www.bytewerx.com");
+            await b.NavigateAsync("http://www.yenc.org");
 
-            b.Navigate("http://www.ms.com");
-            b.Navigate("http://www.microsoft.com");
-            b.Navigate("http://www.github.com");
-            b.Navigate("http://www.bytewerx.com");
-            b.Navigate("http://www.yenc.org");
+            await b.NavigateAsync("http://www.ms.com");
+            await b.NavigateAsync("http://www.microsoft.com");
+            await b.NavigateAsync("http://www.github.com");
+            await b.NavigateAsync("http://www.bytewerx.com");
+            await b.NavigateAsync("http://www.yenc.org");
 
-            b.Navigate("http://www.ms.com");
-            b.Navigate("http://www.microsoft.com");
-            b.Navigate("http://www.github.com");
-            b.Navigate("http://www.bytewerx.com");
-            b.Navigate("http://www.yenc.org");
+            await b.NavigateAsync("http://www.ms.com");
+            await b.NavigateAsync("http://www.microsoft.com");
+            await b.NavigateAsync("http://www.github.com");
+            await b.NavigateAsync("http://www.bytewerx.com");
+            await b.NavigateAsync("http://www.yenc.org");
 
-            b.Navigate("http://www.ms.com");
-            b.Navigate("http://www.microsoft.com");
-            b.Navigate("http://www.github.com");
-            b.Navigate("http://www.bytewerx.com");
-            b.Navigate("http://www.yenc.org");
+            await b.NavigateAsync("http://www.ms.com");
+            await b.NavigateAsync("http://www.microsoft.com");
+            await b.NavigateAsync("http://www.github.com");
+            await b.NavigateAsync("http://www.bytewerx.com");
+            await b.NavigateAsync("http://www.yenc.org");
 
             // Act
             b.MaximumNavigationHistoryCount = 10;

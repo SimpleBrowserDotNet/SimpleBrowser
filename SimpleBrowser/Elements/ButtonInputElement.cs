@@ -8,6 +8,7 @@
 namespace SimpleBrowser.Elements
 {
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
 
     /// <summary>
@@ -43,15 +44,15 @@ namespace SimpleBrowser.Elements
         /// Perform a click action on the label element.
         /// </summary>
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
-        public override ClickResult Click()
+        public override async Task<ClickResult> ClickAsync()
         {
             if (this.Disabled)
             {
                 return ClickResult.SucceededNoOp;
             }
 
-            base.Click();
-            if (this.SubmitForm(clickedElement: this))
+            await base.ClickAsync();
+            if (await this.SubmitFormAsync(clickedElement: this))
             {
                 return ClickResult.SucceededNavigationComplete;
             }

@@ -7,7 +7,9 @@
 
 namespace SimpleBrowser.Elements
 {
+    using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
 
     /// <summary>
@@ -61,13 +63,19 @@ namespace SimpleBrowser.Elements
             yield break;
         }
 
+        [Obsolete("Use ClickAsync instead")]
+        public override ClickResult Click(uint x, uint y)
+        {
+            return ClickAsync(x, y).GetAwaiter().GetResult();
+        }
+
         /// <summary>
         /// Perform a click action on the label element.
         /// </summary>
         /// <param name="x">The x-coordinate of the location clicked</param>
         /// <param name="y">The y-coordinate of the location clicked</param>
         /// <returns>The <see cref="ClickResult"/> of the operation.</returns>
-        public override ClickResult Click(uint x, uint y)
+        public override async Task<ClickResult> ClickAsync(uint x, uint y)
         {
             if (this.Disabled)
             {
@@ -77,8 +85,8 @@ namespace SimpleBrowser.Elements
             this.x = x;
             this.y = y;
 
-            base.Click();
-            if (this.SubmitForm(clickedElement: this))
+            await base.ClickAsync();
+            if (await this.SubmitFormAsync(clickedElement: this))
             {
                 return ClickResult.SucceededNavigationComplete;
             }

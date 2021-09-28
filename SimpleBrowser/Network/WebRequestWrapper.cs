@@ -12,7 +12,8 @@ namespace SimpleBrowser.Network
     using System.Linq;
     using System.Net;
     using System.Security.Cryptography.X509Certificates;
-    
+    using System.Threading.Tasks;
+
     internal class WebRequestWrapper : IHttpWebRequest
     {
         private static int[] allowedRedirectStatusCodes = { 300, 301, 302, 303, 307, 308 };
@@ -26,18 +27,18 @@ namespace SimpleBrowser.Network
 
         #region IHttpWebRequest Members
 
-        public Stream GetRequestStream()
+        public async Task<Stream> GetRequestStreamAsync()
         {
-            return this.webRequest.GetRequestStream();
+            return await this.webRequest.GetRequestStreamAsync();
         }
 
-        public IHttpWebResponse GetResponse()
+        public async Task<IHttpWebResponse> GetResponseAsync()
         {
             HttpWebResponse response;
 
             try
             {
-                response = (HttpWebResponse)this.webRequest.GetResponse();
+                response = (HttpWebResponse)(await this.webRequest.GetResponseAsync());
             }
             // .NET Core throws an exception on the redirect status codes
             // thus we need to handle the exception and inspect the actual

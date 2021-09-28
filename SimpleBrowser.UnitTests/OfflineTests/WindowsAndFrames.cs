@@ -9,13 +9,14 @@ namespace SimpleBrowser.UnitTests.OfflineTests
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using NUnit.Framework;
 
     [TestFixture]
     public class WindowsAndFrames
     {
         [Test]
-        public void Clicking_Target_Blank()
+        public async Task Clicking_Target_Blank()
         {
             Browser b = new Browser(Helper.GetMoviesRequestMocker());
             HttpRequestLog lastRequest = null;
@@ -23,20 +24,20 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/movies/");
+            await b.NavigateAsync("http://localhost/movies/");
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
             HtmlResult link = b.Find(ElementType.Anchor, FindBy.Text, "About us");
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
             Assert.That(b.Windows.Count() == 2);
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Windows.Count() == 3);
             Browser newBrowserWindow = b.Windows.First(br => br.WindowHandle != b.WindowHandle);
             Assert.That(newBrowserWindow.Url == new Uri("http://localhost/movies/About"));
         }
 
         [Test]
-        public void Holding_Ctrl_Shft_Opens_New_Window()
+        public async Task Holding_Ctrl_Shft_Opens_New_Window()
         {
             Browser b = new Browser(Helper.GetMoviesRequestMocker());
             HttpRequestLog lastRequest = null;
@@ -44,27 +45,27 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/movies/");
+            await b.NavigateAsync("http://localhost/movies/");
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
             HtmlResult link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Windows.Count() == 1);
             link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
             b.KeyState = KeyStateOption.Ctrl;
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Windows.Count() == 2);
             link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
             b.KeyState = KeyStateOption.Shift;
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Windows.Count() == 3);
             link = b.Find(ElementType.Anchor, FindBy.Text, "Home");
             b.KeyState = KeyStateOption.Alt;
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Windows.Count() == 3); // alt does not open new browser
         }
 
         [Test]
-        public void Accessing_New_Windows_Using_Event()
+        public async Task Accessing_New_Windows_Using_Event()
         {
             Browser b = new Browser(Helper.GetMoviesRequestMocker());
             Browser newlyOpened = null;
@@ -72,11 +73,11 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 newlyOpened = b2;
             };
-            b.Navigate("http://localhost/movies/");
+            await b.NavigateAsync("http://localhost/movies/");
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
             HtmlResult link = b.Find(ElementType.Anchor, FindBy.Text, "Details");
             b.KeyState = KeyStateOption.Ctrl;
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Windows.Count() == 2);
             Assert.NotNull(newlyOpened);
             Assert.That(b.Url.ToString() == "http://localhost/movies/");
@@ -84,7 +85,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         }
 
         [Test]
-        public void ClosingBrowsers()
+        public async Task ClosingBrowsers()
         {
             Browser b = new Browser(Helper.GetMoviesRequestMocker());
             HttpRequestLog lastRequest = null;
@@ -92,10 +93,10 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/movies/");
+            await b.NavigateAsync("http://localhost/movies/");
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
             HtmlResult link = b.Find(ElementType.Anchor, FindBy.Text, "About us");
-            link.Click();
+            await link.ClickAsync();
             Assert.That(b.Url == new Uri("http://localhost/movies/"));
             Assert.That(b.Windows.Count() == 2);
             b.Close();
@@ -106,7 +107,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         }
 
         [Test]
-        public void Page_With_IFrames()
+        public async Task Page_With_IFrames()
         {
             Browser b = new Browser(Helper.GetIFramesMock());
             HttpRequestLog lastRequest = null;
@@ -114,31 +115,31 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/");
+            await b.NavigateAsync("http://localhost/");
             Assert.That(b.Frames.Count() == 2);
 
             // now navigate away to a page without frames
-            b.Navigate("http://localhost/bla");
+            await b.NavigateAsync("http://localhost/bla");
             Assert.That(b.Frames.Count() == 0);
             Assert.That(b.Windows.Count() == 1);
         }
 
         [Test]
-        public void Navigate_LinkWithParentTarget_OpensPageInParentWindow()
+        public async Task Navigate_LinkWithParentTarget_OpensPageInParentWindow()
         {
             // Arrange
             Browser b = new Browser(Helper.GetFramesetMock());
 
             // Act
-            b.Navigate("http://localhost/");
-            b.Frames.First().Find("parentFrameLink").Click();
+            await b.NavigateAsync("http://localhost/");
+            await b.Frames.First().Find("parentFrameLink").ClickAsync();
 
             // Assert
             Assert.True(b.Find("parentFrameLink").Exists);
         }
 
         [Test]
-        public void GetAttribute_Backdoor_FrameHandle()
+        public async Task GetAttribute_Backdoor_FrameHandle()
         {
             Browser b = new Browser(Helper.GetIFramesMock());
             HttpRequestLog lastRequest = null;
@@ -146,14 +147,14 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/");
+            await b.NavigateAsync("http://localhost/");
             HtmlResult elm = b.Select("iframe");
             string handle = elm.GetAttribute("SimpleBrowser.WebDriver:frameWindowHandle");
             Assert.AreEqual(handle, "frame1");
         }
 
         [Test]
-        public void Navigating_IFrames_Using_Target()
+        public async Task Navigating_IFrames_Using_Target()
         {
             Browser b = new Browser(Helper.GetIFramesMock());
             HttpRequestLog lastRequest = null;
@@ -161,11 +162,11 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             {
                 lastRequest = l;
             };
-            b.Navigate("http://localhost/");
+            await b.NavigateAsync("http://localhost/");
             Assert.That(b.Frames.Count() == 2);
             Assert.That(b.Frames.First().Url == new Uri("http://localhost/subdirectory/frame.htm"));
 
-            b.Find("framelink").Click();
+            await b.Find("framelink").ClickAsync();
             Assert.That(b.Frames.Count() == 2);
             Assert.That(b.Url == new Uri("http://localhost/"));
             Assert.That(b.Frames.First().Url == new Uri("http://localhost/bla.htm"));
@@ -177,26 +178,27 @@ namespace SimpleBrowser.UnitTests.OfflineTests
             Browser b1 = new Browser(Helper.GetIFramesMock());
             Browser b2 = new Browser(Helper.GetIFramesMock());
             Browser.ClearWindows();
-            Assert.Throws(typeof(ObjectDisposedException), () => b1.Navigate("http://localhost/"));
+            Assert.ThrowsAsync(typeof(ObjectDisposedException), async () => await b1.NavigateAsync("http://localhost/"));
         }
 
         [Test]
-        public void Instance_scoped_clear_works()
+        public async Task Instance_scoped_clear_works()
         {
             Browser b1 = new Browser(Helper.GetIFramesMock());
             Browser b2 = new Browser(Helper.GetIFramesMock());
             b2.ClearWindowsInContext();
-            b1.Navigate("http://localhost/");
+            await b1.NavigateAsync("http://localhost/");
             Assert.That(b1.Url.ToString() == "http://localhost/");
-            Assert.Throws(typeof(ObjectDisposedException), () => b2.Navigate("http://localhost/"));
+            Assert.ThrowsAsync(typeof(ObjectDisposedException), async () => await b2.NavigateAsync("http://localhost/"));
+
         }
 
         [Test]
-        public void IFrame_Url_ParsesCorrectly()
+        public async Task IFrame_Url_ParsesCorrectly()
         {
             Browser b = new Browser(Helper.GetIFramesMock());
 
-            b.Navigate("http://localhost/");
+            await b.NavigateAsync("http://localhost/");
             Assert.That(b.Frames.Count() == 2);
             Assert.AreEqual(b.Frames.Last().Url.AbsoluteUri, @"https://www.example.com/BurstingPipe?cn=ot&onetagid=7128&ns=1&activityValues=$$Session=-Session-$$&retargetingValues=$$$$&dynamicRetargetingValues=$$$$&acp=$$$$&");
         }
