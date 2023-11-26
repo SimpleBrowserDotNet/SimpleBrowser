@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="Program.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2023, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -11,20 +11,22 @@ namespace Sample
     using System.Diagnostics;
     using System.IO;
     using SimpleBrowser;
+    using SimpleBrowser.RazorSessionLogger;
 
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
-            Browser browser = new Browser();
+            Browser browser = new ();
             try
             {
                 // log the browser request/response data to files so we can interrogate them in case of an issue with our scraping
                 browser.RequestLogged += OnBrowserRequestLogged;
                 browser.MessageLogged += new Action<Browser, string>(OnBrowserMessageLogged);
 
-                // we'll fake the user agent for websites that alter their content for unrecognised browsers
-                browser.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.10 (KHTML, like Gecko) Chrome/8.0.552.224 Safari/534.10";
+                // we'll fake the user agent for websites that alter their content for unrecognized browsers
+                browser.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36";
+                browser.SessionRenderService = new RazorLogFormatter();
 
                 // browse to GitHub
                 browser.Navigate("http://github.com/");
@@ -89,7 +91,7 @@ namespace Sample
             }
             finally
             {
-                string path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderHtmlLogFile("SimpleBrowser Sample - Request Log"));
+                string path = WriteFile("log-" + DateTime.UtcNow.Ticks + ".html", browser.RenderSessionLog("SimpleBrowser Sample - Request Log"));
 
                 Console.WriteLine("Log file published to:");
                 Console.WriteLine(path);
@@ -124,7 +126,7 @@ namespace Sample
 
         private static string WriteFile(string filename, string text)
         {
-            DirectoryInfo dir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"));
+            DirectoryInfo dir = new (Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"));
             if (!dir.Exists)
             {
                 dir.Create();

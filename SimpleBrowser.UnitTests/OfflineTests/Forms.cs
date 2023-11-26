@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="Forms.cs" company="SimpleBrowser">
-// Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.
+// Copyright © 2010 - 2023, Nathan Ridley and the SimpleBrowser contributors.
 // See https://github.com/SimpleBrowserDotNet/SimpleBrowser/blob/master/readme.md
 // </copyright>
 // -----------------------------------------------------------------------
@@ -26,7 +26,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Forms_Malformed_Select()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
 
             // Test the malformed option.
@@ -97,7 +97,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("text", "invalid", "12345", "12345")]
         public void FormsTextInputElement_SetMaxLength_TextValue(string type, string maxlength, string value, string expectedValue)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
             HtmlResult textInput = b.Find("maxlength1");
 
@@ -129,7 +129,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("invalid", "12345", "12345")]
         public void FormsTextAreaInputElement_SetMaxLength_TextValue(string maxlength, string value, string expectedValue)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
             HtmlResult textArea = b.Find("maxlength2");
 
@@ -168,7 +168,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("a@b.com,b@c.com", false, true, 20, 1)]
         public void FormsEmailInputElement_SubmitForm_SubmitSucceeds(string emailValue, bool required, bool multiple, int? maximumLength, int? minimumLength)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             HtmlResult email = b.Find("email");
 
@@ -227,7 +227,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("a@b.com,b@c.com", false, false, 1, 30)]
         public void FormsEmailInputElement_Invoke_SubmitFails(string emailValue, bool required, bool multiple, int? maximumLength, int? minimumLength)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             HtmlResult email = b.Find("email");
 
@@ -286,7 +286,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("a@b.com,b@c.com", false, false, 1, 30)]
         public void FormsEmailInputElementWithFormNoValidate_Invoke_SubmitSucceeds(string emailValue, bool required, bool multiple, int? maximumLength, int? minimumLength)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             HtmlResult email = b.Find("email");
 
@@ -324,7 +324,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Forms_Input_MinLength()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             HtmlResult textInput = b.Find("textinput");
 
@@ -359,7 +359,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Forms_Validate_Input_Elements()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             // Test text input properties
@@ -405,7 +405,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateTextInputContainingDirnameWithoutValueInLtrCulture_SubmitForm_SubmissionContainsCorrectValues()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             b.Culture = CultureInfo.CreateSpecificCulture("en-US");
 
@@ -434,7 +434,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateTextAreaContainingDirnameWithoutValueInLtrCulture_SubmitForm_SubmissionContainsCorrectValues()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             b.Culture = CultureInfo.CreateSpecificCulture("en-US");
 
@@ -463,7 +463,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateTextInputContainingDirnameWithoutValueInRtlCulture_SubmitForm_SubmissionContainsCorrectValues()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             b.Culture = CultureInfo.CreateSpecificCulture("ar-EG");
 
@@ -492,10 +492,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateTextInputWithPatternAttribute_SubmitForm_SubmissionSucceeds()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("textinput");
             testinput.Value = "USA";
             testinput.XElement.SetAttributeCI("pattern", "[A-Za-z]{3}");
@@ -520,10 +519,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateTextInputWithPatternAttribute_SubmitForm_SubmissionFails()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("textinput");
             testinput.Value = "US";
             testinput.XElement.SetAttributeCI("pattern", "[A-Za-z]{3}");
@@ -540,10 +538,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateTextInputWithPatternAttributewithFormNoValidate_SubmitForm_SubmissionSucceeds()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("textinput");
             testinput.Value = "US";
             testinput.XElement.SetAttributeCI("pattern", "[A-Za-z]{3}");
@@ -562,7 +559,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateTextAreaContainingDirnameWithoutValueInRtlCulture_SubmitForm_SubmissionContainsCorrectValues()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             b.Culture = CultureInfo.CreateSpecificCulture("ar-EG");
 
@@ -591,10 +588,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateUrlInput_SubmitForm_SubmissionSuceeds()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("textinput");
             testinput.XElement.SetAttributeCI("type", "url");
             testinput.Value = "https://github.com/SimpleBrowserDotNet/SimpleBrowser";
@@ -611,10 +607,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateUrlInput_SubmitForm_SubmissionFails()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("url");
             testinput.Value = "US";
 
@@ -630,10 +625,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateUrlInputWithFormNoValidate_SubmitForm_SubmissionSucceds()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("url");
             testinput.Value = "US";
 
@@ -670,10 +664,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("1912-12-13 3:18 PM", "1912-12-13T15:18", true, "1910-12-13 3:18 PM", "1914-12-13 3:18 PM")]
         public void FormsDateTimeInputElement_SubmitForm_SubmitSucceeds(string submittedValue, string returnedValue, bool required, string minimumValue, string maximumValue)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
 
             if (required)
@@ -726,10 +719,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-05-04 4:37:30.500 PM", ".5")]
         public void FormsDateTimeInputElementWithStepAttribute_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
 
             if (!string.IsNullOrWhiteSpace(step))
@@ -754,10 +746,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-05-04 4:37:30.500 PM", ".34")]
         public void FormsDateTimeInputElementWithStepAttribute_SubmitForm_SubmitFails(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
 
             if (!string.IsNullOrWhiteSpace(step))
@@ -782,10 +773,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-05-04 4:37:30.500 PM", ".34")]
         public void FormsDateTimeInputElementWithStepAttributeWithFormNoValidate_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
 
             if (!string.IsNullOrWhiteSpace(step))
@@ -814,10 +804,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-06-13", "60")]
         public void FormsDateInputElementWithStepAttribute_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "date");
 
@@ -842,10 +831,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-05-04", "60")]
         public void FormsDateInputElementWithStepAttribute_SubmitForm_SubmitFails(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "date");
 
@@ -870,10 +858,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-05-04", "60")]
         public void FormsDateInputElementWithStepAttributeWithFormNoValidate_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "date");
 
@@ -903,10 +890,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("1954-01-04", "3")]
         public void FormsMonthInputElementWithStepAttribute_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "month");
 
@@ -932,10 +918,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("1954-02-04", "3")]
         public void FormsMonthInputElementWithStepAttribute_SubmitForm_SubmitFails(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "month");
 
@@ -961,10 +946,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("1954-02-04", "3")]
         public void FormsMonthInputElementWithStepAttributeWithFormNoValidate_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "month");
 
@@ -993,10 +977,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-01-01", "1")]
         public void FormsWeekInputElementWithStepAttribute_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "week");
 
@@ -1021,10 +1004,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-01-01", "2")]
         public void FormsWeekInputElementWithStepAttribute_SubmitForm_SubmitFails(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "week");
 
@@ -1049,10 +1031,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("2019-01-01", "2")]
         public void FormsWeekInputElementWithStepAttributeWithFormNoValidate_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "week");
 
@@ -1082,10 +1063,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("12:45", "5")]
         public void FormsTimeInputElementWithStepAttribute_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "time");
 
@@ -1110,10 +1090,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("12:45", "17")]
         public void FormsTimeInputElementWithStepAttribute_SubmitForm_SubmitFails(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "time");
 
@@ -1138,10 +1117,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("12:45", "17")]
         public void FormsTimeInputElementWithStepAttributeWithFormNoValidate_SubmitForm_SubmitSucceeds(string dateTimeValue, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
             dateTimeInput.XElement.SetAttributeCI("type", "time");
 
@@ -1171,10 +1149,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("invalid", false, null, null)]
         public void FormsDateTimeInputElement_SubmitForm_SubmitSucceedsWithoutValues(string dateTimeValue, bool required, DateTime? minimumValue, DateTime? maximumValue)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult dateTimeInput = b.Find("datetime");
 
             if (required)
@@ -1234,15 +1211,15 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase(".5", "-1.2", "5.9", null, "en-US")]
         [TestCase("-1.1", "-1.6", "2.4", ".5", "en-US")]
         [TestCase(".3", "-1.2", "5.9", ".5", "en-US")]
-		[TestCase("-.5", null, null, null, "nl-NL")]
-		[TestCase(".5", null, null, null, "nl-NL")]
-		[TestCase("-.5", "-1.1", null, null, "nl-NL")]
-		[TestCase(".5", "-1.2", null, null, "nl-NL")]
-		[TestCase("-.5", "-1.1", "2.4", null, "nl-NL")]
-		[TestCase(".5", "-1.2", "5.9", null, "nl-NL")]
-		[TestCase("-1.1", "-1.6", "2.4", ".5", "nl-NL")]
-		[TestCase(".3", "-1.2", "5.9", ".5", "nl-NL")]
-		[TestCase("3e5", null, null, null, "en-US")]
+        [TestCase("-.5", null, null, null, "nl-NL")]
+        [TestCase(".5", null, null, null, "nl-NL")]
+        [TestCase("-.5", "-1.1", null, null, "nl-NL")]
+        [TestCase(".5", "-1.2", null, null, "nl-NL")]
+        [TestCase("-.5", "-1.1", "2.4", null, "nl-NL")]
+        [TestCase(".5", "-1.2", "5.9", null, "nl-NL")]
+        [TestCase("-1.1", "-1.6", "2.4", ".5", "nl-NL")]
+        [TestCase(".3", "-1.2", "5.9", ".5", "nl-NL")]
+        [TestCase("3e5", null, null, null, "en-US")]
         [TestCase("3e5", "1000", null, null, "en-US")]
         [TestCase("3e5", null, "500000", null, "en-US")]
         [TestCase("3e5", "1000", "500000", null, "en-US")]
@@ -1251,8 +1228,11 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("notnumber", "5", "15", "4", "en-US")]
         public void FormsNumberElement_SubmitForm_SubmitSucceeds(string value, string min, string max, string step, string cultureString)
         {
-            Browser b = new Browser();
-			b.Culture = CultureInfo.CreateSpecificCulture(cultureString);
+            Browser b = new()
+            {
+                Culture = CultureInfo.CreateSpecificCulture(cultureString)
+            };
+
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             HtmlResult numberInput = b.Find("number");
@@ -1294,12 +1274,15 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("3e5", "500000", "50000000", "117", "en-US")]
         [TestCase("-.5", "-1.1", "2.4", ".5", "en-US")]
         [TestCase(".5", "-1.2", "5.9", ".5", "en-US")]
-		[TestCase("-,5", "-1,1", "2,4", ",5", "nl-NL")]
-		[TestCase(",5", "-1,2", "5,9", ",5", "nl-NL")]
-		public void FormsNumberElement_SubmitForm_SubmitFails(string value, string min, string max, string step, string cultureString)
+        [TestCase("-,5", "-1,1", "2,4", ",5", "nl-NL")]
+        [TestCase(",5", "-1,2", "5,9", ",5", "nl-NL")]
+        public void FormsNumberElement_SubmitForm_SubmitFails(string value, string min, string max, string step, string cultureString)
         {
-            Browser b = new Browser();
-			b.Culture = CultureInfo.CreateSpecificCulture(cultureString);
+            Browser b = new()
+            {
+                Culture = CultureInfo.CreateSpecificCulture(cultureString)
+            };
+
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             HtmlResult numberInput = b.Find("number");
@@ -1343,7 +1326,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase(".5", "-1.2", "5.9", ".5")]
         public void FormsNumberElement_SubmitFormWithFormNoValidate_SubmitSucceeds(string value, string min, string max, string step)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             HtmlResult numberInput = b.Find("number");
@@ -1390,7 +1373,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("1912-12-13 3:18 PM", true, "1920-12-13 3:18 PM", "1910-12-13 3:18 PM")]
         public void FormsValidateDateTimeInput_SubmitForm_SubmissionFails(string dateTimeValue, bool required, string minimumValue, string maximumValue)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             HtmlResult dateTimeInput = b.Find("datetime");
@@ -1435,7 +1418,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [TestCase("1912-12-13 3:18 PM", true, "1920-12-13 3:18 PM", "1910-12-13 3:18 PM")]
         public void FormsValidateDateTimeInputWithFormNoValidate_SubmitForm_SubmissionSucceeds(string dateTimeValue, bool required, string minimumValue, string maximumValue)
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             HtmlResult dateTimeInput = b.Find("datetime");
@@ -1471,10 +1454,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateDateInput_SubmitForm_SubmissionSucceeds()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult testinput = b.Find("datetime");
             testinput.XElement.SetAttributeCI("type", "date");
             testinput.Value = "1912-12-13";
@@ -1499,10 +1481,9 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void FormsValidateColorInput_SubmitForm_SubmissionSucceeds()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
-            // Test that the text input with a dirname with an empty value properly submits
             HtmlResult colorInput = b.Find("color");
             colorInput.Value = "#34abe6";
 
@@ -1523,10 +1504,13 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         /// <summary>
         /// Tests that form elements properly handle the disabled and read only attributes.
         /// </summary>
+        /// <remarks>
+        /// This is an awful unit test. A unit test should test one thing.
+        /// </remarks>
         [Test]
         public void Forms_Disabled_and_ReadOnly()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
             HtmlResult textarea = b.Find("readonlytextarea");
             textarea.Value = "some value";
@@ -1589,7 +1573,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         public void Forms_Input_Types()
         {
             // Initialize browser and load content.
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.SimpleForm.htm"));
 
             // Test ability to find HTML5 elements.
@@ -1611,7 +1595,7 @@ namespace SimpleBrowser.UnitTests.OfflineTests
         [Test]
         public void Forms_Form_Attribute()
         {
-            Browser b = new Browser();
+            Browser b = new();
             b.SetContent(Helper.GetFromResources("SimpleBrowser.UnitTests.SampleDocs.HTML5Elements.htm"));
 
             // This test covers the following cases:
