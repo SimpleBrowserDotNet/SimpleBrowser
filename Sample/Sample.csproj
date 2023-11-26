@@ -5,7 +5,7 @@
     <Copyright>Copyright © 2010 - 2019, Nathan Ridley and the SimpleBrowser contributors.</Copyright>
     <Authors>Nathan Ridley and the SimpleBrowser contributors.</Authors>
     <AssemblyTitle>Sample</AssemblyTitle>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>Sample</AssemblyName>
@@ -23,6 +23,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\SimpleBrowser.RazorSessionLogger\SimpleBrowser.RazorSessionLogger.csproj" />
     <ProjectReference Include="..\SimpleBrowser\SimpleBrowser.csproj" />
   </ItemGroup>
 

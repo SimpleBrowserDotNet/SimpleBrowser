@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29009.5
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBrowser", "SimpleBrowser\SimpleBrowser.csproj", "{041EB5E9-DE14-41BA-B59D-F77612578CD6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "Sample\Sample.csproj", "{5A003D0D-9F0F-470E-A75C-C61033008A96}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBrowser.UnitTests", "SimpleBrowser.UnitTests\SimpleBrowser.UnitTests.csproj", "{C0A2F5F6-088D-44E8-BBE3-400A8F84C0D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBrowser.RazorSessionLogger", "SimpleBrowser.RazorSessionLogger\SimpleBrowser.RazorSessionLogger.csproj", "{7C433A0D-DB7E-4296-954E-4643ADA88C00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,18 @@ Global
 		{C0A2F5F6-088D-44E8-BBE3-400A8F84C0D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C0A2F5F6-088D-44E8-BBE3-400A8F84C0D3}.Release|x86.ActiveCfg = Release|Any CPU
 		{C0A2F5F6-088D-44E8-BBE3-400A8F84C0D3}.Release|x86.Build.0 = Release|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C433A0D-DB7E-4296-954E-4643ADA88C00}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
